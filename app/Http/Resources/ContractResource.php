@@ -4,7 +4,9 @@ namespace App\Http\Resources;
 
 use App\Enums\BillingPeriod;
 use App\Enums\ContractStatus;
-use App\Services\ContractCalculationService;
+use App\Models\Contract;
+use App\Models\Freight;
+use App\Services\ContractAccrualService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,29 +19,38 @@ class ContractResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $calculation = app(ContractCalculationService::class)->calculate($this->resource);
+        if (! $this->resource instanceof Contract) {
+            return [];
+        }
+
+        $contract = $this->resource;
+        $summary = app(ContractAccrualService::class)->summarize($contract);
+        $calculation = $summary['calculation'];
 
         return [
-            'id' => $this->id,
-            'number' => $this->id,
-            'status' => $this->status->value,
-            'status_label' => match ($this->status) {
+            'id' => $contract->id,
+            'number' => $contract->id,
+            'status' => $contract->status->value,
+            'status_label' => match ($contract->status) {
                 ContractStatus::Active => 'Ativo',
                 ContractStatus::Returned => 'Devolvido',
                 ContractStatus::Finalized => 'Finalizado',
                 ContractStatus::Cancelled => 'Cancelado',
             },
             'client' => new ClientResource($this->whenLoaded('client')),
-            'worksite_address' => $this->worksite_address,
-            'started_at' => $this->started_at?->toJSON(),
-            'ended_at' => $this->ended_at?->toJSON(),
-            'charge_saturdays' => $this->charge_saturdays,
-            'next_charge_date' => $this->next_charge_date?->toDateString(),
+            'worksite_address' => $contract->worksite_address,
+            'started_at' => $contract->started_at->toJSON(),
+            'ended_at' => $contract->ended_at?->toJSON(),
+            'charge_saturdays' => $contract->charge_saturdays,
+            'next_charge_date' => $contract->next_charge_date?->toDateString(),
             'calculated_until' => $calculation->calculatedUntil,
             'rental_total' => $calculation->rentalTotal,
             'calculation_complete' => $calculation->calculationComplete,
-            'notes' => $this->notes,
-            'items' => $this->whenLoaded('items', fn () => $this->items->map(function ($item) use ($calculation): array {
+            'freight_count' => $summary['freight_count'],
+            'freight_total' => $summary['freight_total'],
+            'total_accrued' => $summary['total_accrued'],
+            'notes' => $contract->notes,
+            'items' => $this->whenLoaded('items', fn () => $contract->items->map(function ($item) use ($calculation): array {
                 $itemCalculation = $calculation->item($item->id);
 
                 return [
@@ -57,6 +68,62 @@ class ContractResource extends JsonResource
                     'accrued_subtotal' => $itemCalculation?->subtotal,
                 ];
             })),
+            'freights' => $this->when(
+                $request->routeIs('api.v1.contracts.show') && $contract->relationLoaded('freights'),
+                fn (): array => $this->freightData($contract)
+            ),
         ];
+    }
+
+    /**
+     * @return array<int, array{id: int, quantity: int, unit_amount: string, total: string, occurred_at: string|null, notes: string|null}>
+     */
+    private function freightData(Contract $contract): array
+    {
+        $freights = [];
+
+        foreach ($contract->freights->sortByDesc('occurred_at')->values() as $freight) {
+            if (! $freight instanceof Freight) {
+                continue;
+            }
+
+            $freights[] = [
+                'id' => $freight->id,
+                'quantity' => $freight->quantity,
+                'unit_amount' => $freight->unit_amount,
+                'total' => $this->formatFreightTotal($freight),
+                'occurred_at' => $freight->occurred_at->toJSON(),
+                'notes' => $freight->notes,
+            ];
+        }
+
+        return $freights;
+    }
+
+    private function formatFreightTotal(Freight $freight): string
+    {
+        $cents = $freight->quantity * $this->decimalToCents((string) $freight->unit_amount);
+
+        return $this->formatCents($cents);
+    }
+
+    private function decimalToCents(string $amount): int
+    {
+        $normalized = str_contains($amount, '.')
+            ? $amount
+            : "{$amount}.00";
+
+        [$reais, $cents] = explode('.', $normalized, 2);
+        $cents = str_pad(substr($cents, 0, 2), 2, '0');
+
+        return ((int) $reais * 100) + (int) $cents;
+    }
+
+    private function formatCents(int $cents): string
+    {
+        $reais = intdiv($cents, 100);
+        $remainingCents = str_pad((string) ($cents % 100), 2, '0', STR_PAD_LEFT);
+
+        return "{$reais}.{$remainingCents}";
     }
 }

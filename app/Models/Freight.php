@@ -14,13 +14,14 @@ use Illuminate\Validation\ValidationException;
  * @property int $id
  * @property int $company_id
  * @property int $contract_id
- * @property string $amount
+ * @property int $quantity
+ * @property string $unit_amount
  * @property Carbon $occurred_at
  * @property string|null $notes
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['company_id', 'contract_id', 'amount', 'occurred_at', 'notes'])]
+#[Fillable(['company_id', 'contract_id', 'quantity', 'unit_amount', 'occurred_at', 'notes'])]
 class Freight extends Model
 {
     /** @use HasFactory<FreightFactory> */
@@ -45,6 +46,7 @@ class Freight extends Model
     protected static function booted(): void
     {
         static::saving(function (Freight $freight): void {
+            $freight->validateQuantity();
             $freight->validateCompanyContract();
         });
     }
@@ -55,9 +57,19 @@ class Freight extends Model
     protected function casts(): array
     {
         return [
-            'amount' => 'decimal:2',
+            'quantity' => 'integer',
+            'unit_amount' => 'decimal:2',
             'occurred_at' => 'datetime',
         ];
+    }
+
+    private function validateQuantity(): void
+    {
+        if ($this->quantity < 1) {
+            throw ValidationException::withMessages([
+                'quantity' => 'A quantidade de fretes deve ser maior que zero.',
+            ]);
+        }
     }
 
     private function validateCompanyContract(): void

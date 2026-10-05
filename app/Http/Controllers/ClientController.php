@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Clients\CreateClientAction;
+use App\Actions\Clients\UpdateClientAction;
 use App\Enums\ClientType;
 use App\Http\Requests\Clients\StoreClientRequest;
 use App\Http\Requests\Clients\UpdateClientRequest;
@@ -66,11 +68,9 @@ class ClientController extends Controller
     /**
      * Store a newly created client in storage.
      */
-    public function store(StoreClientRequest $request): RedirectResponse
+    public function store(StoreClientRequest $request, CreateClientAction $createClient): RedirectResponse
     {
-        $client = $this->userCompany($request)
-            ->clients()
-            ->create($request->validated());
+        $client = $createClient->handle($this->userCompany($request), $request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Cliente Criado com Sucesso.')]);
 
@@ -109,13 +109,13 @@ class ClientController extends Controller
     /**
      * Update the specified client in storage.
      */
-    public function update(UpdateClientRequest $request, int $client): RedirectResponse
+    public function update(UpdateClientRequest $request, int $client, UpdateClientAction $updateClient): RedirectResponse
     {
         $client = $this->findClientForUser($request, $client);
 
         Gate::authorize('update', $client);
 
-        $client->update($request->validated());
+        $client = $updateClient->handle($client, $request->validated());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Cliente Atualizado com Sucesso.')]);
 

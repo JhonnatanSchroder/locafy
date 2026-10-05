@@ -38,8 +38,8 @@ type ContractFormData = {
     next_charge_date: string;
     notes: string;
     initial_freight: {
-        amount: string;
-        occurred_at: string;
+        quantity: number | string;
+        unit_amount: string;
         notes: string;
     };
     items: ContractItemForm[];
@@ -65,9 +65,9 @@ const form = useForm<ContractFormData>({
     next_charge_date: props.contract?.next_charge_date ?? '',
     notes: props.contract?.notes ?? '',
     initial_freight: {
-        amount: '',
-        occurred_at: '',
-        notes: '',
+        quantity: props.contract?.initial_freight?.quantity ?? 0,
+        unit_amount: props.contract?.initial_freight?.unit_amount ?? '',
+        notes: props.contract?.initial_freight?.notes ?? '',
     },
     items: props.contract?.items.map((item): ContractItemForm => ({
         id: item.id,
@@ -283,38 +283,45 @@ const submit = () => {
             </CardContent>
         </Card>
 
-        <Card v-if="!contract">
+        <Card>
             <CardHeader>
                 <CardTitle class="text-base">Frete inicial</CardTitle>
             </CardHeader>
             <CardContent class="space-y-4">
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="grid gap-2">
-                        <Label for="initial_freight_amount">Valor</Label>
+                        <Label for="initial_freight_quantity"
+                            >Quantidade</Label
+                        >
                         <Input
-                            id="initial_freight_amount"
-                            v-model="form.initial_freight.amount"
+                            id="initial_freight_quantity"
+                            v-model="form.initial_freight.quantity"
+                            type="number"
+                            min="0"
+                            step="1"
+                            placeholder="0"
+                        />
+                        <InputError
+                            :message="fieldError('initial_freight.quantity')"
+                        />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="initial_freight_unit_amount"
+                            >Valor unitário</Label
+                        >
+                        <Input
+                            id="initial_freight_unit_amount"
+                            v-model="form.initial_freight.unit_amount"
                             type="number"
                             min="0"
                             step="0.01"
                             placeholder="0,00"
                         />
                         <InputError
-                            :message="fieldError('initial_freight.amount')"
-                        />
-                    </div>
-
-                    <div class="grid gap-2">
-                        <Label for="initial_freight_occurred_at"
-                            >Data do frete</Label
-                        >
-                        <Input
-                            id="initial_freight_occurred_at"
-                            v-model="form.initial_freight.occurred_at"
-                            type="datetime-local"
-                        />
-                        <InputError
-                            :message="fieldError('initial_freight.occurred_at')"
+                            :message="
+                                fieldError('initial_freight.unit_amount')
+                            "
                         />
                     </div>
                 </div>

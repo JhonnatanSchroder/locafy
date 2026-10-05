@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreFreightRequest extends FormRequest
+class UpdateFreightRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -24,11 +24,6 @@ class StoreFreightRequest extends FormRequest
                 'required',
                 'numeric',
                 'gt:0',
-            ],
-
-            'occurred_at' => [
-                'required',
-                'date',
             ],
 
             'notes' => [

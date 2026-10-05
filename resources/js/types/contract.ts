@@ -40,9 +40,18 @@ export type ContractItem = {
 
 export type Freight = {
     id: number;
-    amount: string;
+    quantity: number;
+    unit_amount: string;
+    total: string;
     occurred_at: string | null;
     notes: string | null;
+};
+
+export type InitialFreight = {
+    id: number | null;
+    quantity: number;
+    unit_amount: string;
+    notes: string;
 };
 
 export type Contract = {
@@ -63,6 +72,7 @@ export type Contract = {
     freight_count: number;
     freight_total: string;
     total_accrued: string | null;
+    initial_freight?: InitialFreight;
     freights?: Freight[];
     items: ContractItem[];
     movements?: Array<{

@@ -260,9 +260,15 @@ class ContractController extends Controller
         $calculation = $calculator->calculate($contract);
 
         $freights = $contract->freights->sortByDesc('occurred_at')->values();
-        $freightTotalCents = $freights->sum(fn ($freight): int => $this->decimalToCents((string) $freight->amount));
+        $freightTotalCents = $freights->sum(fn ($freight): int => $freight->quantity * $this->decimalToCents((string) $freight->unit_amount));
 
         $freightTotal = $this->formatCents($freightTotalCents);
+        $initialFreight = $contract->freights
+            ->sortBy([
+                ['occurred_at', 'asc'],
+                ['id', 'asc'],
+            ])
+            ->first();
 
         $totalAccrued = $calculation->rentalTotal !== null
             ? $this->formatCents($this->decimalToCents($calculation->rentalTotal) + $freightTotalCents)
@@ -282,9 +288,22 @@ class ContractController extends Controller
             'calculated_until' => $calculation->calculatedUntil,
             'rental_total' => $calculation->rentalTotal,
             'calculation_complete' => $calculation->calculationComplete,
-            'freight_count' => $freights->count(),
+            'freight_count' => $freights->sum(fn ($freight): int => $freight->quantity),
             'freight_total' => $freightTotal,
             'total_accrued' => $totalAccrued,
+            'initial_freight' => $initialFreight === null
+                ? [
+                    'id' => null,
+                    'quantity' => 0,
+                    'unit_amount' => '',
+                    'notes' => '',
+                ]
+                : [
+                    'id' => $initialFreight->id,
+                    'quantity' => $initialFreight->quantity,
+                    'unit_amount' => $initialFreight->unit_amount,
+                    'notes' => $initialFreight->notes ?? '',
+                ],
             'client' => [
                 'id' => $contract->client->id,
                 'name' => $contract->client->name,
@@ -324,7 +343,9 @@ class ContractController extends Controller
             'freights' => $freights
                 ->map(fn ($freight): array => [
                     'id' => $freight->id,
-                    'amount' => $freight->amount,
+                    'quantity' => $freight->quantity,
+                    'unit_amount' => $freight->unit_amount,
+                    'total' => $this->formatCents($freight->quantity * $this->decimalToCents((string) $freight->unit_amount)),
                     'occurred_at' => $freight->occurred_at?->format('Y-m-d\TH:i'),
                     'notes' => $freight->notes,
                 ])->all(),

@@ -21,7 +21,8 @@ type Props = {
 const props = defineProps<Props>();
 
 const freightForm = useForm({
-    amount: '',
+    quantity: 1,
+    unit_amount: '',
     occurred_at: '',
     notes: '',
 });
@@ -418,13 +419,36 @@ defineOptions({
                     <form class="space-y-4" @submit.prevent="submitFreight">
                         <div class="grid gap-2">
                             <label
-                                for="freight_amount"
+                                for="freight_quantity"
                                 class="text-sm font-medium"
-                                >Valor</label
+                                >Quantidade</label
                             >
                             <input
-                                id="freight_amount"
-                                v-model="freightForm.amount"
+                                id="freight_quantity"
+                                v-model="freightForm.quantity"
+                                type="number"
+                                min="1"
+                                step="1"
+                                required
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+                            />
+                            <p
+                                v-if="freightForm.errors.quantity"
+                                class="text-sm text-destructive"
+                            >
+                                {{ freightForm.errors.quantity }}
+                            </p>
+                        </div>
+
+                        <div class="grid gap-2">
+                            <label
+                                for="freight_unit_amount"
+                                class="text-sm font-medium"
+                                >Valor unitário</label
+                            >
+                            <input
+                                id="freight_unit_amount"
+                                v-model="freightForm.unit_amount"
                                 type="number"
                                 min="0"
                                 step="0.01"
@@ -432,10 +456,10 @@ defineOptions({
                                 class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
                             />
                             <p
-                                v-if="freightForm.errors.amount"
+                                v-if="freightForm.errors.unit_amount"
                                 class="text-sm text-destructive"
                             >
-                                {{ freightForm.errors.amount }}
+                                {{ freightForm.errors.unit_amount }}
                             </p>
                         </div>
 
@@ -508,6 +532,15 @@ defineOptions({
                                 <div class="text-sm font-medium">
                                     {{ freight.occurred_at || '—' }}
                                 </div>
+                                <div class="text-sm">
+                                    {{ freight.quantity }}
+                                    {{
+                                        freight.quantity === 1
+                                            ? 'frete'
+                                            : 'fretes'
+                                    }}
+                                    × {{ formatCurrency(freight.unit_amount) }}
+                                </div>
                                 <div
                                     class="text-sm whitespace-pre-line text-muted-foreground"
                                 >
@@ -515,7 +548,7 @@ defineOptions({
                                 </div>
                             </div>
                             <div class="text-sm font-semibold">
-                                {{ formatCurrency(freight.amount) }}
+                                Total {{ formatCurrency(freight.total) }}
                             </div>
                         </div>
                     </div>

@@ -50,8 +50,8 @@ class StoreContractRequest extends FormRequest
             'next_charge_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'initial_freight' => ['nullable', 'array'],
-            'initial_freight.amount' => ['nullable', 'numeric', 'gt:0', 'required_with:initial_freight.occurred_at,initial_freight.notes'],
-            'initial_freight.occurred_at' => ['nullable', 'date', 'required_with:initial_freight.amount,initial_freight.notes'],
+            'initial_freight.quantity' => ['nullable', 'integer', 'min:0'],
+            'initial_freight.unit_amount' => ['nullable', 'numeric', 'gt:0'],
             'initial_freight.notes' => ['nullable', 'string', 'max:2000'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => [
@@ -76,8 +76,22 @@ class StoreContractRequest extends FormRequest
         return [
             function (Validator $validator): void {
                 $this->validateBillingPeriods($validator);
+                $this->validateInitialFreight($validator);
             },
         ];
+    }
+
+    private function validateInitialFreight(Validator $validator): void
+    {
+        if ($validator->errors()->hasAny(['initial_freight.quantity', 'initial_freight.unit_amount'])) {
+            return;
+        }
+
+        $quantity = (int) $this->input('initial_freight.quantity', 0);
+
+        if ($quantity > 0 && blank($this->input('initial_freight.unit_amount'))) {
+            $validator->errors()->add('initial_freight.unit_amount', 'Informe o valor unitário do frete inicial.');
+        }
     }
 
     private function validateBillingPeriods(Validator $validator): void

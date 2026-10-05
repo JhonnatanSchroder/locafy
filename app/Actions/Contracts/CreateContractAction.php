@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class CreateContractAction
 {
     /**
-     * @param  array{client_id: int, worksite_address?: string|null, started_at: string, ended_at?: string|null, charge_saturdays: bool, next_charge_date?: string|null, notes?: string|null, items: array<int, array{product_id: int, billing_period: string, unit_price: numeric-string|float|int, initial_quantity?: int|null}>, initial_freight?: array{amount?: numeric-string|float|int|null, occurred_at?: string|null, notes?: string|null}|null}  $data
+     * @param  array{client_id: int, worksite_address?: string|null, started_at: string, ended_at?: string|null, charge_saturdays: bool, next_charge_date?: string|null, notes?: string|null, items: array<int, array{product_id: int, billing_period: string, unit_price: numeric-string|float|int, initial_quantity?: int|null}>, initial_freight?: array{quantity?: int|null, unit_amount?: numeric-string|float|int|null, notes?: string|null}|null}  $data
      */
     public function handle(Company $company, array $data): Contract
     {
@@ -61,11 +61,14 @@ class CreateContractAction
                 }
             }
 
-            if (is_array($initialFreight) && isset($initialFreight['amount'], $initialFreight['occurred_at'])) {
+            $initialFreightQuantity = is_array($initialFreight) ? (int) ($initialFreight['quantity'] ?? 0) : 0;
+
+            if (is_array($initialFreight) && $initialFreightQuantity > 0 && isset($initialFreight['unit_amount'])) {
                 $contract->freights()->create([
                     'company_id' => $company->id,
-                    'amount' => $initialFreight['amount'],
-                    'occurred_at' => $initialFreight['occurred_at'],
+                    'quantity' => $initialFreightQuantity,
+                    'unit_amount' => $initialFreight['unit_amount'],
+                    'occurred_at' => $contract->started_at,
                     'notes' => $initialFreight['notes'] ?? null,
                 ]);
             }

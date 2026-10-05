@@ -13,6 +13,8 @@ use App\Models\Movement;
 use App\Models\MovementItem;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\ContractAccrualService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -102,8 +104,8 @@ it('creates an optional initial freight when creating a contract', function () {
         ->actingAs($user)
         ->post(route('contracts.store'), contractPayload($client, $product, [
             'initial_freight' => [
-                'amount' => '125.50',
-                'occurred_at' => '2026-10-05T08:30',
+                'quantity' => 2,
+                'unit_amount' => '125.50',
                 'notes' => 'Entrega inicial',
             ],
         ]))
@@ -114,9 +116,29 @@ it('creates an optional initial freight when creating a contract', function () {
 
     expect($freight->company_id)->toBe($company->id);
     expect($freight->contract_id)->toBe($contract->id);
-    expect($freight->amount)->toBe('125.50');
-    expect($freight->occurred_at->format('Y-m-d H:i:s'))->toBe('2026-10-05 08:30:00');
+    expect($freight->quantity)->toBe(2);
+    expect($freight->unit_amount)->toBe('125.50');
+    expect($freight->occurred_at->format('Y-m-d H:i:s'))->toBe('2026-10-05 09:00:00');
     expect($freight->notes)->toBe('Entrega inicial');
+});
+
+it('does not create an initial freight when initial freight quantity is zero', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create();
+
+    $this
+        ->actingAs($user)
+        ->post(route('contracts.store'), contractPayload($client, $product, [
+            'initial_freight' => [
+                'quantity' => 0,
+                'unit_amount' => '125.50',
+            ],
+        ]))
+        ->assertRedirect();
+
+    expect(Freight::query()->count())->toBe(0);
 });
 
 it('creates an initial withdrawal for twelve quantity products', function () {
@@ -378,7 +400,8 @@ it('adds freight to a contract from the authenticated users company', function (
         ->actingAs($user)
         ->from(route('contracts.show', $contract))
         ->post(route('contracts.freights.store', $contract), [
-            'amount' => '80.00',
+            'quantity' => 3,
+            'unit_amount' => '15.00',
             'occurred_at' => '2026-10-06T11:00',
             'notes' => 'Frete complementar',
         ])
@@ -388,7 +411,52 @@ it('adds freight to a contract from the authenticated users company', function (
 
     expect($freight->company_id)->toBe($company->id);
     expect($freight->contract_id)->toBe($contract->id);
-    expect($freight->amount)->toBe('80.00');
+    expect($freight->quantity)->toBe(3);
+    expect($freight->unit_amount)->toBe('15.00');
+});
+
+it('summarizes freight count and totals from quantity times unit amount', function () {
+    $company = Company::factory()->create();
+    $client = Client::factory()->for($company)->create();
+    $contract = Contract::factory()->for($company)->create(['client_id' => $client->id]);
+
+    Freight::factory()->for($company)->for($contract)->create([
+        'quantity' => 2,
+        'unit_amount' => '15.00',
+    ]);
+    Freight::factory()->for($company)->for($contract)->create([
+        'quantity' => 3,
+        'unit_amount' => '20.00',
+    ]);
+
+    $summary = app(ContractAccrualService::class)->summarize($contract);
+
+    expect($summary['freight_count'])->toBe(5);
+    expect($summary['freight_total'])->toBe('90.00');
+});
+
+it('migrates legacy freight amounts to unit amount with quantity one', function () {
+    $company = Company::factory()->create();
+    $client = Client::factory()->for($company)->create();
+    $contract = Contract::factory()->for($company)->create(['client_id' => $client->id]);
+    $migration = include database_path('migrations/2026_10_05_180051_update_freights_to_quantity_and_unit_amount.php');
+
+    $migration->down();
+
+    DB::table('freights')->insert([
+        'company_id' => $company->id,
+        'contract_id' => $contract->id,
+        'amount' => '45.00',
+        'occurred_at' => '2026-10-05 09:00:00',
+        'notes' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    $migration->up();
+
+    expect(DB::table('freights')->where('contract_id', $contract->id)->value('quantity'))->toBe(1);
+    expect((float) DB::table('freights')->where('contract_id', $contract->id)->value('unit_amount'))->toBe(45.0);
 });
 
 it('returns not found when adding freight to another company contract', function () {
@@ -402,12 +470,59 @@ it('returns not found when adding freight to another company contract', function
     $this
         ->actingAs($user)
         ->post(route('contracts.freights.store', $contract), [
-            'amount' => '80.00',
+            'quantity' => 1,
+            'unit_amount' => '80.00',
             'occurred_at' => '2026-10-06T11:00',
         ])
         ->assertNotFound();
 
     expect(Freight::query()->count())->toBe(0);
+});
+
+it('updates the initial freight quantity and unit amount when editing a contract', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create();
+    $contract = Contract::factory()->for($company)->create([
+        'client_id' => $client->id,
+        'started_at' => '2026-10-05 09:00:00',
+    ]);
+    $item = ContractItem::factory()->for($contract)->for($product)->create();
+    $initialFreight = Freight::factory()->for($company)->for($contract)->create([
+        'quantity' => 2,
+        'unit_amount' => '15.00',
+        'occurred_at' => '2026-10-05 09:00:00',
+    ]);
+    Freight::factory()->for($company)->for($contract)->create([
+        'quantity' => 1,
+        'unit_amount' => '50.00',
+        'occurred_at' => '2026-10-06 09:00:00',
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->patch(route('contracts.update', $contract), [
+            ...contractPayload($client, $product),
+            'status' => ContractStatus::Active->value,
+            'items' => [
+                [
+                    'id' => $item->id,
+                    'product_id' => $product->id,
+                    'billing_period' => BillingPeriod::Day->value,
+                    'unit_price' => '10.50',
+                ],
+            ],
+            'initial_freight' => [
+                'quantity' => 3,
+                'unit_amount' => '20.00',
+            ],
+        ])
+        ->assertRedirect(route('contracts.show', $contract));
+
+    expect($initialFreight->refresh()->quantity)->toBe(3);
+    expect($initialFreight->unit_amount)->toBe('20.00');
+    expect($contract->freights()->count())->toBe(2);
 });
 
 it('rejects an update item id from another contract', function () {

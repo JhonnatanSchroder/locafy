@@ -24,7 +24,8 @@ class FreightFactory extends Factory
         return [
             'company_id' => $company,
             'contract_id' => Contract::factory()->for($company),
-            'amount' => fake()->randomFloat(2, 1, 500),
+            'quantity' => fake()->numberBetween(1, 5),
+            'unit_amount' => fake()->randomFloat(2, 1, 500),
             'occurred_at' => fake()->dateTimeBetween('-1 month', 'now'),
             'notes' => fake()->optional()->paragraph(),
         ];

@@ -9,7 +9,22 @@ use Illuminate\Validation\ValidationException;
 class UpdateContractAction
 {
     /**
-     * @param  array{client_id: int, status: string, worksite_address?: string|null, started_at: string, ended_at?: string|null, charge_saturdays: bool, next_charge_date?: string|null, notes?: string|null, items: array<int, array{id?: int|null, product_id: int, billing_period: string, unit_price: numeric-string|float|int}>}  $data
+     * @param  array{
+     *     client_id: int,
+     *     status: string,
+     *     worksite_address?: string|null,
+     *     started_at: string,
+     *     ended_at?: string|null,
+     *     charge_saturdays: bool,
+     *     next_charge_date?: string|null,
+     *     notes?: string|null,
+     *     items: array<int, array{
+     *         id?: int|null,
+     *         product_id: int,
+     *         billing_period: string,
+     *         unit_price: numeric-string|float|int
+     *     }>
+     * }  $data
      */
     public function handle(Contract $contract, array $data): Contract
     {
@@ -19,15 +34,21 @@ class UpdateContractAction
 
             $contract->update($data);
 
-            $existingItems = $contract->items()->get()->keyBy('id');
+            $existingItems = $contract->items()
+                ->get()
+                ->keyBy('id');
+
             $keptItemIds = [];
 
             foreach ($items as $item) {
                 $itemId = $item['id'] ?? null;
+
                 unset($item['id']);
 
                 if ($itemId === null) {
-                    $keptItemIds[] = $contract->items()->create($item)->id;
+                    $keptItemIds[] = $contract->items()
+                        ->create($item)
+                        ->id;
 
                     continue;
                 }
@@ -41,6 +62,7 @@ class UpdateContractAction
                 }
 
                 $contractItem->update($item);
+
                 $keptItemIds[] = $contractItem->id;
             }
 
@@ -49,10 +71,12 @@ class UpdateContractAction
                 ->diff($keptItemIds)
                 ->values();
 
-            if ($contract->items()
-                ->whereIn('id', $removableItemIds)
-                ->whereHas('movementItems')
-                ->exists()) {
+            if (
+                $contract->items()
+                    ->whereIn('id', $removableItemIds)
+                    ->whereHas('movementItems')
+                    ->exists()
+            ) {
                 throw ValidationException::withMessages([
                     'items' => 'Não é possível remover itens que já possuem movimentação física.',
                 ]);
@@ -62,7 +86,11 @@ class UpdateContractAction
                 ->whereIn('id', $removableItemIds)
                 ->delete();
 
-            return $contract->load(['client', 'items.product']);
+            return $contract->load([
+                'client',
+                'items.product',
+                'freights',
+            ]);
         });
     }
 }

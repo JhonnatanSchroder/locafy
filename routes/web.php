@@ -21,6 +21,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         '/contracts/{contract}/freights',
         [FreightController::class, 'store']
     )->name('contracts.freights.store');
+    Route::patch(
+        '/contracts/{contract}/freights/{freight}',
+        [FreightController::class, 'update']
+    )->name('contracts.freights.update');
 });
 
 require __DIR__.'/settings.php';

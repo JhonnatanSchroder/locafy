@@ -18,7 +18,7 @@ class ContractController extends Controller
     {
         return ContractResource::collection(
             Contract::query()
-                ->with(['client', 'items.product', 'items.movementItems.movement', 'movements.items'])
+                ->with(['client', 'items.product', 'items.movementItems.movement', 'movements.items', 'freights:id,contract_id,quantity,unit_amount'])
                 ->whereBelongsTo($this->userCompany($request))
                 ->latest('started_at')
                 ->latest('id')
@@ -33,7 +33,7 @@ class ContractController extends Controller
     {
         return new ContractResource(
             Contract::query()
-                ->with(['client', 'items.product', 'items.movementItems.movement', 'movements.items'])
+                ->with(['client', 'items.product', 'items.movementItems.movement', 'movements.items', 'freights'])
                 ->whereBelongsTo($this->userCompany($request))
                 ->findOrFail($contract)
         );
