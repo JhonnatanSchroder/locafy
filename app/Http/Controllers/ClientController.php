@@ -7,9 +7,11 @@ use App\Actions\Clients\UpdateClientAction;
 use App\Enums\ClientType;
 use App\Http\Requests\Clients\StoreClientRequest;
 use App\Http\Requests\Clients\UpdateClientRequest;
+use App\Http\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\Company;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -68,9 +70,12 @@ class ClientController extends Controller
     /**
      * Store a newly created client in storage.
      */
-    public function store(StoreClientRequest $request, CreateClientAction $createClient): RedirectResponse
+    public function store(StoreClientRequest $request, CreateClientAction $createClient): RedirectResponse|JsonResponse
     {
         $client = $createClient->handle($this->userCompany($request), $request->validated());
+        if ($request->expectsJson()) {
+            return (new ClientResource($client))->response()->setStatusCode(201);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Cliente Criado com Sucesso.')]);
 

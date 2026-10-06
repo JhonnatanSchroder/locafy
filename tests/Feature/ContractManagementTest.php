@@ -479,7 +479,7 @@ it('returns not found when adding freight to another company contract', function
     expect(Freight::query()->count())->toBe(0);
 });
 
-it('updates the initial freight quantity and unit amount when editing a contract', function () {
+it('preserves freight history when editing a contract', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
     $client = Client::factory()->for($company)->create();
@@ -520,8 +520,8 @@ it('updates the initial freight quantity and unit amount when editing a contract
         ])
         ->assertRedirect(route('contracts.show', $contract));
 
-    expect($initialFreight->refresh()->quantity)->toBe(3);
-    expect($initialFreight->unit_amount)->toBe('20.00');
+    expect($initialFreight->refresh()->quantity)->toBe(2);
+    expect($initialFreight->unit_amount)->toBe('15.00');
     expect($contract->freights()->count())->toBe(2);
 });
 

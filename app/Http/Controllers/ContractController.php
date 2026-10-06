@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Contracts\CreateContractAction;
 use App\Actions\Contracts\UpdateContractAction;
 use App\Enums\BillingPeriod;
+use App\Enums\ClientType;
 use App\Enums\ContractStatus;
 use App\Enums\ProductType;
 use App\Http\Requests\Contracts\StoreContractRequest;
@@ -13,7 +14,10 @@ use App\Models\Client;
 use App\Models\Company;
 use App\Models\Contract;
 use App\Models\Product;
+use App\Services\ContractAccrualService;
 use App\Services\ContractCalculationService;
+use App\Services\ContractFinanceService;
+use App\Services\ContractLifecycleService;
 use App\Services\MovementBalanceService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +36,7 @@ class ContractController extends Controller
         Gate::authorize('viewAny', Contract::class);
 
         $company = $this->userCompany($request);
+        app(ContractLifecycleService::class)->repairCompany($company->id);
         $search = $request->string('search')->trim()->toString();
         $status = $request->string('status')->trim()->toString();
 
@@ -56,6 +61,7 @@ class ContractController extends Controller
             ->through(fn (Contract $contract): array => $this->contractData($contract, $calculator, $balances));
 
         return Inertia::render('contracts/Index', [
+            'overview' => ['active' => $company->contracts()->where('status', 'ACTIVE')->count(), 'returned' => $company->contracts()->where('status', 'RETURNED')->count(), 'total' => $company->contracts()->count()],
             'contracts' => $contracts,
             'filters' => [
                 'search' => $search,
@@ -75,6 +81,7 @@ class ContractController extends Controller
         $company = $this->userCompany($request);
 
         return Inertia::render('contracts/Create', [
+            'clientTypes' => collect(ClientType::cases())->map(fn ($type) => ['value' => $type->value, 'label' => $type === ClientType::Individual ? 'Pessoa Física' : 'Pessoa Jurídica'])->all(),
             'clients' => $this->clientOptions($company),
             'products' => $this->productOptions($company),
             'billingPeriods' => $this->billingPeriods(),
@@ -256,23 +263,16 @@ class ContractController extends Controller
     private function contractData(Contract $contract, ContractCalculationService $calculator, MovementBalanceService $balances): array
     {
         $contract->loadMissing(['client', 'items.product', 'items.movementItems.movement', 'movements.items.contractItem.product', 'freights']);
+        $repaired = app(ContractLifecycleService::class)->synchronize($contract);
+        $contract->status = $repaired->status;
+        $contract->ended_at = $repaired->ended_at;
         $quantities = $balances->currentQuantities($contract);
-        $calculation = $calculator->calculate($contract);
-
+        $summary = app(ContractAccrualService::class)->summarize($contract);
+        $calculation = $summary['calculation'];
         $freights = $contract->freights->sortByDesc('occurred_at')->values();
-        $freightTotalCents = $freights->sum(fn ($freight): int => $freight->quantity * $this->decimalToCents((string) $freight->unit_amount));
-
-        $freightTotal = $this->formatCents($freightTotalCents);
-        $initialFreight = $contract->freights
-            ->sortBy([
-                ['occurred_at', 'asc'],
-                ['id', 'asc'],
-            ])
-            ->first();
-
-        $totalAccrued = $calculation->rentalTotal !== null
-            ? $this->formatCents($this->decimalToCents($calculation->rentalTotal) + $freightTotalCents)
-            : null;
+        $freightTotal = $summary['freight_total'];
+        $totalAccrued = $summary['total_accrued'];
+        $finance = app(ContractFinanceService::class)->summarize($contract, $summary);
 
         return [
             'id' => $contract->id,
@@ -284,6 +284,7 @@ class ContractController extends Controller
             'ended_at' => $contract->ended_at?->format('Y-m-d\TH:i'),
             'charge_saturdays' => $contract->charge_saturdays,
             'next_charge_date' => $contract->next_charge_date?->toDateString(),
+            'charge_interval_days' => $contract->charge_interval_days,
             'notes' => $contract->notes,
             'calculated_until' => $calculation->calculatedUntil,
             'rental_total' => $calculation->rentalTotal,
@@ -291,19 +292,8 @@ class ContractController extends Controller
             'freight_count' => $freights->sum(fn ($freight): int => $freight->quantity),
             'freight_total' => $freightTotal,
             'total_accrued' => $totalAccrued,
-            'initial_freight' => $initialFreight === null
-                ? [
-                    'id' => null,
-                    'quantity' => 0,
-                    'unit_amount' => '',
-                    'notes' => '',
-                ]
-                : [
-                    'id' => $initialFreight->id,
-                    'quantity' => $initialFreight->quantity,
-                    'unit_amount' => $initialFreight->unit_amount,
-                    'notes' => $initialFreight->notes ?? '',
-                ],
+            ...$finance,
+            ...app(ContractLifecycleService::class)->presentation($contract, $finance['balance']),
             'client' => [
                 'id' => $contract->client->id,
                 'name' => $contract->client->name,
@@ -329,7 +319,7 @@ class ContractController extends Controller
                 ->map(fn ($movement): array => [
                     'id' => $movement->id,
                     'type' => $movement->type->value,
-                    'type_label' => $movement->type->value === 'WITHDRAWAL' ? 'Retirada' : 'Devolução',
+                    'type_label' => $movement->type->value === 'WITHDRAWAL' ? 'Retirada' : 'DevoluÃ§Ã£o',
                     'occurred_at' => $movement->occurred_at?->format('Y-m-d\TH:i'),
                     'items' => $movement->items->map(fn ($movementItem): array => [
                         'id' => $movementItem->id,
@@ -367,7 +357,7 @@ class ContractController extends Controller
         return match ($period) {
             BillingPeriod::Day => 'Dia',
             BillingPeriod::Week => 'Semana',
-            BillingPeriod::Month => 'Mês',
+            BillingPeriod::Month => 'MÃªs',
         };
     }
 

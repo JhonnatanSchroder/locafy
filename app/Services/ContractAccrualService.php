@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Data\ContractCalculationResult;
 use App\Models\Contract;
-use App\Models\Freight;
+use Carbon\CarbonImmutable;
 
 class ContractAccrualService
 {
@@ -13,19 +13,20 @@ class ContractAccrualService
     /**
      * @return array{calculation: ContractCalculationResult, freight_count: int, freight_total: string, total_accrued: string|null}
      */
-    public function summarize(Contract $contract): array
+    public function summarize(Contract $contract, ?CarbonImmutable $asOf = null): array
     {
         $contract->loadMissing('freights');
 
-        $calculation = $this->calculator->calculate($contract);
+        $calculation = $this->calculator->calculate($contract, $asOf);
         $freightCount = 0;
         $freightTotalCents = 0;
 
         foreach ($contract->freights as $freight) {
-            if ($freight instanceof Freight) {
-                $freightCount += $freight->quantity;
-                $freightTotalCents += $freight->quantity * $this->decimalToCents((string) $freight->unit_amount);
+            if ($asOf !== null && $freight->occurred_at->gt($asOf)) {
+                continue;
             }
+            $freightCount += $freight->quantity;
+            $freightTotalCents += $freight->quantity * $this->decimalToCents((string) $freight->unit_amount);
         }
 
         return [

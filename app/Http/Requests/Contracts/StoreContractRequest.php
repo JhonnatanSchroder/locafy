@@ -13,6 +13,12 @@ use Illuminate\Validation\Validator;
 
 class StoreContractRequest extends FormRequest
 {
+    /** @return ($key is null ? array{client_id: int, worksite_address?: string|null, started_at: string, charge_saturdays: bool, next_charge_date?: string|null, charge_interval_days?: int, notes?: string|null, items: array<int, array{product_id: int, billing_period: string, unit_price: numeric-string, initial_quantity?: int|null}>, initial_freight?: array{quantity?: int|null, unit_amount?: numeric-string|null, notes?: string|null}|null} : mixed) */
+    public function validated($key = null, $default = null)
+    {
+        return parent::validated($key, $default);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -48,10 +54,11 @@ class StoreContractRequest extends FormRequest
             'started_at' => ['required', 'date'],
             'charge_saturdays' => ['boolean'],
             'next_charge_date' => ['nullable', 'date'],
+            'charge_interval_days' => ['sometimes', 'required', 'integer', 'min:1', 'max:365'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'initial_freight' => ['nullable', 'array'],
             'initial_freight.quantity' => ['nullable', 'integer', 'min:0'],
-            'initial_freight.unit_amount' => ['nullable', 'numeric', 'gt:0'],
+            'initial_freight.unit_amount' => ['nullable', 'regex:/^\d{1,12}(\.\d{1,2})?$/', 'gt:0'],
             'initial_freight.notes' => ['nullable', 'string', 'max:2000'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => [
@@ -61,7 +68,7 @@ class StoreContractRequest extends FormRequest
                 Rule::exists('products', 'id')->where('company_id', $this->user()?->company_id),
             ],
             'items.*.billing_period' => ['required', Rule::enum(BillingPeriod::class)],
-            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'items.*.unit_price' => ['required', 'regex:/^\d{1,12}(\.\d{1,2})?$/', 'min:0'],
             'items.*.initial_quantity' => ['nullable', 'integer', 'min:0'],
         ];
     }
@@ -90,13 +97,13 @@ class StoreContractRequest extends FormRequest
         $quantity = (int) $this->input('initial_freight.quantity', 0);
 
         if ($quantity > 0 && blank($this->input('initial_freight.unit_amount'))) {
-            $validator->errors()->add('initial_freight.unit_amount', 'Informe o valor unitário do frete inicial.');
+            $validator->errors()->add('initial_freight.unit_amount', 'Informe o valor unitÃƒÂ¡rio do frete inicial.');
         }
     }
 
     private function validateBillingPeriods(Validator $validator): void
     {
-        $productIds = collect($this->input('items', []))
+        $productIds = collect($this->array('items'))
             ->pluck('product_id')
             ->filter()
             ->unique()
@@ -123,7 +130,7 @@ class StoreContractRequest extends FormRequest
             if ($product->type === ProductType::Quantity && $billingPeriod !== BillingPeriod::Day->value) {
                 $validator->errors()->add(
                     "items.{$index}.billing_period",
-                    'Produtos por quantidade aceitam apenas cobrança diária.'
+                    'Produtos por quantidade aceitam apenas cobranÃƒÂ§a diÃƒÂ¡ria.'
                 );
             }
         }

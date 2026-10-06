@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import InlineClientDialog from '@/components/clients/InlineClientDialog.vue';
+import { useInlineClientOptions } from '@/lib/inline-client';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +17,7 @@ import type {
     BillingPeriod,
     BillingPeriodOption,
     Contract,
+    ClientTypeOption,
     ContractClientOption,
     ContractProductOption,
     ContractStatusOption,
@@ -36,6 +39,7 @@ type ContractFormData = {
     ended_at: string;
     charge_saturdays: boolean;
     next_charge_date: string;
+    charge_interval_days: number;
     notes: string;
     initial_freight: {
         quantity: number | string;
@@ -48,6 +52,7 @@ type ContractFormData = {
 type Props = {
     contract?: Contract;
     clients: ContractClientOption[];
+    clientTypes?: ClientTypeOption[];
     products: ContractProductOption[];
     billingPeriods: BillingPeriodOption[];
     contractStatuses?: ContractStatusOption[];
@@ -63,6 +68,7 @@ const form = useForm<ContractFormData>({
     ended_at: props.contract?.ended_at ?? '',
     charge_saturdays: props.contract?.charge_saturdays ?? true,
     next_charge_date: props.contract?.next_charge_date ?? '',
+    charge_interval_days: props.contract?.charge_interval_days ?? 15,
     notes: props.contract?.notes ?? '',
     initial_freight: {
         quantity: props.contract?.initial_freight?.quantity ?? 0,
@@ -84,6 +90,9 @@ const form = useForm<ContractFormData>({
         },
     ],
 });
+
+const clientDialogOpen = ref(false);
+const { options: clientOptions, created: clientCreated } = useInlineClientOptions(() => props.clients, id => {form.client_id = id});
 
 const title = computed(() =>
     props.contract ? 'Editar contrato' : 'Novo contrato',
@@ -148,7 +157,7 @@ const fieldError = (field: string) =>
 
 const submit = () => {
     if (props.contract) {
-        form.put(contractsUpdate.url(props.contract.id), {
+        form.transform(({initial_freight: _freight, ...data}) => data).put(contractsUpdate.url(props.contract.id), {
             preserveScroll: true,
         });
 
@@ -162,6 +171,7 @@ const submit = () => {
 </script>
 
 <template>
+    <InlineClientDialog v-if="!contract" v-model:open="clientDialogOpen" :client-types="clientTypes ?? []" @created="clientCreated"/>
     <form class="space-y-5" @submit.prevent="submit">
         <Card>
             <CardHeader>
@@ -170,7 +180,7 @@ const submit = () => {
             <CardContent class="space-y-6">
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="grid gap-2">
-                        <Label for="client_id">Cliente</Label>
+                        <div class="flex items-center justify-between"><Label for="client_id">Cliente</Label><Button v-if="!contract" type="button" variant="outline" size="sm" @click="clientDialogOpen = true">+ Novo cliente</Button></div>
                         <select
                             id="client_id"
                             v-model="form.client_id"
@@ -181,7 +191,7 @@ const submit = () => {
                                 Selecione um cliente
                             </option>
                             <option
-                                v-for="client in clients"
+                                v-for="client in clientOptions"
                                 :key="client.id"
                                 :value="client.id"
                             >
@@ -245,6 +255,7 @@ const submit = () => {
                         <InputError :message="form.errors.next_charge_date" />
                     </div>
 
+                    <div class="grid gap-2"><Label for="charge_interval_days">Intervalo entre cobranças (dias)</Label><Input id="charge_interval_days" v-model="form.charge_interval_days" type="number" min="1" max="365" required/><InputError :message="form.errors.charge_interval_days"/></div>
                     <div v-if="contract" class="grid gap-2">
                         <Label for="ended_at">Fim</Label>
                         <Input
@@ -283,7 +294,7 @@ const submit = () => {
             </CardContent>
         </Card>
 
-        <Card>
+        <Card v-if="!contract">
             <CardHeader>
                 <CardTitle class="text-base">Frete inicial</CardTitle>
             </CardHeader>

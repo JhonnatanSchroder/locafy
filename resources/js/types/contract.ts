@@ -59,11 +59,15 @@ export type Contract = {
     number: number;
     status: ContractStatus;
     status_label: string;
+    display_status: string;
+    display_status_label: string;
+    can_finalize: boolean;
     worksite_address: string | null;
     started_at: string | null;
     ended_at: string | null;
     charge_saturdays: boolean;
     next_charge_date: string | null;
+    charge_interval_days: number;
     notes: string | null;
     calculated_until: string | null;
     rental_total: string | null;
@@ -72,6 +76,9 @@ export type Contract = {
     freight_count: number;
     freight_total: string;
     total_accrued: string | null;
+    total_paid: string;
+    balance: string | null;
+    financial_balance: string | null;
     initial_freight?: InitialFreight;
     freights?: Freight[];
     items: ContractItem[];

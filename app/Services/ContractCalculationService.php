@@ -17,13 +17,16 @@ class ContractCalculationService
 
     public function __construct(private MovementBalanceService $balances) {}
 
-    public function calculate(Contract $contract): ContractCalculationResult
+    public function calculate(Contract $contract, ?CarbonImmutable $asOf = null): ContractCalculationResult
     {
         $contract->loadMissing(['items.product', 'items.movementItems.movement', 'movements.items']);
 
         $calculatedUntil = $contract->ended_at !== null
             ? CarbonImmutable::parse($contract->ended_at)->setTimezone(self::TIMEZONE)
             : CarbonImmutable::now(self::TIMEZONE);
+        if ($asOf !== null && $asOf->lt($calculatedUntil)) {
+            $calculatedUntil = $asOf->setTimezone(self::TIMEZONE);
+        }
 
         $currentQuantities = $this->balances->currentQuantities($contract);
         $complete = true;

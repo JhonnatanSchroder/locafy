@@ -4,6 +4,7 @@ namespace App\Actions\Movements;
 
 use App\Models\Contract;
 use App\Models\Movement;
+use App\Services\ContractLifecycleService;
 use App\Services\MovementTimelineValidator;
 use Illuminate\Support\Facades\DB;
 
@@ -17,13 +18,14 @@ class CreateMovementAction
     public function handle(Contract $contract, array $data): Movement
     {
         $items = collect($data['items'])
-            ->filter(fn (array $item): bool => (int) ($item['quantity'] ?? 0) > 0)
+            ->filter(fn (array $item): bool => (int) $item['quantity'] > 0)
             ->values()
             ->all();
 
-        $this->timeline->validateMovementPayload($contract, $data['type'], $data['occurred_at'], $items);
-
         return DB::transaction(function () use ($contract, $data, $items): Movement {
+            $contract = Contract::query()->lockForUpdate()->findOrFail($contract->id);
+            $this->timeline->validateMovementPayload($contract, $data['type'], $data['occurred_at'], $items);
+
             $movement = $contract->company->movements()->create([
                 'contract_id' => $contract->id,
                 'type' => $data['type'],
@@ -38,6 +40,8 @@ class CreateMovementAction
                     'equipment_id' => $item['equipment_id'] ?? null,
                 ]);
             }
+
+            app(ContractLifecycleService::class)->synchronize($contract);
 
             return $movement->load(['contract.client', 'items.contractItem.product']);
         });

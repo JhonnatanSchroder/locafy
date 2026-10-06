@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatDateTime } from '@/lib/dates';
 import { Head, Link } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,7 @@ defineOptions({ layout: { breadcrumbs: [{ title: 'Movimentações', href: moveme
         <Card>
             <CardHeader><CardTitle class="text-base">Dados</CardTitle></CardHeader>
             <CardContent class="space-y-4">
-                <div class="flex items-center gap-3"><Badge :variant="movement.type === 'WITHDRAWAL' ? 'info' : 'success'">{{ movement.type_label }}</Badge><span class="text-sm">{{ movement.occurred_at }}</span></div>
+                <div class="flex items-center gap-3"><Badge :variant="movement.type === 'WITHDRAWAL' ? 'info' : 'success'">{{ movement.type_label }}</Badge><span class="text-sm">{{ formatDateTime(movement.occurred_at) }}</span></div>
                 <p class="whitespace-pre-line text-sm text-muted-foreground">{{ movement.notes || '—' }}</p>
             </CardContent>
         </Card>

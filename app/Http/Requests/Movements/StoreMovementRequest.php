@@ -3,13 +3,19 @@
 namespace App\Http\Requests\Movements;
 
 use App\Enums\MovementType;
+use App\Models\Contract;
 use App\Models\Movement;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreMovementRequest extends FormRequest
 {
+    /** @return ($key is null ? array{contract_id: int, type: string, occurred_at: string, notes?: string|null, items: array<int, array{contract_item_id: int, quantity: int, equipment_id?: int|null}>} : mixed) */
+    public function validated($key = null, $default = null)
+    {
+        return parent::validated($key, $default);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -18,11 +24,14 @@ class StoreMovementRequest extends FormRequest
         return $this->user()?->can('create', Movement::class) ?? false;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->route('contract') instanceof Contract) {
+            $this->merge(['contract_id' => $this->route('contract')->id]);
+        }
+    }
+
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [

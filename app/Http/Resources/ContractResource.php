@@ -7,6 +7,8 @@ use App\Enums\ContractStatus;
 use App\Models\Contract;
 use App\Models\Freight;
 use App\Services\ContractAccrualService;
+use App\Services\ContractFinanceService;
+use App\Services\ContractLifecycleService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,8 +26,12 @@ class ContractResource extends JsonResource
         }
 
         $contract = $this->resource;
+        $repaired = app(ContractLifecycleService::class)->synchronize($contract);
+        $contract->status = $repaired->status;
+        $contract->ended_at = $repaired->ended_at;
         $summary = app(ContractAccrualService::class)->summarize($contract);
         $calculation = $summary['calculation'];
+        $finance = app(ContractFinanceService::class)->summarize($contract, $summary);
 
         return [
             'id' => $contract->id,
@@ -43,12 +49,15 @@ class ContractResource extends JsonResource
             'ended_at' => $contract->ended_at?->toJSON(),
             'charge_saturdays' => $contract->charge_saturdays,
             'next_charge_date' => $contract->next_charge_date?->toDateString(),
+            'charge_interval_days' => $contract->charge_interval_days,
             'calculated_until' => $calculation->calculatedUntil,
             'rental_total' => $calculation->rentalTotal,
             'calculation_complete' => $calculation->calculationComplete,
             'freight_count' => $summary['freight_count'],
             'freight_total' => $summary['freight_total'],
             'total_accrued' => $summary['total_accrued'],
+            ...$finance,
+            ...app(ContractLifecycleService::class)->presentation($contract, $finance['balance']),
             'notes' => $contract->notes,
             'items' => $this->whenLoaded('items', fn () => $contract->items->map(function ($item) use ($calculation): array {
                 $itemCalculation = $calculation->item($item->id);

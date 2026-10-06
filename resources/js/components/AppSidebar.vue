@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowLeftRight, ClipboardList, Contact, LayoutGrid, Package, Wrench } from '@lucide/vue';
+import { ArrowLeftRight, Banknote, ClipboardList, Contact, LayoutGrid, Package, Wrench } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -47,6 +47,8 @@ const mainNavItems: NavItem[] = [
         href: contractsIndex(),
         icon: ClipboardList,
     },
+    { title: 'Cobranças', href: '/charges', icon: ClipboardList },
+    { title: 'Pagamentos', href: '/pagamentos', icon: Banknote },
     {
         title: 'Movimentações',
         href: movementsIndex(),

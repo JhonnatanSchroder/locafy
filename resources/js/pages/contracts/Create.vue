@@ -3,10 +3,11 @@ import { Head, Link } from '@inertiajs/vue3';
 import ContractForm from '@/components/contracts/ContractForm.vue';
 import { Button } from '@/components/ui/button';
 import { index as contractsIndex } from '@/routes/contracts';
-import type { BillingPeriodOption, ContractClientOption, ContractProductOption } from '@/types';
+import type { BillingPeriodOption, ClientTypeOption, ContractClientOption, ContractProductOption } from '@/types';
 
 type Props = {
     clients: ContractClientOption[];
+    clientTypes: ClientTypeOption[];
     products: ContractProductOption[];
     billingPeriods: BillingPeriodOption[];
 };
@@ -44,6 +45,6 @@ defineOptions({
             </Button>
         </div>
 
-        <ContractForm :clients="clients" :products="products" :billing-periods="billingPeriods" />
+        <ContractForm :client-types="clientTypes" :clients="clients" :products="products" :billing-periods="billingPeriods" />
     </div>
 </template>

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import ContractOperations from '@/components/contracts/ContractOperations.vue';
+import { formatDate } from '@/lib/dates';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { ClipboardList, Plus } from '@lucide/vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +32,7 @@ type PaginatedContracts = {
 
 type Props = {
     contracts: PaginatedContracts;
+    overview: {active:number;returned:number;total:number};
     filters: {
         search: string;
         status: string;
@@ -41,6 +45,8 @@ const search = ref(props.filters.search);
 const status = ref(props.filters.status);
 
 const statusVariant = (contractStatus: string) => {
+    if (contractStatus === 'PAYMENT_PENDING') return 'warning';
+    if (contractStatus === 'READY_TO_FINALIZE') return 'info';
     if (contractStatus === 'ACTIVE') {
         return 'success';
     }
@@ -92,7 +98,7 @@ defineOptions({
 </script>
 
 <template>
-    <div class="flex h-full flex-1 flex-col gap-5 p-4 sm:p-6">
+    <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <Head title="Contratos" />
 
         <div
@@ -101,16 +107,17 @@ defineOptions({
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight">Contratos</h1>
                 <p class="text-sm text-muted-foreground">
-                    Cadastre e acompanhe contratos reais do Locafy.
+                    Acompanhe locações, movimentações e o financeiro dos seus contratos.
                 </p>
             </div>
 
             <Button as-child>
-                <Link :href="contractsCreate()">Novo contrato</Link>
+                <Link :href="contractsCreate()"><Plus class="mr-2 size-4"/> Novo contrato</Link>
             </Button>
         </div>
 
-        <Card>
+        <section class="grid gap-4 sm:grid-cols-3"><div v-for="metric in [{label:'Contratos ativos',value:overview.active},{label:'Devolvidos para fechamento',value:overview.returned},{label:'Total de contratos',value:overview.total}]" :key="metric.label" class="rounded-xl border bg-card px-5 py-4"><p class="text-xs font-medium text-muted-foreground">{{ metric.label }}</p><p class="mt-2 text-2xl font-semibold tabular-nums">{{ metric.value }}</p></div></section>
+        <Card class="rounded-xl">
             <CardHeader>
                 <CardTitle class="text-base">Buscar contratos</CardTitle>
             </CardHeader>
@@ -153,7 +160,7 @@ defineOptions({
             </CardContent>
         </Card>
 
-        <Card>
+        <Card class="rounded-xl">
             <CardContent class="p-0">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -164,17 +171,16 @@ defineOptions({
                                 <th class="px-4 py-3 font-medium">Contrato</th>
                                 <th class="px-4 py-3 font-medium">Cliente</th>
                                 <th class="px-4 py-3 font-medium">Status</th>
-                                <th class="px-4 py-3 font-medium">Início</th>
-                                <th class="px-4 py-3 font-medium">Fim</th>
+                                <th class="px-4 py-3 font-medium">Total acumulado</th><th class="px-4 py-3 font-medium">Total pago</th>
                                 <th class="px-4 py-3 font-medium">
                                     Próxima cobrança
                                 </th>
                                 <th class="px-4 py-3 font-medium">
                                     Itens atuais
                                 </th>
-                                <th class="px-4 py-3 font-medium">Fretes</th>
+
                                 <th class="px-4 py-3 font-medium">
-                                    Valor acumulado
+                                    Saldo a receber
                                 </th>
                                 <th class="px-4 py-3 text-right font-medium">
                                     Ações
@@ -184,10 +190,10 @@ defineOptions({
                         <tbody>
                             <tr v-if="contracts.data.length === 0">
                                 <td
-                                    colspan="10"
-                                    class="px-4 py-8 text-center text-muted-foreground"
+                                    colspan="9"
+                                    class="px-4 py-14 text-center text-muted-foreground"
                                 >
-                                    Nenhum contrato encontrado.
+                                    <ClipboardList class="mx-auto mb-3 size-8"/><p class="font-semibold text-foreground">Nenhum contrato nesta seleção</p><p class="mt-1 text-sm">Ajuste os filtros ou crie uma nova locação.</p><Button variant="outline" class="mt-4" as-child><Link :href="contractsCreate()">Novo contrato</Link></Button>
                                 </td>
                             </tr>
                             <tr
@@ -196,7 +202,7 @@ defineOptions({
                                 class="border-b transition-colors last:border-0 hover:bg-muted/40"
                             >
                                 <td class="px-4 py-3 font-medium">
-                                    #{{ contract.number }}
+                                    <Link :href="contractsShow(contract.id)" class="hover:text-primary">#{{ contract.number }}</Link>
                                 </td>
                                 <td class="px-4 py-3">
                                     {{ contract.client.name }}
@@ -204,19 +210,14 @@ defineOptions({
                                 <td class="px-4 py-3">
                                     <Badge
                                         :variant="
-                                            statusVariant(contract.status)
+                                            statusVariant(contract.display_status)
                                         "
-                                        >{{ contract.status_label }}</Badge
+                                        >{{ contract.display_status_label }}</Badge
                                     >
                                 </td>
+                                <td class="px-4 py-3 tabular-nums">{{ formatCurrency(contract.total_accrued) }}</td><td class="px-4 py-3 tabular-nums">{{ formatCurrency(contract.total_paid) }}</td>
                                 <td class="px-4 py-3">
-                                    {{ contract.started_at || '—' }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    {{ contract.ended_at || '—' }}
-                                </td>
-                                <td class="px-4 py-3">
-                                    {{ contract.next_charge_date || '—' }}
+                                    {{ formatDate(contract.next_charge_date) }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <span
@@ -246,49 +247,14 @@ defineOptions({
                                         >—</span
                                     >
                                 </td>
-                                <td class="px-4 py-3">
-                                    <div class="font-medium">
-                                        {{ contract.freight_count }}
-                                    </div>
 
-                                    <div class="text-xs text-muted-foreground">
-                                        {{
-                                            formatCurrency(
-                                                contract.freight_total,
-                                            )
-                                        }}
-                                    </div>
+                                <td class="px-4 py-3">
+                                    <p class="text-base font-semibold tabular-nums text-primary">{{ formatCurrency(contract.financial_balance) }}</p>
+                                    <p class="mt-1 text-xs text-muted-foreground">Acumulado {{ formatCurrency(contract.total_accrued) }}</p>
+                                    <p class="text-xs text-muted-foreground">Pago {{ formatCurrency(contract.total_paid) }}</p>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <span
-                                        v-if="
-                                            contract.calculation_complete &&
-                                            contract.total_accrued
-                                        "
-                                        >{{
-                                            formatCurrency(
-                                                contract.total_accrued,
-                                            )
-                                        }}</span
-                                    >
-                                    <span v-else class="text-muted-foreground"
-                                        >—</span
-                                    >
-                                    <div class="text-xs text-muted-foreground">
-                                        Locação
-                                        {{
-                                            formatCurrency(
-                                                contract.rental_total,
-                                            )
-                                        }}
-                                    </div>
-                                    <div class="text-xs text-muted-foreground">
-                                        Até
-                                        {{ contract.calculated_until || '—' }}
-                                    </div>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="flex justify-end gap-2">
+                                    <div class="flex flex-wrap justify-end gap-2"><ContractOperations :contract="contract"/>
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -302,6 +268,7 @@ defineOptions({
                                             >
                                         </Button>
                                         <Button
+                                            v-if="!['FINALIZED','CANCELLED'].includes(contract.status)"
                                             variant="outline"
                                             size="sm"
                                             as-child

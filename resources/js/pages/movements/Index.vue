@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatDateTime } from '@/lib/dates';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { Badge } from '@/components/ui/badge';
@@ -82,7 +83,7 @@ defineOptions({
                         <tbody>
                             <tr v-if="movements.data.length === 0"><td colspan="6" class="px-4 py-8 text-center text-muted-foreground">Nenhuma movimentação encontrada.</td></tr>
                             <tr v-for="movement in movements.data" :key="movement.id" class="border-b transition-colors hover:bg-muted/40 last:border-0">
-                                <td class="px-4 py-3">{{ movement.occurred_at }}</td>
+                                <td class="px-4 py-3">{{ formatDateTime(movement.occurred_at) }}</td>
                                 <td class="px-4 py-3 font-medium">#{{ movement.contract.number }}</td>
                                 <td class="px-4 py-3">{{ movement.contract.client.name }}</td>
                                 <td class="px-4 py-3"><Badge :variant="movement.type === 'WITHDRAWAL' ? 'info' : 'success'">{{ movement.type_label }}</Badge></td>

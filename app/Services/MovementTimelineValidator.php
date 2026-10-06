@@ -16,6 +16,9 @@ class MovementTimelineValidator
      */
     public function validateMovementPayload(Contract $contract, string $type, string $occurredAt, array $items, ?Movement $ignoreMovement = null): void
     {
+        if (in_array($contract->status->value, ['FINALIZED', 'CANCELLED'])) {
+            throw ValidationException::withMessages(['contract_id' => 'Contrato encerrado.']);
+        }
         if ($items === []) {
             throw ValidationException::withMessages([
                 'items' => 'Informe ao menos um item com quantidade maior que zero.',

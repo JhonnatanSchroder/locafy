@@ -10,9 +10,11 @@ use App\Http\Requests\Clients\UpdateClientRequest;
 use App\Http\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\Company;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Str;
 
 class ClientController extends Controller
 {
@@ -21,11 +23,42 @@ class ClientController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
+        $search = $request->string('search')->trim()->toString();
+        $sqlite = (new Client)->getConnection()->getDriverName() === 'sqlite';
+        if ($sqlite && $search !== '') {
+            (new Client)->getConnection()->getPdo()->sqliteCreateFunction(
+                'locafy_client_search',
+                static fn ($value): string => Str::lower(Str::ascii((string) $value)),
+                1
+            );
+        }
+
         return ClientResource::collection(
             Client::query()
                 ->whereBelongsTo($this->userCompany($request))
+                ->when($search !== '', function (Builder $query) use ($search, $sqlite): void {
+                    $query->where(function (Builder $query) use ($search, $sqlite): void {
+                        if ($sqlite) {
+                            $query->whereRaw('locafy_client_search(name) LIKE ?', ['%'.Str::lower(Str::ascii($search)).'%']);
+                        } else {
+                            $query->where('name', 'like', "%{$search}%");
+                        }
+                        $query->orWhere('phone', 'like', "%{$search}%")->orWhere('document', 'like', "%{$search}%");
+                        $digits = preg_replace('/\D/', '', $search);
+                        if ($digits !== '' && preg_match('/^[\d\s()+.\-\/]+$/', $search)) {
+                            foreach (['phone', 'document'] as $column) {
+                                $expression = $column;
+                                foreach ([' ', '-', '(', ')', '+', '.', '/'] as $separator) {
+                                    $expression = "REPLACE({$expression}, '{$separator}', '')";
+                                }
+                                $query->orWhereRaw("{$expression} LIKE ?", ["%{$digits}%"]);
+                            }
+                        }
+                    });
+                })
                 ->orderBy('name')
                 ->paginate(15)
+                ->withQueryString()
         );
     }
 

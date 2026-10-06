@@ -1,116 +1,32 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import {
-    Banknote,
-    ClipboardList,
-    PackageCheck,
-    ReceiptText,
-} from '@lucide/vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { ArrowUpRight, Banknote, CalendarDays, CircleAlert, ClipboardList, Plus, Users, Wallet } from '@lucide/vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { dashboard } from '@/routes';
-
-const overviewCards = [
-    {
-        title: 'Contratos ativos',
-        value: '—',
-        icon: ClipboardList,
-    },
-    {
-        title: 'Cobranças',
-        value: '—',
-        icon: ReceiptText,
-    },
-    {
-        title: 'Financeiro',
-        value: '—',
-        icon: Banknote,
-    },
-    {
-        title: 'Equipamentos',
-        value: '—',
-        icon: PackageCheck,
-    },
-];
-
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-            },
-        ],
-    },
-});
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { formatDate } from '@/lib/dates';
+import { money } from '@/types/charge';
+import type { Receivable } from '@/types/charge';
+defineProps<{today: string; metrics:{active:number;returned:number;returned_pending:number;ready_to_finalize:number;today:number;overdue:number;balance:string;received:string}; attention:Receivable[]; recentContracts:Receivable[]}>();
+const page = usePage<{auth:{user:{name:string}}}>();
+const labels:Record<string,string> = {ACTIVE:'Ativo',RETURNED:'Devolvido',FINALIZED:'Finalizado',CANCELLED:'Cancelado'};
+defineOptions({layout:{breadcrumbs:[{title:'Dashboard',href:'/dashboard'}]}});
 </script>
-
 <template>
-    <Head title="Dashboard" />
-
-    <div class="flex h-full flex-1 flex-col gap-6 p-4 sm:p-6">
-        <div
-            class="flex flex-col gap-2 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between"
-        >
-            <div>
-                <h1 class="text-2xl font-semibold tracking-tight">
-                    Dashboard
-                </h1>
-                <p class="text-sm text-muted-foreground">
-                    Visão geral do Locafy.
-                </p>
-            </div>
+    <Head title="Dashboard"/>
+    <div class="mx-auto flex w-full max-w-[1600px] flex-col gap-6 p-4 sm:p-6 lg:p-8">
+        <header class="flex flex-wrap items-center justify-between gap-4"><div><p class="mb-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Visão geral · Locafy</p><h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">Olá, {{ page.props.auth.user.name.split(' ')[0] }}</h1><p class="mt-2 text-sm text-muted-foreground">{{ formatDate(today) }} · Sua operação, em um só lugar.</p></div><Button as-child><Link href="/contracts/create"><Plus class="mr-2 size-4"/> Novo contrato</Link></Button></header>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <Link href="/contracts?status=ACTIVE" class="rounded-xl border bg-card p-5 transition-colors hover:border-primary/40"><div class="flex items-center justify-between text-muted-foreground"><span class="text-sm">Contratos ativos</span><ClipboardList class="size-4"/></div><p class="mt-3 text-3xl font-semibold tabular-nums">{{ metrics.active }}</p><p class="mt-2 text-xs text-muted-foreground">{{ metrics.returned_pending }} pendentes · {{ metrics.ready_to_finalize }} prontos para finalizar</p></Link>
+            <Link href="/charges?filter=today" class="rounded-xl border bg-card p-5 transition-colors hover:border-primary/40"><div class="flex items-center justify-between text-muted-foreground"><span class="text-sm">Cobranças de hoje</span><CalendarDays class="size-4"/></div><p class="mt-3 text-3xl font-semibold tabular-nums">{{ metrics.today }}</p><p class="mt-2 text-xs text-muted-foreground">Vencimento na data atual</p></Link>
+            <Link href="/charges?filter=overdue" class="rounded-xl border bg-card p-5 transition-colors hover:border-primary/40"><div class="flex items-center justify-between text-muted-foreground"><span class="text-sm">Em atraso</span><CircleAlert class="size-4"/></div><p class="mt-3 text-3xl font-semibold tabular-nums" :class="metrics.overdue ? 'text-amber-600 dark:text-amber-400' : ''">{{ metrics.overdue }}</p><p class="mt-2 text-xs text-muted-foreground">Contratos com saldo pendente</p></Link>
+            <Link href="/charges" class="rounded-xl border border-primary/20 bg-primary/5 p-5"><div class="flex items-center justify-between text-primary"><span class="text-sm font-medium">Saldo a receber</span><Wallet class="size-4"/></div><p class="mt-3 text-2xl font-bold tabular-nums text-primary">{{ money(metrics.balance) }}</p><p class="mt-2 text-xs text-muted-foreground">Saldo atual de contratos abertos</p></Link>
+            <div class="rounded-xl border bg-card p-5"><div class="flex items-center justify-between text-muted-foreground"><span class="text-sm">Recebido no mês</span><Banknote class="size-4"/></div><p class="mt-3 text-2xl font-semibold tabular-nums">{{ money(metrics.received) }}</p><p class="mt-2 text-xs text-muted-foreground">Pagamentos registrados</p></div>
         </div>
-
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <Card v-for="card in overviewCards" :key="card.title">
-                <CardHeader
-                    class="flex flex-row items-center justify-between gap-3"
-                >
-                    <CardTitle
-                        class="text-sm font-medium text-muted-foreground"
-                    >
-                        {{ card.title }}
-                    </CardTitle>
-                    <div
-                        class="flex size-9 items-center justify-center rounded-md bg-accent text-accent-foreground"
-                    >
-                        <component :is="card.icon" class="size-4" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <p class="text-3xl font-semibold tracking-tight">
-                        {{ card.value }}
-                    </p>
-                </CardContent>
-            </Card>
+        <div class="grid items-start gap-6 xl:grid-cols-2">
+            <Card class="rounded-xl"><CardHeader class="flex flex-row items-center justify-between"><div><CardTitle class="text-base">Precisa de atenção</CardTitle><p class="mt-1 text-xs text-muted-foreground">As cobranças mais antigas primeiro.</p></div><Button variant="ghost" size="sm" as-child><Link href="/charges?filter=overdue">Ver todas <ArrowUpRight class="ml-1 size-4"/></Link></Button></CardHeader><CardContent class="space-y-1"><Link v-for="row in attention" :key="row.id" :href="`/charges/${row.contract_id}`" class="flex items-center justify-between gap-4 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50"><div class="min-w-0"><p class="truncate text-sm font-medium">{{ row.client }}</p><p class="mt-1 text-xs text-muted-foreground">#{{ row.contract_id }} · {{ row.days_overdue }} dias em atraso</p></div><span class="shrink-0 text-base font-semibold tabular-nums">{{ money(row.balance) }}</span></Link><div v-if="!attention.length" class="rounded-lg border border-dashed px-5 py-10 text-center"><CircleAlert class="mx-auto mb-3 size-6 text-muted-foreground"/><p class="text-sm font-medium">Tudo em dia</p><p class="mt-1 text-xs text-muted-foreground">Não há cobranças atrasadas para acompanhar.</p></div></CardContent></Card>
+            <Card class="rounded-xl"><CardHeader class="flex flex-row items-center justify-between"><div><CardTitle class="text-base">Contratos recentes</CardTitle><p class="mt-1 text-xs text-muted-foreground">Acompanhe as últimas operações.</p></div><Button variant="ghost" size="sm" as-child><Link href="/contracts">Ver todos <ArrowUpRight class="ml-1 size-4"/></Link></Button></CardHeader><CardContent class="space-y-1"><Link v-for="row in recentContracts" :key="row.id" :href="`/contracts/${row.id}`" class="flex items-center justify-between gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-muted/50"><div class="min-w-0"><p class="truncate text-sm font-medium">{{ row.client }}</p><p class="mt-1 text-xs text-muted-foreground">Contrato #{{ row.id }} · {{ formatDate(row.started_at) }}</p></div><Badge :variant="row.contract_status === 'ACTIVE' ? 'success' : 'muted'">{{ row.display_status_label ?? labels[row.contract_status] }}</Badge></Link><div v-if="!recentContracts.length" class="rounded-lg border border-dashed px-5 py-10 text-center"><ClipboardList class="mx-auto mb-3 size-6 text-muted-foreground"/><p class="text-sm font-medium">Sua operação começa aqui</p><p class="mt-1 text-xs text-muted-foreground">Crie o primeiro contrato para acompanhar suas locações.</p></div></CardContent></Card>
         </div>
-
-        <Card>
-            <CardHeader>
-                <CardTitle>Operação</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div class="grid gap-4 md:grid-cols-3">
-                    <div
-                        class="rounded-md border border-border bg-secondary/40 p-4"
-                    >
-                        <p class="text-sm font-medium">Contratos</p>
-                        <p class="mt-2 text-2xl font-semibold">—</p>
-                    </div>
-                    <div
-                        class="rounded-md border border-border bg-secondary/40 p-4"
-                    >
-                        <p class="text-sm font-medium">Cobranças</p>
-                        <p class="mt-2 text-2xl font-semibold">—</p>
-                    </div>
-                    <div
-                        class="rounded-md border border-border bg-secondary/40 p-4"
-                    >
-                        <p class="text-sm font-medium">Equipamentos</p>
-                        <p class="mt-2 text-2xl font-semibold">—</p>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+        <section><h2 class="mb-3 text-sm font-semibold">Atalhos rápidos</h2><div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Link v-for="item in [{label:'Novo contrato',href:'/contracts/create',icon:Plus},{label:'Novo cliente',href:'/clients/create',icon:Users},{label:'Cobranças',href:'/charges',icon:Wallet},{label:'Contratos',href:'/contracts',icon:ClipboardList}]" :key="item.href" :href="item.href" class="flex items-center gap-3 rounded-xl border bg-card p-4 transition-colors hover:bg-muted/40"><component :is="item.icon" class="size-4 text-muted-foreground"/><span class="text-sm font-medium">{{ item.label }}</span><ArrowUpRight class="ml-auto size-4 text-muted-foreground"/></Link></div></section>
     </div>
 </template>

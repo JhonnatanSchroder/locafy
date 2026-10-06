@@ -16,6 +16,12 @@ use Illuminate\Validation\Validator;
 
 class UpdateContractRequest extends FormRequest
 {
+    /** @return ($key is null ? array{client_id: int, status: string, worksite_address?: string|null, started_at: string, ended_at?: string|null, charge_saturdays: bool, next_charge_date?: string|null, charge_interval_days?: int, notes?: string|null, items: array<int, array{id?: int|null, product_id: int, billing_period: string, unit_price: numeric-string}>} : mixed) */
+    public function validated($key = null, $default = null)
+    {
+        return parent::validated($key, $default);
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,6 +35,14 @@ class UpdateContractRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        $contract = $this->route('contract');
+        if ($this->is('api/*') && $contract instanceof Contract) {
+            abort_unless($contract->company_id === $this->user()?->company_id, 404);
+            $defaults = $contract->only(['client_id', 'status', 'worksite_address', 'started_at', 'ended_at', 'charge_saturdays', 'next_charge_date', 'charge_interval_days', 'notes']);
+            $defaults['status'] = $contract->status->value;
+            $defaults['items'] = $contract->items->map(fn ($item) => ['id' => $item->id, 'product_id' => $item->product_id, 'billing_period' => $item->billing_period->value, 'unit_price' => $item->unit_price])->all();
+            $this->mergeIfMissing($defaults);
+        }
         $this->merge([
             'charge_saturdays' => $this->boolean('charge_saturdays'),
         ]);
@@ -53,11 +67,8 @@ class UpdateContractRequest extends FormRequest
             'ended_at' => ['nullable', 'date'],
             'charge_saturdays' => ['boolean'],
             'next_charge_date' => ['nullable', 'date'],
+            'charge_interval_days' => ['sometimes', 'required', 'integer', 'min:1', 'max:365'],
             'notes' => ['nullable', 'string', 'max:5000'],
-            'initial_freight' => ['nullable', 'array'],
-            'initial_freight.quantity' => ['nullable', 'integer', 'min:0'],
-            'initial_freight.unit_amount' => ['nullable', 'numeric', 'gt:0'],
-            'initial_freight.notes' => ['nullable', 'string', 'max:2000'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.id' => ['nullable', 'integer'],
             'items.*.product_id' => [
@@ -67,7 +78,7 @@ class UpdateContractRequest extends FormRequest
                 Rule::exists('products', 'id')->where('company_id', $this->user()?->company_id),
             ],
             'items.*.billing_period' => ['required', Rule::enum(BillingPeriod::class)],
-            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'items.*.unit_price' => ['required', 'regex:/^\d{1,12}(\.\d{1,2})?$/', 'min:0'],
         ];
     }
 
@@ -83,22 +94,8 @@ class UpdateContractRequest extends FormRequest
                 $this->validateContractItemIds($validator);
                 $this->validateBillingPeriods($validator);
                 $this->validateEndedAt($validator);
-                $this->validateInitialFreight($validator);
             },
         ];
-    }
-
-    private function validateInitialFreight(Validator $validator): void
-    {
-        if ($validator->errors()->hasAny(['initial_freight.quantity', 'initial_freight.unit_amount'])) {
-            return;
-        }
-
-        $quantity = (int) $this->input('initial_freight.quantity', 0);
-
-        if ($quantity > 0 && blank($this->input('initial_freight.unit_amount'))) {
-            $validator->errors()->add('initial_freight.unit_amount', 'Informe o valor unitário do frete inicial.');
-        }
     }
 
     private function validateEndedAt(Validator $validator): void
@@ -119,17 +116,17 @@ class UpdateContractRequest extends FormRequest
         $startedAtCarbon = CarbonImmutable::parse($this->input('started_at'));
 
         if ($endedAtCarbon->lt($startedAtCarbon)) {
-            $validator->errors()->add('ended_at', 'O fim do contrato não pode ser anterior ao início.');
+            $validator->errors()->add('ended_at', 'O fim do contrato nÃƒÂ£o pode ser anterior ao inÃƒÂ­cio.');
         }
 
         if ($endedAtCarbon->gt(CarbonImmutable::now())) {
-            $validator->errors()->add('ended_at', 'O fim do contrato não pode estar no futuro.');
+            $validator->errors()->add('ended_at', 'O fim do contrato nÃƒÂ£o pode estar no futuro.');
         }
 
         $lastMovement = $contract->movements()->latest('occurred_at')->first();
 
         if ($lastMovement !== null && $endedAtCarbon->lt($lastMovement->occurred_at)) {
-            $validator->errors()->add('ended_at', 'O fim do contrato não pode ser anterior à última movimentação.');
+            $validator->errors()->add('ended_at', 'O fim do contrato nÃƒÂ£o pode ser anterior ÃƒÂ  ÃƒÂºltima movimentaÃƒÂ§ÃƒÂ£o.');
         }
 
         $contract->loadMissing(['items.product', 'items.movementItems.movement']);
@@ -141,7 +138,7 @@ class UpdateContractRequest extends FormRequest
         );
 
         if ($hasQuantityItemsOut) {
-            $validator->errors()->add('ended_at', 'Não é possível encerrar a locação enquanto houver itens não devolvidos.');
+            $validator->errors()->add('ended_at', 'NÃƒÂ£o ÃƒÂ© possÃƒÂ­vel encerrar a locaÃƒÂ§ÃƒÂ£o enquanto houver itens nÃƒÂ£o devolvidos.');
         }
     }
 
@@ -161,7 +158,7 @@ class UpdateContractRequest extends FormRequest
             if ($itemId !== null && ! in_array((int) $itemId, $itemIds, true)) {
                 $validator->errors()->add(
                     "items.{$index}.id",
-                    'O item informado não pertence a este contrato.'
+                    'O item informado nÃƒÂ£o pertence a este contrato.'
                 );
             }
         }
@@ -169,7 +166,7 @@ class UpdateContractRequest extends FormRequest
 
     private function validateBillingPeriods(Validator $validator): void
     {
-        $productIds = collect($this->input('items', []))
+        $productIds = collect($this->array('items'))
             ->pluck('product_id')
             ->filter()
             ->unique()
@@ -196,7 +193,7 @@ class UpdateContractRequest extends FormRequest
             if ($product->type === ProductType::Quantity && $billingPeriod !== BillingPeriod::Day->value) {
                 $validator->errors()->add(
                     "items.{$index}.billing_period",
-                    'Produtos por quantidade aceitam apenas cobrança diária.'
+                    'Produtos por quantidade aceitam apenas cobranÃƒÂ§a diÃƒÂ¡ria.'
                 );
             }
         }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { edit as clientsEdit, index as clientsIndex } from '@/routes/clients';
@@ -28,7 +29,7 @@ defineOptions({
 </script>
 
 <template>
-    <div class="flex h-full flex-1 flex-col gap-5 p-4 sm:p-6">
+    <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <Head :title="client.name" />
 
         <div
@@ -53,7 +54,7 @@ defineOptions({
             </div>
         </div>
 
-        <Card class="max-w-3xl">
+        <Card class="max-w-4xl rounded-xl">
             <CardHeader>
                 <CardTitle class="text-base">Informações</CardTitle>
             </CardHeader>
@@ -70,7 +71,7 @@ defineOptions({
                         <dt class="text-sm font-medium text-muted-foreground">
                             Tipo
                         </dt>
-                        <dd>{{ client.type_label }}</dd>
+                        <dd><Badge variant="muted">{{ client.type_label }}</Badge></dd>
                     </div>
 
                     <div class="grid gap-1">

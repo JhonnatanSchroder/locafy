@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import ClientController from '@/actions/App/Http/Controllers/ClientController';
-import InputError from '@/components/InputError.vue';
+import ClientFields from '@/components/clients/ClientFields.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { index as clientsIndex } from '@/routes/clients';
 import type { ClientTypeOption } from '@/types';
 
@@ -62,83 +60,7 @@ defineOptions({
                     class="space-y-6"
                     v-slot="{ errors, processing }"
                 >
-                    <div class="grid gap-2">
-                        <Label for="type">Tipo</Label>
-                        <select
-                            id="type"
-                            name="type"
-                            class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            <option
-                                v-for="clientType in clientTypes"
-                                :key="clientType.value"
-                                :value="clientType.value"
-                                :selected="clientType.value === 'INDIVIDUAL'"
-                            >
-                                {{ clientType.label }}
-                            </option>
-                        </select>
-                        <InputError :message="errors.type" />
-                    </div>
-
-                    <div class="grid gap-2">
-                        <Label for="name">Nome</Label>
-                        <Input
-                            id="name"
-                            name="name"
-                            required
-                            placeholder="Nome do cliente"
-                        />
-                        <InputError :message="errors.name" />
-                    </div>
-
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div class="grid gap-2">
-                            <Label for="document">CPF/CNPJ</Label>
-                            <Input
-                                id="document"
-                                name="document"
-                                placeholder="Documento"
-                            />
-                            <InputError :message="errors.document" />
-                        </div>
-
-                        <div class="grid gap-2">
-                            <Label for="phone">Telefone</Label>
-                            <Input
-                                id="phone"
-                                name="phone"
-                                placeholder="Telefone"
-                            />
-                            <InputError :message="errors.phone" />
-                        </div>
-                    </div>
-
-                    <div class="grid gap-2">
-                        <Label for="residential_address"
-                            >Endereço residencial</Label
-                        >
-                        <textarea
-                            id="residential_address"
-                            name="residential_address"
-                            rows="3"
-                            class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder="Endereço residencial do cliente"
-                        />
-                        <InputError :message="errors.residential_address" />
-                    </div>
-
-                    <div class="grid gap-2">
-                        <Label for="notes">Observação</Label>
-                        <textarea
-                            id="notes"
-                            name="notes"
-                            rows="4"
-                            class="flex min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder="Observações gerais"
-                        />
-                        <InputError :message="errors.notes" />
-                    </div>
+                    <ClientFields :client-types="clientTypes" :errors="errors"/>
 
                     <div class="flex items-center gap-3">
                         <Button :disabled="processing">Salvar cliente</Button>

@@ -2,7 +2,10 @@
 
 namespace App\Actions\Freights;
 
+use App\Models\Contract;
 use App\Models\Freight;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class UpdateFreightAction
 {
@@ -15,12 +18,18 @@ class UpdateFreightAction
      */
     public function handle(Freight $freight, array $data): Freight
     {
-        $freight->update([
-            'quantity' => $data['quantity'],
-            'unit_amount' => $data['unit_amount'],
-            'notes' => $data['notes'] ?? null,
-        ]);
+        return DB::transaction(function () use ($freight, $data): Freight {
+            $contract = Contract::query()->lockForUpdate()->findOrFail($freight->contract_id);
+            if (in_array($contract->status->value, ['FINALIZED', 'CANCELLED'])) {
+                throw ValidationException::withMessages(['quantity' => 'Contrato encerrado.']);
+            }
+            $freight->update([
+                'quantity' => $data['quantity'],
+                'unit_amount' => $data['unit_amount'],
+                'notes' => $data['notes'] ?? null,
+            ]);
 
-        return $freight->refresh();
+            return $freight->refresh();
+        });
     }
 }

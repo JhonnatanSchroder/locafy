@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { Users, Plus } from '@lucide/vue';
 import { ref } from 'vue';
 import {
     create as clientsCreate,
@@ -58,7 +59,7 @@ defineOptions({
 </script>
 
 <template>
-    <div class="flex h-full flex-1 flex-col gap-5 p-4 sm:p-6">
+    <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <Head title="Clientes" />
 
         <div
@@ -67,16 +68,17 @@ defineOptions({
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight">Clientes</h1>
                 <p class="text-sm text-muted-foreground">
-                    Cadastre e consulte os clientes da sua empresa.
+                    Relacionamentos organizados para uma operação mais simples.
                 </p>
             </div>
 
             <Button as-child>
-                <Link :href="clientsCreate()">Novo cliente</Link>
+                <Link :href="clientsCreate()"><Plus class="mr-2 size-4"/> Novo cliente</Link>
             </Button>
         </div>
 
-        <Card>
+        <div class="flex items-center gap-4 rounded-xl border bg-card p-5"><div class="rounded-lg bg-primary/5 p-3"><Users class="size-5 text-primary"/></div><div><p class="text-2xl font-semibold tabular-nums">{{ clients.total }}</p><p class="text-xs text-muted-foreground">{{ filters.search ? 'Clientes nesta busca' : 'Clientes cadastrados' }}</p></div></div>
+        <Card class="rounded-xl">
             <CardHeader>
                 <CardTitle class="text-base">Buscar clientes</CardTitle>
             </CardHeader>
@@ -105,7 +107,7 @@ defineOptions({
             </CardContent>
         </Card>
 
-        <Card>
+        <Card class="rounded-xl">
             <CardContent class="p-0">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -124,9 +126,9 @@ defineOptions({
                             <tr v-if="clients.data.length === 0">
                                 <td
                                     colspan="5"
-                                    class="px-4 py-8 text-center text-muted-foreground"
+                                    class="px-4 py-14 text-center text-muted-foreground"
                                 >
-                                    Nenhum cliente encontrado.
+                                    <Users class="mx-auto mb-3 size-8"/><p class="font-semibold text-foreground">Nenhum cliente nesta seleção</p><p class="mt-1 text-sm">Ajuste sua busca ou cadastre o primeiro cliente.</p><Button variant="outline" class="mt-4" as-child><Link :href="clientsCreate()">Novo cliente</Link></Button>
                                 </td>
                             </tr>
                             <tr
@@ -135,7 +137,7 @@ defineOptions({
                                 class="border-b transition-colors hover:bg-muted/40 last:border-0"
                             >
                                 <td class="px-4 py-3 font-medium">
-                                    {{ client.name }}
+                                    <Link :href="clientsShow(client.id)" class="hover:text-primary">{{ client.name }}</Link>
                                 </td>
                                 <td class="px-4 py-3">
                                     {{ client.type_label }}

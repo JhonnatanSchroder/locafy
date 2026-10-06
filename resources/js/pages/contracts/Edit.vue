@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import FreightEditor from '@/components/contracts/FreightEditor.vue';
 import ContractForm from '@/components/contracts/ContractForm.vue';
 import { Button } from '@/components/ui/button';
 import { index as contractsIndex, show as contractsShow } from '@/routes/contracts';
@@ -51,6 +52,8 @@ defineOptions({
             </div>
         </div>
 
+        <h2 class="text-lg font-semibold">Fretes registrados</h2>
+        <FreightEditor v-for="freight in contract.freights" :key="freight.id" :contract-id="contract.id" :freight="freight" />
         <ContractForm
             :contract="props.contract"
             :clients="clients"

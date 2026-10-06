@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import ContractOperations from '@/components/contracts/ContractOperations.vue';
+import FinancialSummary from '@/components/finance/FinancialSummary.vue';
+import { formatDate, formatDateTime } from '@/lib/dates';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +23,7 @@ type Props = {
 
 const props = defineProps<Props>();
 
+
 const freightForm = useForm({
     quantity: 1,
     unit_amount: '',
@@ -28,6 +32,8 @@ const freightForm = useForm({
 });
 
 const statusVariant = (status: string) => {
+    if (status === 'PAYMENT_PENDING') return 'warning';
+    if (status === 'READY_TO_FINALIZE') return 'info';
     if (status === 'ACTIVE') {
         return 'success';
     }
@@ -79,7 +85,7 @@ defineOptions({
 </script>
 
 <template>
-    <div class="flex h-full flex-1 flex-col gap-5 p-4 sm:p-6">
+    <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <Head :title="`Contrato #${contract.number}`" />
 
         <div
@@ -90,8 +96,8 @@ defineOptions({
                     <h1 class="text-2xl font-semibold tracking-tight">
                         Contrato #{{ contract.number }}
                     </h1>
-                    <Badge :variant="statusVariant(contract.status)">{{
-                        contract.status_label
+                    <Badge :variant="statusVariant(contract.display_status)">{{
+                        contract.display_status_label
                     }}</Badge>
                 </div>
                 <p class="text-sm text-muted-foreground">
@@ -99,11 +105,11 @@ defineOptions({
                 </p>
             </div>
 
-            <div class="flex gap-2">
-                <Button as-child>
+            <div class="flex flex-wrap gap-2"><ContractOperations :contract="contract"/>
+                <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" as-child>
                     <Link :href="contractsEdit(contract.id)">Editar</Link>
                 </Button>
-                <Button variant="outline" as-child>
+                <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" variant="outline" as-child>
                     <Link
                         :href="
                             movementsCreate.url({
@@ -116,7 +122,7 @@ defineOptions({
                         >Nova retirada</Link
                     >
                 </Button>
-                <Button variant="outline" as-child>
+                <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" variant="outline" as-child>
                     <Link
                         :href="
                             movementsCreate.url({
@@ -135,8 +141,10 @@ defineOptions({
             </div>
         </div>
 
+        <FinancialSummary :rental-total="contract.rental_total" :freight-total="contract.freight_total" :total-accrued="contract.total_accrued" :total-paid="contract.total_paid" :balance="contract.balance"/>
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-5 py-4"><p class="text-sm text-muted-foreground">Próxima cobrança: {{ formatDate(contract.next_charge_date) }} · Intervalo de {{ contract.charge_interval_days }} dias</p><Button variant="outline" as-child><Link :href="`/charges/${contract.id}`">Pagamentos e financeiro</Link></Button></div>
         <div class="grid gap-5 xl:grid-cols-[1fr_24rem]">
-            <Card>
+            <Card class="rounded-xl">
                 <CardHeader>
                     <CardTitle class="text-base">Dados do contrato</CardTitle>
                 </CardHeader>
@@ -159,7 +167,7 @@ defineOptions({
                                 Início
                             </dt>
                             <dd class="mt-1 text-sm">
-                                {{ contract.started_at || '—' }}
+                                {{ formatDateTime(contract.started_at) }}
                             </dd>
                         </div>
                         <div>
@@ -169,7 +177,7 @@ defineOptions({
                                 Fim
                             </dt>
                             <dd class="mt-1 text-sm">
-                                {{ contract.ended_at || '—' }}
+                                {{ formatDateTime(contract.ended_at) }}
                             </dd>
                         </div>
                         <div>
@@ -179,7 +187,7 @@ defineOptions({
                                 Próxima cobrança
                             </dt>
                             <dd class="mt-1 text-sm">
-                                {{ contract.next_charge_date || '—' }}
+                                {{ formatDate(contract.next_charge_date) }}
                             </dd>
                         </div>
                         <div>
@@ -216,7 +224,7 @@ defineOptions({
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card class="rounded-xl">
                 <CardHeader>
                     <CardTitle class="text-base">Resumo</CardTitle>
                 </CardHeader>
@@ -285,7 +293,7 @@ defineOptions({
 
                             <dd class="text-xs text-muted-foreground">
                                 Calculado até
-                                {{ contract.calculated_until || '—' }}
+                                {{ formatDate(contract.calculated_until) }}
                             </dd>
                         </div>
 
@@ -305,7 +313,7 @@ defineOptions({
             </Card>
         </div>
 
-        <Card>
+        <Card class="rounded-xl">
             <CardHeader>
                 <CardTitle class="text-base">Itens do contrato</CardTitle>
             </CardHeader>
@@ -367,7 +375,7 @@ defineOptions({
             </CardContent>
         </Card>
 
-        <Card>
+        <Card class="rounded-xl">
             <CardHeader>
                 <CardTitle class="text-base">Movimentações</CardTitle>
             </CardHeader>
@@ -386,7 +394,7 @@ defineOptions({
                     <div class="flex items-center justify-between gap-3">
                         <div>
                             <div class="text-sm font-medium">
-                                {{ movement.occurred_at }} ·
+                                {{ formatDateTime(movement.occurred_at) }} ·
                                 {{ movement.type_label }}
                             </div>
                             <div class="text-sm text-muted-foreground">
@@ -400,7 +408,7 @@ defineOptions({
                                 }}
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" as-child>
+                        <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" variant="outline" size="sm" as-child>
                             <Link :href="movementsEdit(movement.id)"
                                 >Editar</Link
                             >
@@ -410,8 +418,8 @@ defineOptions({
             </CardContent>
         </Card>
 
-        <div class="grid gap-5 xl:grid-cols-[24rem_1fr]">
-            <Card>
+        <div class="grid gap-5" :class="!['FINALIZED','CANCELLED'].includes(contract.status) ? 'xl:grid-cols-[24rem_1fr]' : ''">
+            <Card v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" class="rounded-xl">
                 <CardHeader>
                     <CardTitle class="text-base">Adicionar frete</CardTitle>
                 </CardHeader>
@@ -511,7 +519,7 @@ defineOptions({
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card class="rounded-xl">
                 <CardHeader>
                     <CardTitle class="text-base">Histórico de fretes</CardTitle>
                 </CardHeader>
@@ -530,7 +538,7 @@ defineOptions({
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <div class="text-sm font-medium">
-                                    {{ freight.occurred_at || '—' }}
+                                    {{ formatDateTime(freight.occurred_at) }}
                                 </div>
                                 <div class="text-sm">
                                     {{ freight.quantity }}
