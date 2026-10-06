@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import FreightEditor from '@/components/contracts/FreightEditor.vue';
 import ContractForm from '@/components/contracts/ContractForm.vue';
+import ContractAttachments from '@/components/contracts/ContractAttachments.vue';
 import { Button } from '@/components/ui/button';
 import { index as contractsIndex, show as contractsShow } from '@/routes/contracts';
 import type { BillingPeriodOption, Contract, ContractClientOption, ContractProductOption, ContractStatusOption } from '@/types';
@@ -54,6 +55,11 @@ defineOptions({
 
         <h2 class="text-lg font-semibold">Fretes registrados</h2>
         <FreightEditor v-for="freight in contract.freights" :key="freight.id" :contract-id="contract.id" :freight="freight" />
+        <ContractAttachments
+            :contract-id="contract.id"
+            :attachments="contract.attachments ?? []"
+            :locked="['FINALIZED','CANCELLED'].includes(contract.status)"
+        />
         <ContractForm
             :contract="props.contract"
             :clients="clients"

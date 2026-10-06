@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import InlineClientDialog from '@/components/clients/InlineClientDialog.vue';
 import { useInlineClientOptions } from '@/lib/inline-client';
@@ -92,6 +92,7 @@ const form = useForm<ContractFormData>({
 });
 
 const clientDialogOpen = ref(false);
+const selectedPhotos = ref<Array<{ file: File; url: string }>>([]);
 const { options: clientOptions, created: clientCreated } = useInlineClientOptions(() => props.clients, id => {form.client_id = id});
 
 const title = computed(() =>
@@ -155,6 +156,37 @@ const isQuantityProduct = (productId: number | string) =>
 const fieldError = (field: string) =>
     form.errors[field as keyof typeof form.errors] as string | undefined;
 
+const addPhotos = (files: FileList | null) => {
+    if (!files) return;
+
+    for (const file of Array.from(files)) {
+        if (selectedPhotos.value.length >= 10) break;
+        selectedPhotos.value.push({ file, url: URL.createObjectURL(file) });
+    }
+};
+
+const removePhoto = (index: number) => {
+    const [photo] = selectedPhotos.value.splice(index, 1);
+    if (photo) URL.revokeObjectURL(photo.url);
+};
+
+const uploadSelectedPhotos = (contractId: number) => {
+    if (selectedPhotos.value.length === 0) return;
+
+    router.post(
+        `/contracts/${contractId}/attachments`,
+        { attachments: selectedPhotos.value.map(photo => photo.file) },
+        {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedPhotos.value.forEach(photo => URL.revokeObjectURL(photo.url));
+                selectedPhotos.value = [];
+            },
+        },
+    );
+};
+
 const submit = () => {
     if (props.contract) {
         form.transform(({initial_freight: _freight, ...data}) => data).put(contractsUpdate.url(props.contract.id), {
@@ -166,6 +198,10 @@ const submit = () => {
 
     form.post(contractsStore.url(), {
         preserveScroll: true,
+        onSuccess: page => {
+            const contractId = (page.props as { contract?: { id: number } }).contract?.id;
+            if (contractId) uploadSelectedPhotos(contractId);
+        },
     });
 };
 </script>
@@ -290,6 +326,30 @@ const submit = () => {
                         placeholder="Observações internas"
                     />
                     <InputError :message="form.errors.notes" />
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card v-if="!contract">
+            <CardHeader>
+                <CardTitle class="text-base">Fotos do contrato</CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="text-sm text-muted-foreground">{{ selectedPhotos.length }} / 10 fotos</p>
+                    <label class="inline-flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted">
+                        + Adicionar fotos
+                        <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden" @change="addPhotos(($event.target as HTMLInputElement).files)" />
+                    </label>
+                </div>
+                <div v-if="selectedPhotos.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div v-for="(photo, index) in selectedPhotos" :key="photo.url" class="overflow-hidden rounded-lg border">
+                        <img :src="photo.url" :alt="photo.file.name" class="aspect-video w-full object-cover" />
+                        <div class="space-y-2 p-3">
+                            <p class="truncate text-sm font-medium">{{ photo.file.name }}</p>
+                            <Button type="button" variant="outline" size="sm" class="w-full" @click="removePhoto(index)">Remover</Button>
+                        </div>
+                    </div>
                 </div>
             </CardContent>
         </Card>

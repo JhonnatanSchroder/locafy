@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ContractOperations from '@/components/contracts/ContractOperations.vue';
+import ContractAttachments from '@/components/contracts/ContractAttachments.vue';
 import FinancialSummary from '@/components/finance/FinancialSummary.vue';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -374,6 +375,12 @@ defineOptions({
                 </div>
             </CardContent>
         </Card>
+
+        <ContractAttachments
+            :contract-id="contract.id"
+            :attachments="contract.attachments ?? []"
+            :locked="['FINALIZED','CANCELLED'].includes(contract.status)"
+        />
 
         <Card class="rounded-xl">
             <CardHeader>

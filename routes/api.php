@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\EquipmentController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\ChargeController;
+use App\Http\Controllers\ContractAttachmentController;
 use App\Http\Controllers\ContractPaymentController;
 use App\Http\Controllers\FinalizeContractController;
 use App\Http\Controllers\PaymentController;
@@ -27,6 +28,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::apiResource('products', ProductController::class)->only(['index']);
         Route::apiResource('equipments', EquipmentController::class)->only(['index', 'show']);
         Route::apiResource('contracts', ContractController::class)->only(['index', 'show', 'store', 'update']);
+        Route::get('contracts/{contract}/attachments', [ContractAttachmentController::class, 'index'])->name('contracts.attachments.index');
+        Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])->name('contracts.attachments.store');
+        Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'show'])->name('contracts.attachments.show');
+        Route::delete('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'destroy'])->name('contracts.attachments.destroy');
         Route::post('contracts/{contract}/movements', [ContractOperationController::class, 'movement']);
         Route::post('contracts/{contract}/freights', [ContractOperationController::class, 'freight']);
         Route::patch('contracts/{contract}/freights/{freight}', [ContractOperationController::class, 'updateFreight']);

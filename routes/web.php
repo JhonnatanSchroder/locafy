@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ContractAttachmentController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ContractPaymentController;
 use App\Http\Controllers\DashboardController;
@@ -34,6 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class)->except(['destroy']);
     Route::resource('equipments', EquipmentController::class)->except(['destroy']);
     Route::resource('contracts', ContractController::class)->except(['destroy']);
+    Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'show'])->name('contracts.attachments.show');
+    Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])->name('contracts.attachments.store');
+    Route::delete('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'destroy'])->name('contracts.attachments.destroy');
     Route::resource('movements', MovementController::class)->except(['destroy']);
     Route::get('usuarios', [UserAdministrationController::class, 'index'])->name('users.index');
     Route::post('usuarios', [UserAdministrationController::class, 'store'])->name('users.store');

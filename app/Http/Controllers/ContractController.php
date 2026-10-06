@@ -10,6 +10,7 @@ use App\Enums\ContractStatus;
 use App\Enums\ProductType;
 use App\Http\Requests\Contracts\StoreContractRequest;
 use App\Http\Requests\Contracts\UpdateContractRequest;
+use App\Http\Resources\ContractAttachmentResource;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Contract;
@@ -44,6 +45,7 @@ class ContractController extends Controller
 
         $contracts = Contract::query()
             ->with(['client', 'items.product', 'items.movementItems.movement', 'movements.items', 'freights'])
+            ->withCount('attachments')
             ->whereBelongsTo($company)
             ->when($search !== '', function (Builder $query) use ($search): void {
                 $query->where(function (Builder $query) use ($search): void {
@@ -164,7 +166,8 @@ class ContractController extends Controller
     private function findContractForUser(Request $request, Contract $contract): Contract
     {
         return Contract::query()
-            ->with(['company', 'client', 'items.product', 'items.movementItems.movement', 'movements.items.contractItem.product', 'freights'])
+            ->with(['company', 'client', 'items.product', 'items.movementItems.movement', 'movements.items.contractItem.product', 'freights', 'attachments.uploader'])
+            ->withCount('attachments')
             ->whereBelongsTo($this->userCompany($request))
             ->findOrFail($contract->id);
     }
@@ -304,7 +307,7 @@ class ContractController extends Controller
 
     private function contractData(Contract $contract, ContractCalculationService $calculator, MovementBalanceService $balances): array
     {
-        $contract->loadMissing(['client', 'items.product', 'items.movementItems.movement', 'movements.items.contractItem.product', 'freights']);
+        $contract->loadMissing(['client', 'items.product', 'items.movementItems.movement', 'movements.items.contractItem.product', 'freights', 'attachments.uploader']);
         $repaired = app(ContractLifecycleService::class)->synchronize($contract);
         $contract->status = $repaired->status;
         $contract->ended_at = $repaired->ended_at;
@@ -328,6 +331,10 @@ class ContractController extends Controller
             'next_charge_date' => $contract->next_charge_date?->toDateString(),
             'charge_interval_days' => $contract->charge_interval_days,
             'notes' => $contract->notes,
+            'attachments_count' => (int) ($contract->attachments_count ?? $contract->attachments()->count()),
+            'attachments' => $contract->relationLoaded('attachments')
+                ? ContractAttachmentResource::collection($contract->attachments->sortByDesc('created_at')->values())->resolve()
+                : [],
             'calculated_until' => $calculation->calculatedUntil,
             'rental_total' => $calculation->rentalTotal,
             'calculation_complete' => $calculation->calculationComplete,

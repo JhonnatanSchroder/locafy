@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $charge_interval_days
  * @property Collection<int, Payment> $payments
+ * @property Collection<int, ContractAttachment> $attachments
  * @property int $id
  * @property int $company_id
  * @property int $client_id
@@ -86,6 +87,12 @@ class Contract extends Model
     public function freights(): HasMany
     {
         return $this->hasMany(Freight::class);
+    }
+
+    /** @return HasMany<ContractAttachment, $this> */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ContractAttachment::class);
     }
 
     /**

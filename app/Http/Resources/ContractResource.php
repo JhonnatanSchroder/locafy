@@ -59,6 +59,11 @@ class ContractResource extends JsonResource
             ...$finance,
             ...app(ContractLifecycleService::class)->presentation($contract, $finance['balance']),
             'notes' => $contract->notes,
+            'attachments_count' => (int) ($contract->attachments_count ?? $contract->attachments()->count()),
+            'attachments' => $this->when(
+                $request->routeIs('api.v1.contracts.show') && $contract->relationLoaded('attachments'),
+                fn () => ContractAttachmentResource::collection($contract->attachments->sortByDesc('created_at')->values())->resolve()
+            ),
             'items' => $this->whenLoaded('items', fn () => $contract->items->map(function ($item) use ($calculation): array {
                 $itemCalculation = $calculation->item($item->id);
 
