@@ -49,3 +49,11 @@ test('adding an inline client selects it while preserving all contract draft dat
     existing.push({id:2,name:'New client'});
     assert.equal(options.value.filter(client => client.id === 2).length, 1);
 });
+
+test('sidebar has a single clickable users item and no administration link', () => {
+    const sidebar = fs.readFileSync('resources/js/components/AppSidebar.vue', 'utf8');
+
+    assert.equal((sidebar.match(/title: 'Usuários'/g) || []).length, 1);
+    assert.equal((sidebar.match(/href: '\/usuarios'/g) || []).length, 1);
+    assert.equal(sidebar.includes("title: 'Administração'"), false);
+});

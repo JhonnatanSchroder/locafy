@@ -24,7 +24,9 @@ class MeController extends Controller
                 'email' => $user->email,
                 'company_id' => $user->company_id,
                 'role' => $user->role->value,
+                'must_change_password' => $user->mustChangePassword(),
             ],
+            'must_change_password' => $user->mustChangePassword(),
         ]);
     }
 }

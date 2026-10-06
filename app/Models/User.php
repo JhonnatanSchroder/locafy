@@ -28,7 +28,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['company_id', 'name', 'email', 'password', 'role'])]
+#[Fillable(['company_id', 'name', 'email', 'password', 'role', 'active', 'must_change_password_at', 'created_by_user_id', 'role_updated_by_user_id', 'deactivated_by_user_id', 'deactivated_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -54,6 +54,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'active' => 'boolean',
+            'must_change_password_at' => 'datetime',
+            'deactivated_at' => 'datetime',
         ];
+    }
+
+    public function canAdministrateCompany(): bool
+    {
+        return $this->company_id !== null
+            && $this->active !== false
+            && $this->role === UserRole::Admin;
+    }
+
+    public function mustChangePassword(): bool
+    {
+        return $this->must_change_password_at !== null;
     }
 }

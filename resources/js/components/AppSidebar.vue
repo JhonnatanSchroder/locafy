@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowLeftRight, Banknote, ClipboardList, Contact, LayoutGrid, Package, Wrench } from '@lucide/vue';
+import { ArrowLeftRight, Banknote, ClipboardList, Contact, LayoutGrid, Package, Users, Wrench } from '@lucide/vue';
+import { usePage } from '@inertiajs/vue3';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -20,6 +21,9 @@ import { index as equipmentsIndex } from '@/routes/equipments';
 import { index as movementsIndex } from '@/routes/movements';
 import { index as productsIndex } from '@/routes/products';
 import type { NavItem } from '@/types';
+
+const page = usePage();
+const canManageUsers = () => Boolean(page.props.auth?.can?.manageUsers);
 
 const mainNavItems: NavItem[] = [
     {
@@ -55,6 +59,11 @@ const mainNavItems: NavItem[] = [
         icon: ArrowLeftRight,
     },
 ];
+
+const adminNavItems = (): NavItem[] =>
+    canManageUsers()
+        ? [{ title: 'Usuários', href: '/usuarios', icon: Users }]
+        : [];
 </script>
 
 <template>
@@ -72,7 +81,7 @@ const mainNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="[...mainNavItems, ...adminNavItems()]" />
         </SidebarContent>
 
         <SidebarFooter>

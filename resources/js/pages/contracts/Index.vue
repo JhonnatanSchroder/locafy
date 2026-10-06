@@ -262,20 +262,20 @@ defineOptions({
                                         >
                                             <Link
                                                 :href="
-                                                    contractsShow(contract.id)
+                                                    contractsShow.url(contract.id)
                                                 "
                                                 >Ver</Link
                                             >
                                         </Button>
                                         <Button
-                                            v-if="!['FINALIZED','CANCELLED'].includes(contract.status)"
+                                            v-if="contract.status !== 'CANCELLED'"
                                             variant="outline"
                                             size="sm"
                                             as-child
                                         >
                                             <Link
                                                 :href="
-                                                    contractsEdit(contract.id)
+                                                    contractsEdit.url(contract.id)
                                                 "
                                                 >Editar</Link
                                             >

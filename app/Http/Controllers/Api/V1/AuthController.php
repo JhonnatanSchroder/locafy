@@ -32,11 +32,12 @@ class AuthController extends Controller
             ]);
         }
 
-        abort_if($user->company_id === null, 403);
+        abort_if($user->company_id === null || $user->active === false, 403);
 
         return response()->json([
             'token' => $user->createToken($credentials['device_name'])->plainTextToken,
             'token_type' => 'Bearer',
+            'must_change_password' => $user->mustChangePassword(),
         ]);
     }
 

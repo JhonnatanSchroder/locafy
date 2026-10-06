@@ -525,6 +525,78 @@ it('preserves freight history when editing a contract', function () {
     expect($contract->freights()->count())->toBe(2);
 });
 
+it('opens the edit form with current commercial fields and freight history', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create(['name' => 'Cliente Edit']);
+    $product = Product::factory()->for($company)->create(['default_price' => '20.00']);
+    $contract = Contract::factory()->for($company)->create([
+        'client_id' => $client->id,
+        'worksite_address' => 'Rua Editavel, 10',
+        'started_at' => '2026-10-05 09:00:00',
+        'ended_at' => null,
+        'charge_saturdays' => false,
+        'next_charge_date' => '2026-10-12',
+        'charge_interval_days' => 20,
+        'notes' => 'Observacao atual',
+    ]);
+    ContractItem::factory()->for($contract)->for($product)->create([
+        'unit_price' => '20.00',
+        'billing_period' => BillingPeriod::Day,
+    ]);
+    Freight::factory()->for($company)->for($contract)->create([
+        'quantity' => 2,
+        'unit_amount' => '35.00',
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->get(route('contracts.edit', $contract))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('contracts/Edit')
+            ->where('contract.client.id', $client->id)
+            ->where('contract.worksite_address', 'Rua Editavel, 10')
+            ->where('contract.charge_saturdays', false)
+            ->where('contract.charge_interval_days', 20)
+            ->where('contract.notes', 'Observacao atual')
+            ->where('contract.items.0.unit_price', '20.00')
+            ->where('contract.freights.0.quantity', 2));
+});
+
+it('opens the edit form for finalized contracts but rejects saving operational changes', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create();
+    $contract = Contract::factory()->for($company)->create([
+        'client_id' => $client->id,
+        'status' => ContractStatus::Finalized,
+        'ended_at' => '2026-10-05 10:00:00',
+    ]);
+    $item = ContractItem::factory()->for($contract)->for($product)->create();
+
+    $this
+        ->actingAs($user)
+        ->get(route('contracts.edit', $contract))
+        ->assertOk();
+
+    $this
+        ->actingAs($user)
+        ->from(route('contracts.edit', $contract))
+        ->patch(route('contracts.update', $contract), [
+            ...contractPayload($client, $product),
+            'status' => ContractStatus::Finalized->value,
+            'items' => [[
+                'id' => $item->id,
+                'product_id' => $product->id,
+                'billing_period' => BillingPeriod::Day->value,
+                'unit_price' => '99.00',
+            ]],
+        ])
+        ->assertSessionHasErrors('status');
+});
+
 it('rejects an update item id from another contract', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();

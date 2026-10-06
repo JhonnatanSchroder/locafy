@@ -41,7 +41,7 @@ type ContractFormData = {
     next_charge_date: string;
     charge_interval_days: number;
     notes: string;
-    initial_freight: {
+    initial_freight?: {
         quantity: number | string;
         unit_amount: string;
         notes: string;
@@ -70,10 +70,10 @@ const form = useForm<ContractFormData>({
     next_charge_date: props.contract?.next_charge_date ?? '',
     charge_interval_days: props.contract?.charge_interval_days ?? 15,
     notes: props.contract?.notes ?? '',
-    initial_freight: {
-        quantity: props.contract?.initial_freight?.quantity ?? 0,
-        unit_amount: props.contract?.initial_freight?.unit_amount ?? '',
-        notes: props.contract?.initial_freight?.notes ?? '',
+    initial_freight: props.contract ? undefined : {
+        quantity: 0,
+        unit_amount: '',
+        notes: '',
     },
     items: props.contract?.items.map((item): ContractItemForm => ({
         id: item.id,
@@ -306,7 +306,7 @@ const submit = () => {
                         >
                         <Input
                             id="initial_freight_quantity"
-                            v-model="form.initial_freight.quantity"
+                            v-model="form.initial_freight!.quantity"
                             type="number"
                             min="0"
                             step="1"
@@ -323,7 +323,7 @@ const submit = () => {
                         >
                         <Input
                             id="initial_freight_unit_amount"
-                            v-model="form.initial_freight.unit_amount"
+                            v-model="form.initial_freight!.unit_amount"
                             type="number"
                             min="0"
                             step="0.01"
@@ -343,7 +343,7 @@ const submit = () => {
                     >
                     <textarea
                         id="initial_freight_notes"
-                        v-model="form.initial_freight.notes"
+                        v-model="form.initial_freight!.notes"
                         rows="3"
                         class="flex min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     />

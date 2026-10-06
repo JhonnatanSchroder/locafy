@@ -9,13 +9,17 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\FinalizeContractController;
 use App\Http\Controllers\FreightController;
 use App\Http\Controllers\MovementController;
+use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserAdministrationController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('definir-nova-senha', [PasswordChangeController::class, 'edit'])->name('password.change.edit');
+    Route::put('definir-nova-senha', [PasswordChangeController::class, 'update'])->name('password.change.update');
     Route::get('pagamentos', [PaymentController::class, 'index'])->name('payments.index');
     Route::post('contracts/{contract}/finalize', FinalizeContractController::class)->name('contracts.finalize');
     Route::get('dashboard', DashboardController::class)->name('dashboard');
@@ -31,6 +35,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('equipments', EquipmentController::class)->except(['destroy']);
     Route::resource('contracts', ContractController::class)->except(['destroy']);
     Route::resource('movements', MovementController::class)->except(['destroy']);
+    Route::get('usuarios', [UserAdministrationController::class, 'index'])->name('users.index');
+    Route::post('usuarios', [UserAdministrationController::class, 'store'])->name('users.store');
+    Route::patch('usuarios/{user}', [UserAdministrationController::class, 'update'])->name('users.update');
+    Route::patch('usuarios/{user}/activate', [UserAdministrationController::class, 'activate'])->name('users.activate');
+    Route::patch('usuarios/{user}/deactivate', [UserAdministrationController::class, 'deactivate'])->name('users.deactivate');
+    Route::post('usuarios/{user}/reset-password', [UserAdministrationController::class, 'resetPassword'])->name('users.reset-password');
     Route::post(
         '/contracts/{contract}/freights',
         [FreightController::class, 'store']
