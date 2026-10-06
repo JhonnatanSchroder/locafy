@@ -5,7 +5,7 @@ export type ContractStatus = 'ACTIVE' | 'RETURNED' | 'FINALIZED' | 'CANCELLED';
 export type BillingPeriod = 'DAY' | 'WEEK' | 'MONTH';
 
 export type ContractStatusOption = {
-    value: ContractStatus;
+    value: string;
     label: string;
 };
 
@@ -77,6 +77,7 @@ export type Contract = {
     freight_total: string;
     total_accrued: string | null;
     total_paid: string;
+    total_discount: string;
     balance: string | null;
     financial_balance: string | null;
     initial_freight?: InitialFreight;

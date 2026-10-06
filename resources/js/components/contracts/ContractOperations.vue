@@ -11,7 +11,7 @@ const props = defineProps<{ contract: Contract }>();
 const paymentOpen = ref(false);
 const finalizeOpen = ref(false);
 const form = useForm({});
-const payment = computed(() => ({contract_id:props.contract.id,client:props.contract.client.name,balance:props.contract.financial_balance,total_accrued:props.contract.total_accrued,total_paid:props.contract.total_paid,next_charge_date:props.contract.next_charge_date}));
+const payment = computed(() => ({contract_id:props.contract.id,client:props.contract.client.name,balance:props.contract.financial_balance,total_accrued:props.contract.total_accrued,total_paid:props.contract.total_paid,total_discount:props.contract.total_discount,next_charge_date:props.contract.next_charge_date}));
 function finalize() {
     form.post(`/contracts/${props.contract.id}/finalize`, {preserveScroll:true,preserveState:true,onSuccess:()=>{finalizeOpen.value=false;}});
 }

@@ -40,6 +40,11 @@ class DashboardController extends Controller
                 'received' => Money::format($payments->sum(fn ($payment) => Money::cents($payment->amount))),
             ],
             'attention' => $overdue->take(5)->values(),
+            'returnedPending' => $returned
+                ->where('display_status', 'PAYMENT_PENDING')
+                ->sortByDesc(fn ($row) => Money::cents($row['balance']))
+                ->take(5)
+                ->values(),
             'recentContracts' => (clone $contracts)->with('client')->latest('id')->limit(6)->get()->map(fn ($contract) => [
                 ...$receivables->data($contract), 'started_at' => $contract->started_at->toIso8601String(),
             ])->all(),

@@ -31,6 +31,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['client_id', 'status', 'worksite_address', 'started_at', 'ended_at', 'charge_saturdays', 'next_charge_date', 'charge_interval_days', 'notes'])]
 class Contract extends Model
 {
+    public const DEFAULT_CHARGE_INTERVAL_DAYS = 15;
+
     protected $attributes = ['charge_interval_days' => 15];
 
     /** @use HasFactory<ContractFactory> */

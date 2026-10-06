@@ -94,6 +94,54 @@ it('creates a contract for the authenticated users company with item price snaps
     expect($contract->items()->first()?->refresh()->unit_price)->toBe('0.60');
 });
 
+it('defaults new contracts to a fifteen day charge interval when omitted', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create();
+
+    $this
+        ->actingAs($user)
+        ->post(route('contracts.store'), contractPayload($client, $product))
+        ->assertRedirect();
+
+    expect(Contract::query()->firstOrFail()->charge_interval_days)->toBe(15);
+});
+
+it('preserves a custom charge interval on new contracts', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create();
+
+    $this
+        ->actingAs($user)
+        ->post(route('contracts.store'), contractPayload($client, $product, [
+            'charge_interval_days' => 7,
+        ]))
+        ->assertRedirect();
+
+    expect(Contract::query()->firstOrFail()->charge_interval_days)->toBe(7);
+});
+
+it('does not change existing custom charge intervals when opening edit', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $contract = Contract::factory()->for($company)->create([
+        'client_id' => $client->id,
+        'charge_interval_days' => 30,
+    ]);
+
+    $this
+        ->actingAs($user)
+        ->get(route('contracts.edit', $contract))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('contract.charge_interval_days', 30));
+
+    expect($contract->refresh()->charge_interval_days)->toBe(30);
+});
+
 it('creates an optional initial freight when creating a contract', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();

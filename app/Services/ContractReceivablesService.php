@@ -29,14 +29,15 @@ class ContractReceivablesService
             'id' => $contract->id, 'contract_id' => $contract->id, 'client' => $contract->client->name,
             'client_id' => $contract->client_id, 'contract_status' => $contract->status->value,
             ...$finance, ...app(ContractLifecycleService::class)->presentation($contract, $finance['balance']), 'next_charge_date' => $due, 'charge_interval_days' => $contract->charge_interval_days,
+            'ended_at' => $contract->ended_at?->toIso8601String(),
             'days_overdue' => $closed ? 0 : $days, 'due_today' => ! $closed && $pending && $due === $today,
             'is_collectible' => ! $closed && $pending && ($contract->status->value === 'RETURNED' || ($due !== null && $due <= $today)),
-            'financial_status' => $finance['balance'] === null ? 'UNAVAILABLE' : (! $pending ? 'PAID' : (Money::cents($finance['total_paid']) > 0 ? 'PARTIAL' : 'PENDING')),
+            'financial_status' => $finance['balance'] === null ? 'UNAVAILABLE' : (! $pending ? 'PAID' : (Money::cents($finance['total_paid']) + Money::cents($finance['total_discount']) > 0 ? 'PARTIAL' : 'PENDING')),
             'notes' => $contract->notes,
         ];
         if ($detail) {
             $data['payments'] = $contract->payments->sortByDesc('paid_at')->values()->map(fn ($p) => [
-                'id' => $p->id, 'amount' => $p->amount, 'paid_at' => $p->paid_at->toIso8601String(), 'method' => $p->method, 'notes' => $p->notes, 'charge_id' => $p->charge_id,
+                'id' => $p->id, 'amount' => $p->amount, 'discount_amount' => $p->discount_amount, 'settled_amount' => $p->settledAmount(), 'paid_at' => $p->paid_at->toIso8601String(), 'method' => $p->method, 'notes' => $p->notes, 'charge_id' => $p->charge_id,
             ])->all();
         }
 

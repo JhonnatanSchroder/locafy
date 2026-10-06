@@ -31,6 +31,7 @@ class PaymentController extends Controller
             'today' => $this->total((clone $base)->whereBetween('paid_at', [$today->utc(), $today->endOfDay()->utc()])),
             'month' => $this->total((clone $base)->whereBetween('paid_at', [$today->startOfMonth()->utc(), $today->endOfMonth()->utc()])),
             'count' => (clone $filtered)->count(), 'filtered_total' => $this->total(clone $filtered),
+            'filtered_discount' => $this->discountTotal(clone $filtered),
         ];
         $payments = $filtered->orderByDesc('paid_at')->orderByDesc('id')->paginate(15)->withQueryString();
         if ($request->is('api/*')) {
@@ -44,5 +45,11 @@ class PaymentController extends Controller
     private function total(Builder $query): string
     {
         return Money::format($query->get(['amount'])->sum(fn (Payment $payment): int => Money::cents($payment->amount)));
+    }
+
+    /** @param Builder<Payment> $query */
+    private function discountTotal(Builder $query): string
+    {
+        return Money::format($query->get(['discount_amount'])->sum(fn (Payment $payment): int => Money::cents((string) ($payment->discount_amount ?? '0.00'))));
     }
 }

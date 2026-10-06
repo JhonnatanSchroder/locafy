@@ -18,6 +18,7 @@ use App\Services\ContractAccrualService;
 use App\Services\ContractCalculationService;
 use App\Services\ContractFinanceService;
 use App\Services\ContractLifecycleService;
+use App\Services\ContractReceivablesService;
 use App\Services\MovementBalanceService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +32,7 @@ class ContractController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, ContractCalculationService $calculator, MovementBalanceService $balances): Response
+    public function index(Request $request, ContractCalculationService $calculator, MovementBalanceService $balances, ContractReceivablesService $receivables): Response
     {
         Gate::authorize('viewAny', Contract::class);
 
@@ -39,6 +40,7 @@ class ContractController extends Controller
         app(ContractLifecycleService::class)->repairCompany($company->id);
         $search = $request->string('search')->trim()->toString();
         $status = $request->string('status')->trim()->toString();
+        $derivedIds = $this->derivedStatusIds($company, $status, $receivables);
 
         $contracts = Contract::query()
             ->with(['client', 'items.product', 'items.movementItems.movement', 'movements.items', 'freights'])
@@ -51,8 +53,11 @@ class ContractController extends Controller
                         ->orWhereHas('client', fn (Builder $query) => $query->where('name', 'like', "%{$search}%"));
                 });
             })
-            ->when($status !== '', function (Builder $query) use ($status): void {
-                $query->where('status', $status);
+            ->when($status !== '', function (Builder $query) use ($status, $derivedIds): void {
+                match ($status) {
+                    'PAYMENT_PENDING', 'READY_TO_FINALIZE' => $query->whereIn('id', $derivedIds),
+                    default => $query->where('status', $status),
+                };
             })
             ->latest('started_at')
             ->latest('id')
@@ -67,7 +72,7 @@ class ContractController extends Controller
                 'search' => $search,
                 'status' => $status,
             ],
-            'contractStatuses' => $this->contractStatuses(),
+            'contractStatuses' => $this->contractFilterStatuses(),
         ]);
     }
 
@@ -232,6 +237,43 @@ class ContractController extends Controller
                 'value' => $status->value,
                 'label' => $this->contractStatusLabel($status),
             ])
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{value: string, label: string}>
+     */
+    private function contractFilterStatuses(): array
+    {
+        return [
+            ['value' => 'ACTIVE', 'label' => 'Ativos'],
+            ['value' => 'PAYMENT_PENDING', 'label' => 'Pendentes de pagamento'],
+            ['value' => 'READY_TO_FINALIZE', 'label' => 'Prontos para finalizar'],
+            ['value' => 'FINALIZED', 'label' => 'Finalizados'],
+            ['value' => 'CANCELLED', 'label' => 'Cancelados'],
+        ];
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function derivedStatusIds(Company $company, string $status, ContractReceivablesService $receivables): array
+    {
+        if (! in_array($status, ['PAYMENT_PENDING', 'READY_TO_FINALIZE'], true)) {
+            return [];
+        }
+
+        return Contract::query()
+            ->whereBelongsTo($company)
+            ->where('status', ContractStatus::Returned->value)
+            ->with(['client', 'payments', 'freights', 'items.product', 'items.movementItems.movement', 'movements.items'])
+            ->get()
+            ->map(fn (Contract $contract): array => $receivables->data($contract))
+            ->filter(fn (array $row): bool => $status === 'PAYMENT_PENDING'
+                ? $row['display_status'] === 'PAYMENT_PENDING'
+                : $row['display_status'] === 'READY_TO_FINALIZE')
+            ->pluck('id')
+            ->values()
             ->all();
     }
 

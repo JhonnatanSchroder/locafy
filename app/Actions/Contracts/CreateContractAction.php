@@ -24,6 +24,8 @@ class CreateContractAction
             $initialFreight = $data['initial_freight'] ?? null;
             unset($data['initial_freight']);
 
+            $data['charge_interval_days'] ??= Contract::DEFAULT_CHARGE_INTERVAL_DAYS;
+
             $contract = $company->contracts()->create([
                 ...$data,
                 'status' => ContractStatus::Active,

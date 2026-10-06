@@ -32,9 +32,11 @@ class StoreContractRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'charge_saturdays' => $this->boolean('charge_saturdays'),
+        $this->mergeIfMissing([
+            'charge_interval_days' => Contract::DEFAULT_CHARGE_INTERVAL_DAYS,
         ]);
+
+        $this->merge(['charge_saturdays' => $this->boolean('charge_saturdays')]);
     }
 
     /**

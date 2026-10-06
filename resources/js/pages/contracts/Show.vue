@@ -141,7 +141,7 @@ defineOptions({
             </div>
         </div>
 
-        <FinancialSummary :rental-total="contract.rental_total" :freight-total="contract.freight_total" :total-accrued="contract.total_accrued" :total-paid="contract.total_paid" :balance="contract.balance"/>
+        <FinancialSummary :rental-total="contract.rental_total" :freight-total="contract.freight_total" :total-accrued="contract.total_accrued" :total-paid="contract.total_paid" :total-discount="contract.total_discount" :balance="contract.balance"/>
         <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-5 py-4"><p class="text-sm text-muted-foreground">Próxima cobrança: {{ formatDate(contract.next_charge_date) }} · Intervalo de {{ contract.charge_interval_days }} dias</p><Button variant="outline" as-child><Link :href="`/charges/${contract.id}`">Pagamentos e financeiro</Link></Button></div>
         <div class="grid gap-5 xl:grid-cols-[1fr_24rem]">
             <Card class="rounded-xl">

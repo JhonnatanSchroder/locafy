@@ -137,7 +137,7 @@ defineOptions({
                         name="status"
                         class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none lg:max-w-56"
                     >
-                        <option value="">Todos os status</option>
+                        <option value="">Todos</option>
                         <option
                             v-for="option in contractStatuses"
                             :key="option.value"
@@ -252,6 +252,7 @@ defineOptions({
                                     <p class="text-base font-semibold tabular-nums text-primary">{{ formatCurrency(contract.financial_balance) }}</p>
                                     <p class="mt-1 text-xs text-muted-foreground">Acumulado {{ formatCurrency(contract.total_accrued) }}</p>
                                     <p class="text-xs text-muted-foreground">Pago {{ formatCurrency(contract.total_paid) }}</p>
+                                    <p class="text-xs text-muted-foreground">Descontos {{ formatCurrency(contract.total_discount) }}</p>
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex flex-wrap justify-end gap-2"><ContractOperations :contract="contract"/>

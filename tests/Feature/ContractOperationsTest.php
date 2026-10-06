@@ -83,6 +83,51 @@ it('updates quick payments and becomes ready without finalizing automatically', 
     $this->getJson('/api/v1/charges')->assertJsonCount(0, 'data');
 });
 
+it('filters contracts by operational derived states', function () {
+    [$user, $active] = operationalContract();
+    $company = $user->company;
+    $client = Client::factory()->for($company)->create(['name' => 'Filtro']);
+    $product = Product::factory()->for($company)->create();
+
+    $returnedPending = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id, 'started_at' => '2026-10-05 12:00', 'charge_saturdays' => true,
+        'next_charge_date' => '2026-10-07', 'items' => [['product_id' => $product->id, 'billing_period' => 'DAY', 'unit_price' => '10.00', 'initial_quantity' => 1]],
+    ]);
+    operationalReturn($returnedPending, 1);
+
+    $ready = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id, 'started_at' => '2026-10-05 12:00', 'charge_saturdays' => true,
+        'next_charge_date' => '2026-10-07', 'items' => [['product_id' => $product->id, 'billing_period' => 'DAY', 'unit_price' => '10.00', 'initial_quantity' => 1]],
+    ]);
+    operationalReturn($ready, 1);
+    $this->actingAs($user)->postJson("/api/v1/contracts/{$ready->id}/payments", operationalPay('20.00'))->assertOk();
+
+    $finalized = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id, 'started_at' => '2026-10-05 12:00', 'charge_saturdays' => true,
+        'next_charge_date' => '2026-10-07', 'items' => [['product_id' => $product->id, 'billing_period' => 'DAY', 'unit_price' => '10.00', 'initial_quantity' => 1]],
+    ]);
+    operationalReturn($finalized, 1);
+    $this->postJson("/api/v1/contracts/{$finalized->id}/payments", operationalPay('20.00'))->assertOk();
+    $this->postJson("/api/v1/contracts/{$finalized->id}/finalize")->assertOk();
+
+    $cancelled = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id, 'started_at' => '2026-10-05 12:00', 'charge_saturdays' => true,
+        'next_charge_date' => '2026-10-07', 'items' => [['product_id' => $product->id, 'billing_period' => 'DAY', 'unit_price' => '10.00']],
+    ]);
+    $cancelled->update(['status' => ContractStatus::Cancelled]);
+
+    $this->get(route('contracts.index', ['status' => 'ACTIVE']))
+        ->assertInertia(fn (Assert $page) => $page->has('contracts.data', 1)->where('contracts.data.0.id', $active->id));
+    $this->get(route('contracts.index', ['status' => 'PAYMENT_PENDING']))
+        ->assertInertia(fn (Assert $page) => $page->has('contracts.data', 1)->where('contracts.data.0.id', $returnedPending->id)->where('contracts.data.0.display_status_label', 'Pendente de pagamento'));
+    $this->get(route('contracts.index', ['status' => 'READY_TO_FINALIZE']))
+        ->assertInertia(fn (Assert $page) => $page->has('contracts.data', 1)->where('contracts.data.0.id', $ready->id)->where('contracts.data.0.display_status_label', 'Pronto para finalizar'));
+    $this->get(route('contracts.index', ['status' => 'FINALIZED']))
+        ->assertInertia(fn (Assert $page) => $page->has('contracts.data', 1)->where('contracts.data.0.id', $finalized->id));
+    $this->get(route('contracts.index', ['status' => 'CANCELLED']))
+        ->assertInertia(fn (Assert $page) => $page->has('contracts.data', 1)->where('contracts.data.0.id', $cancelled->id));
+});
+
 it('explicitly finalizes preserves the physical end and freezes all totals on subsequent days', function () {
     [$user, $contract] = operationalContract();
     operationalReturn($contract);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -13,6 +14,7 @@ use Illuminate\Validation\ValidationException;
  * @property int|null $contract_id
  * @property int|null $charge_id
  * @property string $amount
+ * @property string $discount_amount
  * @property Carbon $paid_at
  * @property string $method
  * @property string|null $notes
@@ -21,7 +23,7 @@ use Illuminate\Validation\ValidationException;
  */
 class Payment extends Model
 {
-    protected $fillable = ['company_id', 'contract_id', 'charge_id', 'amount', 'paid_at', 'method', 'notes'];
+    protected $fillable = ['company_id', 'contract_id', 'charge_id', 'amount', 'discount_amount', 'paid_at', 'method', 'notes'];
 
     protected static function booted(): void
     {
@@ -40,7 +42,14 @@ class Payment extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['amount' => 'decimal:2', 'paid_at' => 'datetime'];
+        return ['amount' => 'decimal:2', 'discount_amount' => 'decimal:2', 'paid_at' => 'datetime'];
+    }
+
+    public function settledAmount(): string
+    {
+        return Money::format(
+            Money::cents($this->amount) + Money::cents($this->discount_amount)
+        );
     }
 
     /** @return BelongsTo<Contract, $this> */

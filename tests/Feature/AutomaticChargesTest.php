@@ -38,12 +38,110 @@ function livePaymentData(string $amount): array
     return ['amount' => $amount, 'method' => 'PIX', 'paid_at' => now()->toIso8601String()];
 }
 
+function livePaymentWithDiscount(string $amount, string $discount): array
+{
+    return [...livePaymentData($amount), 'discount_amount' => $discount];
+}
+
 it('uses current accrued totals minus every valid contract payment with exact cents', function () {
     [$user,$contract] = liveReceivableFixture();
     $this->actingAs($user)->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('100.00'))
         ->assertOk()->assertJsonPath('data.total_accrued', '300.00')->assertJsonPath('data.total_paid', '100.00')->assertJsonPath('data.balance', '200.00');
     $this->getJson("/api/v1/contracts/{$contract->id}")->assertJsonPath('data.balance', '200.00')->assertJsonPath('data.rental_total', '270.00')->assertJsonPath('data.freight_total', '30.00');
     expect(Charge::count())->toBe(0)->and(Payment::first()->contract_id)->toBe($contract->id)->and(Payment::first()->charge_id)->toBeNull();
+});
+
+it('settles balances with payments and discounts while keeping revenue separate', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('80.00', '20.00'))
+        ->assertOk()
+        ->assertJsonPath('data.total_paid', '80.00')
+        ->assertJsonPath('data.total_discount', '20.00')
+        ->assertJsonPath('data.balance', '200.00');
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('50.00', '20.00'))
+        ->assertOk()
+        ->assertJsonPath('data.total_paid', '130.00')
+        ->assertJsonPath('data.total_discount', '40.00')
+        ->assertJsonPath('data.balance', '130.00');
+
+    $finance = app(ContractFinanceService::class)->summarize($contract->fresh());
+    expect($finance['total_paid'])->toBe('130.00');
+    expect($finance['total_discount'])->toBe('40.00');
+    expect($finance['balance'])->toBe('130.00');
+});
+
+it('rejects payment plus discount above the current balance', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('290.00', '20.00'))
+        ->assertUnprocessable();
+
+    expect(Payment::count())->toBe(0);
+});
+
+it('allows full discount settlement without received revenue', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('0.00', '300.00'))
+        ->assertOk()
+        ->assertJsonPath('data.total_paid', '0.00')
+        ->assertJsonPath('data.total_discount', '300.00')
+        ->assertJsonPath('data.balance', '0.00');
+
+    $this->get('/dashboard')
+        ->assertInertia(fn (Assert $p) => $p->where('metrics.received', '0.00')->where('metrics.balance', '0.00'));
+});
+
+it('advances charge cycle when payment and discount settle the full balance', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('250.00', '50.00'))
+        ->assertOk()
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.next_charge_date', '2026-10-20');
+});
+
+it('marks returned contracts settled by discount as ready and finalizes them', function () {
+    [$user, $contract] = liveReceivableFixture();
+    app(CreateMovementAction::class)->handle($contract, ['type' => 'RETURN', 'occurred_at' => '2026-10-05 16:00', 'items' => [['contract_item_id' => $contract->items()->first()->id, 'quantity' => 1]]]);
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('250.00', '50.00'))
+        ->assertOk()
+        ->assertJsonPath('data.can_finalize', true)
+        ->assertJsonPath('data.display_status_label', 'Pronto para finalizar');
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/finalize")
+        ->assertOk()
+        ->assertJsonPath('data.status', 'FINALIZED')
+        ->assertJsonPath('data.financial_balance', '0.00');
+});
+
+it('returns payment discount fields through the api and excludes discounts from received summaries', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('80.00', '20.00'))
+        ->assertOk();
+
+    $this->getJson('/api/v1/payments')
+        ->assertOk()
+        ->assertJsonPath('data.0.amount', '80.00')
+        ->assertJsonPath('data.0.discount_amount', '20.00')
+        ->assertJsonPath('data.0.settled_amount', '100.00')
+        ->assertJsonPath('summary.today', '80.00')
+        ->assertJsonPath('summary.month', '80.00')
+        ->assertJsonPath('summary.filtered_discount', '20.00');
+
+    $this->getJson("/api/v1/contracts/{$contract->id}")
+        ->assertJsonPath('data.total_paid', '80.00')
+        ->assertJsonPath('data.total_discount', '20.00')
+        ->assertJsonPath('data.financial_balance', '200.00');
 });
 
 it('shows due contracts automatically without materializing or advancing cycles', function () {

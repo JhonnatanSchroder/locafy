@@ -30,6 +30,6 @@ class StorePaymentRequest extends FormRequest
     /** @return array<string, mixed> */
     public function rules(): array
     {
-        return ['amount' => ['required', 'regex:/^\d{1,12}(\.\d{1,2})?$/', 'gt:0'], 'paid_at' => ['required', 'date', 'before_or_equal:now'], 'method' => ['required', Rule::in(['PIX', 'CASH', 'CARD', 'TRANSFER', 'OTHER'])], 'notes' => ['nullable', 'string', 'max:5000']];
+        return ['amount' => ['required', 'regex:/^\d{1,12}(\.\d{1,2})?$/'], 'discount_amount' => ['nullable', 'regex:/^\d{1,12}(\.\d{1,2})?$/'], 'paid_at' => ['required', 'date', 'before_or_equal:now'], 'method' => ['required', Rule::in(['PIX', 'CASH', 'CARD', 'TRANSFER', 'OTHER'])], 'notes' => ['nullable', 'string', 'max:5000']];
     }
 }
