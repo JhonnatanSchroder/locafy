@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     index as contractsIndex,
+    show as contractsShow,
     store as contractsStore,
     update as contractsUpdate,
 } from '@/routes/contracts';
@@ -92,7 +93,10 @@ const form = useForm<ContractFormData>({
 });
 
 const clientDialogOpen = ref(false);
+const photoInput = ref<HTMLInputElement | null>(null);
 const selectedPhotos = ref<Array<{ file: File; url: string }>>([]);
+const createWithPhotosProcessing = ref(false);
+const creationStep = ref('');
 const { options: clientOptions, created: clientCreated } = useInlineClientOptions(() => props.clients, id => {form.client_id = id});
 
 const title = computed(() =>
@@ -163,6 +167,10 @@ const addPhotos = (files: FileList | null) => {
         if (selectedPhotos.value.length >= 10) break;
         selectedPhotos.value.push({ file, url: URL.createObjectURL(file) });
     }
+
+    if (photoInput.value) {
+        photoInput.value.value = '';
+    }
 };
 
 const removePhoto = (index: number) => {
@@ -170,21 +178,126 @@ const removePhoto = (index: number) => {
     if (photo) URL.revokeObjectURL(photo.url);
 };
 
-const uploadSelectedPhotos = (contractId: number) => {
+const xsrfToken = () => {
+    const token = document.cookie
+        .split('; ')
+        .find((cookie) => cookie.startsWith('XSRF-TOKEN='))
+        ?.split('=')[1];
+
+    return token ? decodeURIComponent(token) : '';
+};
+
+const jsonHeaders = () => ({
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-XSRF-TOKEN': xsrfToken(),
+});
+
+const uploadHeaders = () => ({
+    Accept: 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-XSRF-TOKEN': xsrfToken(),
+});
+
+const createPayload = () => ({
+    client_id: form.client_id,
+    status: form.status,
+    worksite_address: form.worksite_address,
+    started_at: form.started_at,
+    ended_at: form.ended_at,
+    charge_saturdays: form.charge_saturdays,
+    next_charge_date: form.next_charge_date,
+    charge_interval_days: form.charge_interval_days,
+    notes: form.notes,
+    initial_freight: form.initial_freight,
+    items: form.items,
+});
+
+const applyValidationErrors = (errors: Record<string, string[]>) => {
+    form.clearErrors();
+
+    Object.entries(errors).forEach(([field, messages]) => {
+        form.setError(field as keyof ContractFormData, messages[0] ?? 'Revise este campo.');
+    });
+};
+
+const createContractAsJson = async () => {
+    const response = await fetch(contractsStore.url(), {
+        method: 'POST',
+        headers: jsonHeaders(),
+        credentials: 'same-origin',
+        body: JSON.stringify(createPayload()),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 422 && data.errors) {
+        applyValidationErrors(data.errors);
+        return null;
+    }
+
+    if (!response.ok) {
+        throw new Error('Não foi possível criar o contrato.');
+    }
+
+    const contractId = Number(data.contract?.id);
+
+    if (!contractId) {
+        throw new Error('O contrato foi criado, mas a resposta não trouxe o ID.');
+    }
+
+    return contractId;
+};
+
+const uploadSelectedPhotos = async (contractId: number) => {
     if (selectedPhotos.value.length === 0) return;
 
-    router.post(
-        `/contracts/${contractId}/attachments`,
-        { attachments: selectedPhotos.value.map(photo => photo.file) },
-        {
-            forceFormData: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                selectedPhotos.value.forEach(photo => URL.revokeObjectURL(photo.url));
-                selectedPhotos.value = [];
-            },
-        },
-    );
+    const payload = new FormData();
+    selectedPhotos.value.forEach((photo) => {
+        payload.append('attachments[]', photo.file);
+    });
+
+    const response = await fetch(`/contracts/${contractId}/attachments`, {
+        method: 'POST',
+        headers: uploadHeaders(),
+        credentials: 'same-origin',
+        body: payload,
+    });
+
+    if (!response.ok) {
+        throw new Error('Contrato criado, mas algumas fotos não foram enviadas.');
+    }
+
+    selectedPhotos.value.forEach(photo => URL.revokeObjectURL(photo.url));
+    selectedPhotos.value = [];
+};
+
+const submitCreateWithPhotos = async () => {
+    createWithPhotosProcessing.value = true;
+    creationStep.value = 'Criando contrato...';
+
+    try {
+        const contractId = await createContractAsJson();
+
+        if (!contractId) {
+            return;
+        }
+
+        try {
+            creationStep.value = `Enviando fotos 1/${selectedPhotos.value.length}...`;
+            await uploadSelectedPhotos(contractId);
+        } catch {
+            window.alert('Contrato criado, mas algumas fotos não foram enviadas.');
+        }
+
+        router.visit(contractsShow.url(contractId));
+    } catch (error) {
+        window.alert(error instanceof Error ? error.message : 'Não foi possível criar o contrato.');
+    } finally {
+        createWithPhotosProcessing.value = false;
+        creationStep.value = '';
+    }
 };
 
 const submit = () => {
@@ -196,12 +309,14 @@ const submit = () => {
         return;
     }
 
+    if (selectedPhotos.value.length > 0) {
+        void submitCreateWithPhotos();
+
+        return;
+    }
+
     form.post(contractsStore.url(), {
         preserveScroll: true,
-        onSuccess: page => {
-            const contractId = (page.props as { contract?: { id: number } }).contract?.id;
-            if (contractId) uploadSelectedPhotos(contractId);
-        },
     });
 };
 </script>
@@ -339,7 +454,7 @@ const submit = () => {
                     <p class="text-sm text-muted-foreground">{{ selectedPhotos.length }} / 10 fotos</p>
                     <label class="inline-flex cursor-pointer items-center rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted">
                         + Adicionar fotos
-                        <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden" @change="addPhotos(($event.target as HTMLInputElement).files)" />
+                        <input ref="photoInput" type="file" accept="image/jpeg,image/png,image/webp" multiple class="hidden" @change="addPhotos(($event.target as HTMLInputElement).files)" />
                     </label>
                 </div>
                 <div v-if="selectedPhotos.length" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -576,7 +691,7 @@ const submit = () => {
         </Card>
 
         <div class="flex items-center gap-3">
-            <Button :disabled="form.processing">{{ submitLabel }}</Button>
+            <Button :disabled="form.processing || createWithPhotosProcessing">{{ createWithPhotosProcessing ? creationStep : submitLabel }}</Button>
             <Button variant="outline" as-child>
                 <Link :href="contractsIndex()">Cancelar</Link>
             </Button>

@@ -30,7 +30,7 @@ class ContractAttachmentController extends Controller
     {
         $attachments = $action->handle($contract, $request->file('attachments', []), $request->user());
 
-        if ($request->is('api/*')) {
+        if ($request->is('api/*') || $request->expectsJson()) {
             $attachments->each->load('uploader');
 
             return ContractAttachmentResource::collection($attachments);

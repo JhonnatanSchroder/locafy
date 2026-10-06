@@ -48,6 +48,44 @@ it('uploads a valid contract image', function () {
     Storage::disk('local')->assertExists($attachment->file_path);
 });
 
+it('creates a contract and uploads an attachment with the official multipart field', function () {
+    config(['filesystems.contract_attachments_disk' => 'local']);
+    Storage::fake('local');
+
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create();
+
+    $createResponse = $this
+        ->actingAs($user)
+        ->postJson(route('contracts.store'), [
+            'client_id' => $client->id,
+            'started_at' => '2026-10-05T09:00',
+            'charge_saturdays' => true,
+            'items' => [
+                ['product_id' => $product->id, 'billing_period' => 'DAY', 'unit_price' => '10.00'],
+            ],
+        ])
+        ->assertCreated()
+        ->assertJsonPath('contract.id', fn (int $id): bool => $id > 0);
+
+    $contract = Contract::query()->findOrFail($createResponse->json('contract.id'));
+
+    $this
+        ->postJson(route('contracts.attachments.store', $contract), [
+            'attachments' => [UploadedFile::fake()->image('obra.jpg')],
+        ])
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+
+    $attachment = ContractAttachment::query()->firstOrFail();
+
+    expect($attachment->company_id)->toBe($company->id);
+    expect($attachment->contract_id)->toBe($contract->id);
+    Storage::disk('local')->assertExists($attachment->file_path);
+});
+
 it('uploads multiple images up to the contract limit', function () {
     [$user, $contract] = attachmentFixture();
 

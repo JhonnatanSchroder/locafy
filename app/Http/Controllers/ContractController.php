@@ -22,6 +22,7 @@ use App\Services\ContractLifecycleService;
 use App\Services\ContractReceivablesService;
 use App\Services\MovementBalanceService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -98,9 +99,15 @@ class ContractController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreContractRequest $request, CreateContractAction $createContract): RedirectResponse
+    public function store(StoreContractRequest $request, CreateContractAction $createContract): RedirectResponse|JsonResponse
     {
         $contract = $createContract->handle($this->userCompany($request), $request->validated());
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'contract' => ['id' => $contract->id],
+            ], 201);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Contrato Criado com Sucesso.')]);
 
