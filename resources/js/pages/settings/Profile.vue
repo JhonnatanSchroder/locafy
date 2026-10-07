@@ -28,13 +28,13 @@ const user = computed(() => page.props.auth.user);
 <template>
     <Head title="Profile settings" />
 
-    <h1 class="sr-only">Profile settings</h1>
+    <h1 class="sr-only">Configurações do perfil</h1>
 
     <div class="flex flex-col space-y-6">
         <Heading
             variant="small"
-            title="Profile"
-            description="Update your name and email address"
+            title="Perfil"
+            description="Atualize seu nome e endereço de e-mail"
         />
 
         <Form
@@ -43,7 +43,7 @@ const user = computed(() => page.props.auth.user);
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="name">Name</Label>
+                <Label for="name">Nome</Label>
                 <Input
                     id="name"
                     class="mt-1 block w-full"
@@ -57,7 +57,7 @@ const user = computed(() => page.props.auth.user);
             </div>
 
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">Email</Label>
                 <Input
                     id="email"
                     type="email"
@@ -73,7 +73,7 @@ const user = computed(() => page.props.auth.user);
 
             <div class="flex items-center gap-4">
                 <Button :disabled="processing" data-test="update-profile-button"
-                    >Save</Button
+                    >Salvar</Button
                 >
             </div>
         </Form>
