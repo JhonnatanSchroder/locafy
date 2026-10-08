@@ -6,6 +6,7 @@ use App\Enums\BillingPeriod;
 use App\Enums\ContractStatus;
 use App\Models\Contract;
 use App\Models\Freight;
+use App\Models\Movement;
 use App\Services\ContractAccrualService;
 use App\Services\ContractFinanceService;
 use App\Services\ContractLifecycleService;
@@ -86,6 +87,10 @@ class ContractResource extends JsonResource
                 $request->routeIs('api.v1.contracts.show') && $contract->relationLoaded('freights'),
                 fn (): array => $this->freightData($contract)
             ),
+            'movements' => $this->when(
+                $request->routeIs('api.v1.contracts.show') && $contract->relationLoaded('movements'),
+                fn (): array => $this->movementData($contract)
+            ),
         ];
     }
 
@@ -119,6 +124,47 @@ class ContractResource extends JsonResource
         $cents = $freight->quantity * $this->decimalToCents((string) $freight->unit_amount);
 
         return $this->formatCents($cents);
+    }
+
+    /**
+     * @return array<int, array{id: int, type: string, type_label: string, occurred_at: string|null, notes: string|null, items: array<int, array{id: int, quantity: int, product: array{id: int, name: string}|null, equipment: array{id: int, name: string}|null}>}>
+     */
+    private function movementData(Contract $contract): array
+    {
+        $movements = [];
+
+        foreach ($contract->movements->sortByDesc(fn (Movement $movement): string => sprintf(
+            '%012d-%012d',
+            $movement->occurred_at?->timestamp ?? 0,
+            $movement->id
+        ))->values() as $movement) {
+            if (! $movement instanceof Movement) {
+                continue;
+            }
+
+            $movements[] = [
+                'id' => $movement->id,
+                'type' => $movement->type->value,
+                'type_label' => $movement->type->value === 'WITHDRAWAL' ? 'Retirada' : 'Devolução',
+                'occurred_at' => $movement->occurred_at?->format('Y-m-d H:i:s'),
+                'notes' => $movement->notes,
+                'items' => $movement->items->map(fn ($movementItem): array => [
+                    'id' => $movementItem->id,
+                    'contract_item_id' => $movementItem->contract_item_id,
+                    'quantity' => $movementItem->quantity,
+                    'product' => $movementItem->contractItem?->product ? [
+                        'id' => $movementItem->contractItem->product->id,
+                        'name' => $movementItem->contractItem->product->name,
+                    ] : null,
+                    'equipment' => $movementItem->equipment ? [
+                        'id' => $movementItem->equipment->id,
+                        'name' => $movementItem->equipment->name,
+                    ] : null,
+                ])->values()->all(),
+            ];
+        }
+
+        return $movements;
     }
 
     private function decimalToCents(string $amount): int

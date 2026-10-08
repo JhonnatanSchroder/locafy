@@ -42,7 +42,18 @@ class ContractController extends Controller
     {
         return new ContractResource(
             Contract::query()
-                ->with(['client', 'items.product', 'items.movementItems.movement', 'movements.items', 'freights', 'attachments.uploader'])
+                ->with([
+                    'client',
+                    'items.product',
+                    'items.movementItems.movement',
+                    'movements' => fn ($query) => $query
+                        ->orderByDesc('occurred_at')
+                        ->orderByDesc('id'),
+                    'movements.items.contractItem.product',
+                    'movements.items.equipment',
+                    'freights',
+                    'attachments.uploader',
+                ])
                 ->withCount('attachments')
                 ->whereBelongsTo($this->userCompany($request))
                 ->findOrFail($contract)

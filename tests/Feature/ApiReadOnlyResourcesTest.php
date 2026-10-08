@@ -232,6 +232,77 @@ it('returns contract details with freight totals and freight history', function 
         ->assertJsonPath('data.freights.1.notes', 'Entrega');
 });
 
+it('returns contract details with movement history ordered by most recent', function () {
+    $company = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create(['name' => 'Andaime']);
+    $contract = Contract::factory()->for($company)->create([
+        'client_id' => $client->id,
+        'started_at' => '2026-10-05 08:00:00',
+    ]);
+    $contractItem = ContractItem::factory()->for($contract)->for($product)->create([
+        'billing_period' => BillingPeriod::Day,
+        'unit_price' => '10.00',
+    ]);
+    $withdrawal = $company->movements()->create([
+        'contract_id' => $contract->id,
+        'type' => MovementType::Withdrawal,
+        'occurred_at' => '2026-10-05 09:00:00',
+        'notes' => 'Retirada inicial',
+    ]);
+    $withdrawalItem = $withdrawal->items()->create([
+        'contract_item_id' => $contractItem->id,
+        'quantity' => 10,
+        'equipment_id' => null,
+    ]);
+    $return = $company->movements()->create([
+        'contract_id' => $contract->id,
+        'type' => MovementType::Return,
+        'occurred_at' => '2026-10-08 10:19:00',
+        'notes' => 'Devolução parcial',
+    ]);
+    $returnItem = $return->items()->create([
+        'contract_item_id' => $contractItem->id,
+        'quantity' => 4,
+        'equipment_id' => null,
+    ]);
+    $foreignCompany = Company::factory()->create();
+    $foreignContract = Contract::factory()->for($foreignCompany)->create([
+        'client_id' => Client::factory()->for($foreignCompany)->create()->id,
+    ]);
+    $foreignCompany->movements()->create([
+        'contract_id' => $foreignContract->id,
+        'type' => MovementType::Withdrawal,
+        'occurred_at' => '2026-10-09 10:00:00',
+    ]);
+    $token = $user->createToken('Mobile')->plainTextToken;
+
+    $this
+        ->withToken($token)
+        ->getJson("/api/v1/contracts/{$contract->id}")
+        ->assertOk()
+        ->assertJsonCount(2, 'data.movements')
+        ->assertJsonPath('data.movements.0.id', $return->id)
+        ->assertJsonPath('data.movements.0.type', 'RETURN')
+        ->assertJsonPath('data.movements.0.occurred_at', '2026-10-08 10:19:00')
+        ->assertJsonPath('data.movements.0.notes', 'Devolução parcial')
+        ->assertJsonPath('data.movements.0.items.0.id', $returnItem->id)
+        ->assertJsonPath('data.movements.0.items.0.contract_item_id', $contractItem->id)
+        ->assertJsonPath('data.movements.0.items.0.quantity', 4)
+        ->assertJsonPath('data.movements.0.items.0.product.id', $product->id)
+        ->assertJsonPath('data.movements.0.items.0.product.name', 'Andaime')
+        ->assertJsonPath('data.movements.1.id', $withdrawal->id)
+        ->assertJsonPath('data.movements.1.type', 'WITHDRAWAL')
+        ->assertJsonPath('data.movements.1.items.0.id', $withdrawalItem->id)
+        ->assertJsonMissingPath('data.movements.2');
+
+    $this
+        ->withToken($token)
+        ->getJson("/api/v1/contracts/{$foreignContract->id}")
+        ->assertNotFound();
+});
+
 it('returns not found for api contracts from another company', function () {
     $company = Company::factory()->create();
     $otherCompany = Company::factory()->create();
