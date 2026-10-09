@@ -82,10 +82,10 @@ jobs:
 
           cd /var/www/locafy
 
-          echo "==> Atualizando código"
+          echo "==> Atualizando codigo"
           git pull --ff-only origin main
 
-          echo "==> Instalando dependências PHP"
+          echo "==> Instalando dependencias PHP"
           composer install \
             --no-dev \
             --prefer-dist \
@@ -93,7 +93,7 @@ jobs:
             --no-progress \
             --optimize-autoloader
 
-          echo "==> Instalando dependências frontend"
+          echo "==> Instalando dependencias frontend"
           npm ci
 
           echo "==> Compilando frontend"
@@ -102,14 +102,14 @@ jobs:
           echo "==> Executando migrations"
           php artisan migrate --force
 
-          echo "==> Limpando caches antigos"
+          echo "==> Limpando caches"
           php artisan optimize:clear
 
           echo "==> Otimizando Laravel"
           php artisan optimize
 
-          echo "==> Reiniciando workers"
+          echo "==> Reiniciando filas"
           php artisan queue:restart
 
-          echo "==> Deploy concluído com sucesso"
+          echo "==> Deploy concluido"
           EOF
