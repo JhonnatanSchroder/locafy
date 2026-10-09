@@ -1,0 +1,4 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
