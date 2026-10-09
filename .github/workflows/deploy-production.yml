@@ -1,44 +1,53 @@
-name: Test VPS Connection
+name: Test Locafy
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-ssh:
-    name: Test SSH
+  test:
+    name: Tests and Build
     runs-on: ubuntu-24.04
 
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+
     steps:
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
-          SSH_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_sqlite, sqlite3
+          coverage: none
+          tools: composer:v2
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare Laravel
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          cp .env.example .env
+          touch database/database.sqlite
+          php artisan key:generate
 
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+      - name: Run Laravel tests
+        run: php artisan test
 
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
 
-      - name: Test VPS connection
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-        run: |
-          if [ -z "$VPS_HOST" ]; then
-            echo "ERRO: VPS_HOST está vazio"
-            exit 1
-          fi
+      - name: Install frontend dependencies
+        run: npm ci
 
-          if [ -z "$VPS_USER" ]; then
-            echo "ERRO: VPS_USER está vazio"
-            exit 1
-          fi
-
-          echo "Secrets VPS_HOST e VPS_USER carregados"
-
-          ssh "$VPS_USER@$VPS_HOST" \
-            "echo 'SSH funcionando' && whoami && hostname"
+      - name: Build frontend
+        run: npm run build
