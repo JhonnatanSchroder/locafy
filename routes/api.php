@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ContractController;
 use App\Http\Controllers\Api\V1\ContractOperationController;
 use App\Http\Controllers\Api\V1\EquipmentController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\MovementController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\ContractAttachmentController;
@@ -27,6 +28,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::apiResource('clients', ClientController::class)->only(['index', 'show', 'store', 'update']);
         Route::apiResource('products', ProductController::class)->only(['index']);
         Route::apiResource('equipments', EquipmentController::class)->only(['index', 'show']);
+        Route::apiResource('movements', MovementController::class)->only(['index', 'show', 'update']);
         Route::apiResource('contracts', ContractController::class)->only(['index', 'show', 'store', 'update']);
         Route::get('contracts/{contract}/attachments', [ContractAttachmentController::class, 'index'])->name('contracts.attachments.index');
         Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])->name('contracts.attachments.store');
