@@ -25,6 +25,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('me', MeController::class);
         Route::post('auth/logout', [AuthController::class, 'logout']);
 
+        Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
         Route::apiResource('clients', ClientController::class)->only(['index', 'show', 'store', 'update']);
         Route::apiResource('products', ProductController::class)->only(['index']);
         Route::apiResource('equipments', EquipmentController::class)->only(['index', 'show']);
