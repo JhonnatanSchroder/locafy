@@ -26,8 +26,19 @@ jobs:
       - name: Test VPS connection
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_PORT: ${{ secrets.VPS_PORT }}
           VPS_USER: ${{ secrets.VPS_USER }}
         run: |
+          if [ -z "$VPS_HOST" ]; then
+            echo "ERRO: VPS_HOST está vazio"
+            exit 1
+          fi
+
+          if [ -z "$VPS_USER" ]; then
+            echo "ERRO: VPS_USER está vazio"
+            exit 1
+          fi
+
+          echo "Secrets VPS_HOST e VPS_USER carregados"
+
           ssh "$VPS_USER@$VPS_HOST" \
             "echo 'SSH funcionando' && whoami && hostname"
