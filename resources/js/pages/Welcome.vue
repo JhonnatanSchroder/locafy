@@ -1,57 +1,79 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { ArrowRight } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { ArrowDown, ArrowRight, CalendarDays, Check, ChevronRight, CircleDollarSign, FileText, History, Image, Package, ShieldCheck, Truck, Users } from '@lucide/vue';
+import { computed, onMounted, ref } from 'vue';
+import LandingHeader from '@/components/landing/LandingHeader.vue';
+import MobileProduct from '@/components/landing/MobileProduct.vue';
+import ProductWindow from '@/components/landing/ProductWindow.vue';
+import WorkflowSection from '@/components/landing/WorkflowSection.vue';
 import { dashboard, login } from '@/routes';
+
+const page = usePage<{ auth?: { user?: unknown } }>();
+const authenticated = computed(() => Boolean(page.props.auth?.user));
+const contractsScreenshotAvailable = ref(true);
+
+onMounted(() => {
+    const items = document.querySelectorAll<HTMLElement>('.landing-reveal');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        items.forEach((item) => item.classList.add('is-visible'));
+        return;
+    }
+    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }), { threshold: 0.12 });
+    items.forEach((item) => observer.observe(item));
+});
 </script>
 
 <template>
-    <Head title="Locafy" />
+    <Head>
+        <title>Locafy | Gestão de locações</title>
+        <meta name="description" content="Controle clientes, contratos, retiradas, devoluções, cobranças e pagamentos em um único sistema de locação." />
+        <meta property="og:title" content="Locafy | Gestão de locações" />
+        <meta property="og:description" content="Do contrato ao recebimento, uma operação de locação mais clara." />
+        <meta property="og:type" content="website" />
+    </Head>
 
-    <main
-        class="flex min-h-screen flex-col bg-background text-foreground"
-    >
-        <header
-            class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5"
-        >
-            <p class="text-sm font-semibold tracking-wide">LOCAFY</p>
-            <Button as-child>
-                <Link v-if="$page.props.auth.user" :href="dashboard()">
-                    Dashboard
-                </Link>
-                <Link v-else :href="login()">Entrar</Link>
-            </Button>
-        </header>
-
-        <section
-            class="mx-auto flex w-full max-w-6xl flex-1 items-center px-6 py-12"
-        >
-            <div class="max-w-3xl">
-                <p class="text-sm font-medium text-primary">
-                    Gestão de locações
-                </p>
-                <h1
-                    class="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl"
-                >
-                    Locafy
-                </h1>
-                <p class="mt-4 max-w-2xl text-base text-muted-foreground">
-                    Controle clientes, produtos e equipamentos com uma base
-                    preparada para contratos, cobranças e operações de locação.
-                </p>
-                <div class="mt-8">
-                    <Button as-child>
-                        <Link
-                            :href="
-                                $page.props.auth.user ? dashboard() : login()
-                            "
-                        >
-                            Acessar sistema
-                            <ArrowRight class="size-4" />
-                        </Link>
-                    </Button>
-                </div>
+    <main id="top" class="landing-page overflow-hidden bg-[#08111f] text-white">
+        <LandingHeader :authenticated="authenticated" />
+        <section class="hero-section relative px-5 pb-20 pt-36 lg:px-8 lg:pb-32 lg:pt-48">
+            <div class="hero-grid absolute inset-0 opacity-40" /><div class="hero-glow absolute -right-40 top-20 size-[520px] rounded-full bg-[#208AEF]/20 blur-[120px]" />
+            <div class="relative mx-auto max-w-[1240px]">
+                <div class="max-w-[720px]"><p class="landing-eyebrow hero-enter text-[#7ec3ff]">Gestão de locações para quem está em movimento</p><h1 class="hero-enter hero-title mt-6 max-w-[760px] text-5xl font-semibold leading-[.98] tracking-[-.065em] text-white sm:text-7xl lg:text-[88px]">Controle sua locação do contrato ao recebimento.</h1><p class="hero-enter mt-7 max-w-[570px] text-base leading-7 text-white/55 sm:text-lg">Clientes, contratos, retiradas, devoluções, cobranças e pagamentos em um único sistema — no computador e no celular.</p><div class="hero-enter mt-9 flex flex-wrap items-center gap-3"><Link :href="login()" class="landing-primary-button">Entrar no Locafy <ArrowRight class="size-4" /></Link><a href="#produto" class="landing-secondary-button">Conhecer o sistema <ArrowDown class="size-4" /></a></div></div>
+                <div class="hero-product relative mt-12 lg:mt-14 lg:translate-x-[-3%] lg:scale-[1.04]"><ProductWindow src="/images/landing/dashboard.webp" /><div class="hero-float hero-float-left hidden sm:block"><div class="flex size-9 items-center justify-center rounded-xl bg-[#208AEF] text-white"><Truck class="size-4" /></div><div><p class="text-[10px] font-semibold text-white">Retirada registrada</p><p class="mt-0.5 text-[9px] text-white/40">Histórico atualizado</p></div><Check class="ml-auto size-4 text-emerald-300" /></div><div class="hero-float hero-float-right hidden lg:block"><CircleDollarSign class="size-4 text-[#7ec3ff]" /><div><p class="text-[9px] text-white/45">Financeiro</p><p class="text-sm font-semibold text-white">Saldo em aberto</p></div></div></div>
             </div>
         </section>
+
+        <section id="produto" class="landing-section relative bg-white px-5 py-20 text-[#102239] lg:px-8 lg:py-28"><div class="mx-auto grid max-w-[1120px] gap-12 lg:grid-cols-[.75fr_1.25fr] lg:items-center"><div class="landing-reveal"><p class="landing-eyebrow text-[#208AEF]">Uma operação que se explica</p><h2 class="mt-5 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Menos informação espalhada. Mais contexto em cada contrato.</h2><p class="mt-5 max-w-md text-base leading-7 text-slate-600">O Locafy conecta cliente, itens em campo, movimentações e recebimentos no mesmo contexto.</p><div class="mt-8 space-y-4"><div class="flex gap-3"><span class="landing-check"><Check class="size-3.5" /></span><span class="text-sm text-slate-700">Peças e equipamentos em campo.</span></div><div class="flex gap-3"><span class="landing-check"><Check class="size-3.5" /></span><span class="text-sm text-slate-700">Fretes, fotos e movimentações no contrato.</span></div><div class="flex gap-3"><span class="landing-check"><Check class="size-3.5" /></span><span class="text-sm text-slate-700">Cobrança e operação na mesma visão.</span></div></div></div><div class="landing-reveal product-detail-panel"><img v-if="contractsScreenshotAvailable" src="/images/landing/contracts.webp" alt="Tela de contratos do Locafy" class="block aspect-[16/10] w-full object-cover object-top" loading="lazy" @error="contractsScreenshotAvailable = false" /><div v-if="!contractsScreenshotAvailable" class="flex items-center justify-between border-b border-slate-200 px-5 py-4"><div><p class="text-[10px] text-slate-500">Detalhe do contrato</p><h3 class="mt-1 text-base font-semibold tracking-[-.03em]">Obra em andamento</h3><p class="mt-1 text-[10px] text-slate-500">Cliente selecionado · contrato ativo</p></div><span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-semibold text-emerald-700">ATIVO</span></div><div v-if="!contractsScreenshotAvailable" class="grid gap-3 p-5 sm:grid-cols-3"><div class="contract-signal"><Package class="size-4 text-[#208AEF]" /><span>Itens em campo</span><strong>Acompanhados</strong></div><div class="contract-signal"><CircleDollarSign class="size-4 text-[#208AEF]" /><span>Saldo</span><strong>Em aberto</strong></div><div class="contract-signal"><CalendarDays class="size-4 text-[#208AEF]" /><span>Próxima cobrança</span><strong>Programada</strong></div></div><div v-if="!contractsScreenshotAvailable" class="border-t border-slate-200 px-5 py-4"><div class="flex items-center gap-3"><span class="flex size-8 items-center justify-center rounded-lg bg-[#e9f5ff] text-[#208AEF]"><Truck class="size-4" /></span><div><p class="text-xs font-semibold text-[#102239]">Última movimentação</p><p class="mt-1 text-[10px] text-slate-600">Retirada vinculada ao contrato · histórico atualizado</p></div><ChevronRight class="ml-auto size-4 text-slate-400" /></div></div></div></div></section>
+
+        <WorkflowSection />
+
+        <section class="landing-section bg-[#0d1a2b] px-5 py-24 lg:px-8 lg:py-32"><div class="mx-auto grid max-w-[1120px] gap-14 lg:grid-cols-[.8fr_1.2fr] lg:items-center"><div class="landing-reveal"><p class="landing-eyebrow text-[#7ec3ff]">Operação sem ponto cego</p><h2 class="mt-5 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">O que está na obra também precisa estar no sistema.</h2><p class="mt-5 max-w-md text-base leading-7 text-white/50">Retiradas, devoluções, fretes e fotos ficam vinculados ao contrato. Quando alguém precisa entender o que aconteceu, o histórico está lá.</p><a href="#mobile" class="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-white transition hover:text-[#7ec3ff]">Ver no computador e no celular <ArrowRight class="size-4" /></a></div><div class="landing-reveal grid grid-cols-2 gap-3 sm:grid-cols-4"><div class="dark-feature-card col-span-2"><Truck class="size-5 text-[#7ec3ff]" /><h3>Retiradas e devoluções</h3><p>Movimente itens sem perder a posição física do contrato.</p><div class="mt-8 flex items-end gap-1.5"><span v-for="height in [40,56,42,76,62,88,70]" :key="height" class="mini-bar" :style="{height: `${height}px`}" /></div></div><div class="dark-feature-card"><Image class="size-5 text-[#7ec3ff]" /><h3>Fotos</h3><p>Evidências da obra e dos equipamentos.</p></div><div class="dark-feature-card"><ShieldCheck class="size-5 text-[#7ec3ff]" /><h3>Histórico</h3><p>Cada mudança ligada ao contrato.</p></div></div></div></section>
+
+        <section id="mobile" class="landing-section bg-[#f4f7fb] px-5 py-24 text-[#102239] lg:px-8 lg:py-32"><div class="mx-auto grid max-w-[1120px] gap-16 lg:grid-cols-[1fr_.8fr] lg:items-center"><div class="landing-reveal flex justify-center lg:order-2"><div class="relative"><MobileProduct /><span class="absolute -right-10 top-24 hidden rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-semibold text-slate-600 shadow-lg sm:block">Retirada sincronizada <Check class="ml-2 inline size-3 text-emerald-500" /></span></div></div><div class="landing-reveal lg:order-1"><p class="landing-eyebrow text-[#208AEF]">Web + Mobile</p><h2 class="mt-5 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Na loja, na obra ou no caminho.</h2><p class="mt-5 max-w-md text-base leading-7 text-slate-500">A visão geral fica no computador. A operação acompanha a equipe no celular, com contratos, movimentações, cobranças e pagamentos no mesmo contexto.</p><div class="mt-9 grid max-w-md gap-4 sm:grid-cols-2"><div class="mobile-copy-item"><span class="icon-box"><Users class="size-4" /></span><div><h3>Visão geral</h3><p>Clientes, contratos e saldo.</p></div></div><div class="mobile-copy-item"><span class="icon-box"><Truck class="size-4" /></span><div><h3>Ação no campo</h3><p>Retire, devolva e consulte.</p></div></div></div></div></div></section>
+
+        <section class="landing-section bg-white px-5 py-24 text-[#102239] lg:px-8 lg:py-32"><div class="mx-auto max-w-[1120px]"><div class="landing-reveal max-w-xl"><p class="landing-eyebrow text-[#208AEF]">Feito para a rotina da locação</p><h2 class="mt-5 text-4xl font-semibold tracking-[-.055em] sm:text-5xl">Uma base para a operação que já existe.</h2></div><div class="mt-14 grid gap-3 md:grid-cols-12"><div class="landing-reveal bento-card md:col-span-7"><div class="flex items-start justify-between"><div><span class="bento-kicker">Contratos</span><h3>Do combinado ao realizado.</h3><p>Itens, valores, datas, situação e histórico em uma única visão.</p></div><FileText class="size-5 text-[#208AEF]" /></div><div class="mt-8 rounded-xl border border-slate-200 bg-[#f8fafc] p-4"><div class="flex items-center gap-3"><span class="size-7 rounded-lg bg-[#208AEF]/10" /><div class="flex-1"><div class="h-2 w-28 rounded bg-slate-200" /><div class="mt-2 h-1.5 w-44 rounded bg-slate-100" /></div><span class="rounded-full bg-emerald-50 px-2 py-1 text-[8px] font-semibold text-emerald-600">Ativo</span></div></div></div><div class="landing-reveal bento-card md:col-span-5"><span class="bento-kicker">Cobranças</span><h3>Receba com clareza.</h3><p>Veja valores acumulados, pagamentos, descontos e o que falta receber.</p><div class="mt-8 flex items-end gap-2"><strong class="text-3xl tracking-[-.07em]">Saldo em aberto</strong></div></div><div class="landing-reveal bento-card md:col-span-4"><Truck class="size-5 text-[#208AEF]" /><h3>Movimentações</h3><p>Retiradas e devoluções com quantidade física no lugar certo.</p></div><div class="landing-reveal bento-card md:col-span-4"><Image class="size-5 text-[#208AEF]" /><h3>Fotos da operação</h3><p>Registre a condição da obra e dos equipamentos.</p></div><div class="landing-reveal bento-card md:col-span-4"><CircleDollarSign class="size-5 text-[#208AEF]" /><h3>Pagamentos</h3><p>Dinheiro recebido separado do desconto concedido.</p></div></div></div></section>
+
+        <section class="landing-section final-cta relative overflow-hidden px-5 py-24 lg:px-8 lg:py-32"><div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(32,138,239,.25),transparent_34%)]" /><div class="relative mx-auto max-w-[900px] text-center"><p class="landing-eyebrow text-[#7ec3ff]">Locafy</p><h2 class="mt-5 text-4xl font-semibold tracking-[-.06em] sm:text-6xl">Menos planilha. Mais controle da operação.</h2><p class="mx-auto mt-5 max-w-lg text-base leading-7 text-white/50">Entre no sistema e veja sua locação com o contexto que ela merece.</p><Link :href="login()" class="landing-primary-button mt-9">Entrar no Locafy <ArrowRight class="size-4" /></Link></div></section>
+        <footer class="border-t border-white/10 bg-[#08111f] px-5 py-8 lg:px-8"><div class="mx-auto flex max-w-[1120px] flex-col gap-5 text-sm text-white/40 sm:flex-row sm:items-center sm:justify-between"><div class="flex items-center gap-2.5"><img src="/images/logo.png" alt="" class="size-6 rounded-md" /><span class="font-semibold text-white/75">Locafy</span></div><div class="flex gap-5"><a href="#produto" class="landing-footer-link">Produto</a><a href="#fluxo" class="landing-footer-link">Como funciona</a><a :href="login().url" class="landing-footer-link">Entrar</a></div><span>© {{ new Date().getFullYear() }} Locafy</span></div></footer>
     </main>
 </template>
+
+<style>
+:root { --landing-blue:#208AEF; }
+html { scroll-behavior:smooth; }
+.landing-page { font-family:Instrument Sans,ui-sans-serif,system-ui,sans-serif; }
+.landing-header { background:linear-gradient(180deg,rgba(8,17,31,.72),transparent); transition:background .3s ease,backdrop-filter .3s ease; }
+.landing-header:hover { background:rgba(8,17,31,.76); backdrop-filter:blur(14px); }
+.landing-nav-link,.landing-footer-link { transition:color .2s ease; }.landing-nav-link:hover,.landing-footer-link:hover { color:#fff; }
+.hero-section { min-height:860px; }.hero-grid { background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px); background-size:64px 64px; mask-image:linear-gradient(to bottom,black,transparent 75%); }.hero-title { text-wrap:balance; }
+.hero-enter { animation:landing-up .8s cubic-bezier(.16,1,.3,1) both; }.hero-enter:nth-child(2) { animation-delay:100ms; }.hero-enter:nth-child(3) { animation-delay:180ms; }.hero-enter:nth-child(4) { animation-delay:260ms; }.hero-product { animation:landing-product 1.1s .2s cubic-bezier(.16,1,.3,1) both; }
+.hero-float { position:absolute; display:flex; align-items:center; gap:10px; border:1px solid rgba(255,255,255,.13); border-radius:12px; background:rgba(16,28,45,.9); padding:11px 13px; box-shadow:0 20px 55px rgba(0,0,0,.32); }.hero-float-left { bottom:30px; left:-38px; width:190px; }.hero-float-right { right:-25px; top:35px; }
+.landing-eyebrow { font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }.landing-primary-button { display:inline-flex; align-items:center; gap:10px; border-radius:999px; background:var(--landing-blue); padding:13px 19px; color:#fff; font-size:13px; font-weight:700; box-shadow:0 12px 28px rgba(32,138,239,.25); transition:transform .25s ease,box-shadow .25s ease,background .25s ease; }.landing-primary-button:hover { transform:translateY(-2px); background:#3b9bf3; box-shadow:0 16px 35px rgba(32,138,239,.34); }.landing-secondary-button { display:inline-flex; align-items:center; gap:9px; padding:13px 12px; color:rgba(255,255,255,.62); font-size:13px; font-weight:600; transition:color .2s ease; }.landing-secondary-button:hover { color:#fff; }
+.landing-reveal { opacity:0; transform:translateY(22px); transition:opacity .7s cubic-bezier(.16,1,.3,1) var(--delay,0ms),transform .7s cubic-bezier(.16,1,.3,1) var(--delay,0ms); }.landing-reveal.is-visible { opacity:1; transform:none; }.landing-check { display:flex; width:22px; height:22px; flex:none; align-items:center; justify-content:center; border-radius:999px; background:#e9f5ff; color:var(--landing-blue); }.product-detail-panel { overflow:hidden; border:1px solid #dfe7f1; border-radius:20px; background:#fff; box-shadow:0 22px 70px rgba(22,55,92,.12); }
+.dark-feature-card { min-height:180px; border:1px solid rgba(255,255,255,.09); border-radius:16px; background:rgba(255,255,255,.035); padding:19px; transition:transform .25s ease,border-color .25s ease,background .25s ease; }.dark-feature-card:hover { transform:translateY(-4px); border-color:rgba(126,195,255,.3); background:rgba(255,255,255,.06); }.dark-feature-card h3 { margin-top:30px; font-size:15px; font-weight:600; letter-spacing:-.03em; }.dark-feature-card p { margin-top:7px; max-width:190px; font-size:12px; line-height:1.6; color:rgba(255,255,255,.42); }.mini-bar { width:9px; border-radius:4px 4px 0 0; background:#208AEF; opacity:.8; }
+.mobile-copy-item { display:flex; gap:11px; }.icon-box { display:flex; width:31px; height:31px; flex:none; align-items:center; justify-content:center; border-radius:9px; background:#e9f5ff; color:var(--landing-blue); }.mobile-copy-item h3 { font-size:13px; font-weight:700; }.mobile-copy-item p { margin-top:3px; font-size:11px; color:#718096; }
+.contract-signal { border:1px solid #e1e8f1; border-radius:12px; padding:14px; }.contract-signal span,.contract-signal strong { display:block; }.contract-signal span { margin-top:14px; color:#64748b; font-size:10px; }.contract-signal strong { margin-top:5px; color:#102239; font-size:14px; letter-spacing:-.03em; }
+.bento-card { min-height:190px; border:1px solid #e1e8f1; border-radius:18px; padding:22px; transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease; }.bento-card:hover { transform:translateY(-4px); border-color:#bddcf7; box-shadow:0 18px 45px rgba(22,55,92,.1); }.bento-kicker { color:#208AEF; font-size:10px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }.bento-card h3 { margin-top:17px; font-size:20px; font-weight:600; letter-spacing:-.04em; }.bento-card p { margin-top:7px; max-width:330px; color:#718096; font-size:13px; line-height:1.6; }.final-cta { background:#0d1a2b; }.final-cta h2 { text-wrap:balance; }
+@keyframes landing-up { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } } @keyframes landing-product { from { opacity:0; transform:translateY(28px) scale(.975); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; }.hero-enter,.hero-product { animation:none; }.landing-reveal { opacity:1; transform:none; transition:none; }.bento-card,.dark-feature-card,.landing-primary-button { transition:none; } }
+@media (max-width:767px) { .hero-section { min-height:auto; padding-bottom:72px; }.hero-title { font-size:clamp(2.8rem,13vw,4.4rem); }.hero-product { margin-top:48px; }.product-window { border-radius:16px; }.landing-header { background:rgba(8,17,31,.72); backdrop-filter:blur(14px); } }
+</style>
