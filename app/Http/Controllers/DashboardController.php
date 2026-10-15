@@ -27,6 +27,13 @@ class DashboardController extends Controller
         $overdue = $outstanding->filter(fn ($row) => $row['days_overdue'] > 0);
         $contracts = Contract::query()->where('company_id', $company);
         $payments = Payment::query()->where('company_id', $company)->whereBetween('paid_at', [$today->startOfMonth()->utc(), CarbonImmutable::now()])->get();
+        $receivedSeries = collect(range(6, 0))->map(function (int $daysAgo) use ($payments, $today) {
+            $date = $today->subDays($daysAgo);
+            $total = $payments->filter(fn ($payment) => $payment->paid_at?->setTimezone(ContractCalculationService::TIMEZONE)->toDateString() === $date->toDateString())
+                ->sum(fn ($payment) => Money::cents($payment->amount));
+
+            return ['label' => $date->format('d/m'), 'value' => $total];
+        })->values()->all();
 
         return Inertia::render('Dashboard', [
             'today' => $today->toDateString(),
@@ -38,6 +45,7 @@ class DashboardController extends Controller
                 'today' => $outstanding->where('due_today', true)->count(), 'overdue' => $overdue->count(),
                 'balance' => Money::format($outstanding->sum(fn ($row) => Money::cents($row['balance']))),
                 'received' => Money::format($payments->sum(fn ($payment) => Money::cents($payment->amount))),
+                'received_series' => $receivedSeries,
             ],
             'attention' => $overdue->take(5)->values(),
             'returnedPending' => $returned

@@ -6,6 +6,7 @@ use App\Actions\Payments\RegisterContractPaymentAction;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Product;
+use App\Models\Payment;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -83,4 +84,44 @@ test('dashboard does not list returned contracts settled as pending', function (
         ->assertInertia(fn (Assert $page) => $page
             ->where('metrics.returned_pending', 0)
             ->has('returnedPending', 0));
+});
+
+test('dashboard received series sums amount only, groups by company and local paid date', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-14 12:00:00', 'America/Sao_Paulo'));
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $user = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $otherClient = Client::factory()->for($otherCompany)->create();
+    $product = Product::factory()->for($company)->create();
+    $otherProduct = Product::factory()->for($otherCompany)->create();
+    $contract = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id,
+        'started_at' => '2026-10-01 12:00',
+        'charge_saturdays' => true,
+        'items' => [['product_id' => $product->id, 'billing_period' => 'DAY', 'unit_price' => '10.00', 'initial_quantity' => 1]],
+    ]);
+    $otherContract = app(CreateContractAction::class)->handle($otherCompany, [
+        'client_id' => $otherClient->id,
+        'started_at' => '2026-10-01 12:00',
+        'charge_saturdays' => true,
+        'items' => [['product_id' => $otherProduct->id, 'billing_period' => 'DAY', 'unit_price' => '10.00', 'initial_quantity' => 1]],
+    ]);
+
+    Payment::create(['company_id' => $company->id, 'contract_id' => $contract->id, 'amount' => '60.00', 'discount_amount' => '40.00', 'paid_at' => '2026-10-14 05:30:00', 'method' => 'PIX']);
+    Payment::create(['company_id' => $company->id, 'contract_id' => $contract->id, 'amount' => '25.00', 'discount_amount' => '99.00', 'paid_at' => '2026-10-13 23:30:00', 'method' => 'PIX']);
+    Payment::create(['company_id' => $otherCompany->id, 'contract_id' => $otherContract->id, 'amount' => '500.00', 'discount_amount' => '0.00', 'paid_at' => '2026-10-14 05:30:00', 'method' => 'PIX']);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('metrics.received', '85.00')
+            ->where('metrics.received_series.5.value', 25 * 100)
+            ->where('metrics.received_series.6.value', 60 * 100)
+            ->where('metrics.received_series.0.value', 0)
+            ->where('metrics.received_series.1.value', 0)
+            ->where('metrics.received_series.2.value', 0)
+            ->where('metrics.received_series.3.value', 0)
+            ->where('metrics.received_series.4.value', 0));
 });
