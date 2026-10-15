@@ -153,6 +153,61 @@ it('shows due contracts automatically without materializing or advancing cycles'
     expect(Charge::count())->toBe(0)->and($contract->fresh()->next_charge_date->toDateString())->toBe('2026-10-05');
 });
 
+it('returns the client contact in receivable list and detail payloads', function () {
+    [$user, $contract] = liveReceivableFixture();
+    $client = $contract->client;
+    $client->update(['phone' => '94999999999']);
+
+    $this->actingAs($user)
+        ->getJson('/api/v1/charges')
+        ->assertOk()
+        ->assertJsonPath('data.0.client', $client->name)
+        ->assertJsonPath('data.0.client_contact.id', $client->id)
+        ->assertJsonPath('data.0.client_contact.name', $client->name)
+        ->assertJsonPath('data.0.client_contact.phone', $client->phone);
+
+    $this->getJson("/api/v1/charges/{$contract->id}")
+        ->assertOk()
+        ->assertJsonPath('data.client', $client->name)
+        ->assertJsonPath('data.client_contact.id', $client->id)
+        ->assertJsonPath('data.client_contact.name', $client->name)
+        ->assertJsonPath('data.client_contact.phone', $client->phone);
+});
+
+it('returns a nullable phone and preserves archived client contact in receivables', function () {
+    [$user, $contract] = liveReceivableFixture();
+    $client = $contract->client;
+    $client->update(['phone' => null]);
+    $client->delete();
+
+    $this->actingAs($user)
+        ->getJson('/api/v1/charges')
+        ->assertOk()
+        ->assertJsonPath('data.0.client_contact.id', $client->id)
+        ->assertJsonPath('data.0.client_contact.name', $client->name)
+        ->assertJsonPath('data.0.client_contact.phone', null);
+
+    $this->getJson("/api/v1/charges/{$contract->id}")
+        ->assertOk()
+        ->assertJsonPath('data.client_contact.id', $client->id)
+        ->assertJsonPath('data.client_contact.name', $client->name)
+        ->assertJsonPath('data.client_contact.phone', null);
+});
+
+it('does not expose receivable contacts across companies', function () {
+    [$user, $contract] = liveReceivableFixture();
+    [, $foreign] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->getJson('/api/v1/charges')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.contract_id', $contract->id)
+        ->assertJsonPath('data.0.client_contact.id', $contract->client_id);
+
+    $this->getJson("/api/v1/charges/{$foreign->id}")->assertNotFound();
+});
+
 it('shows future active contracts only under upcoming and keeps overdue filters accurate', function () {
     [$user,$contract] = liveReceivableFixture('2026-10-06');
     $this->actingAs($user)->getJson('/api/v1/charges')->assertJsonCount(0, 'data');

@@ -25,8 +25,13 @@ class ContractReceivablesService
         $days = $pending && $due !== null && $due < $today
             ? (int) CarbonImmutable::parse($due)->diffInDays(CarbonImmutable::parse($today)) : 0;
         $closed = in_array($contract->status->value, ['FINALIZED', 'CANCELLED']);
+        $clientContact = $contract->client === null ? null : [
+            'id' => $contract->client->id,
+            'name' => $contract->client->name,
+            'phone' => $contract->client->phone,
+        ];
         $data = [
-            'id' => $contract->id, 'contract_id' => $contract->id, 'client' => $contract->client->name,
+            'id' => $contract->id, 'contract_id' => $contract->id, 'client' => $contract->client?->name, 'client_contact' => $clientContact,
             'client_id' => $contract->client_id, 'contract_status' => $contract->status->value,
             ...$finance, ...app(ContractLifecycleService::class)->presentation($contract, $finance['balance']), 'next_charge_date' => $due, 'charge_interval_days' => $contract->charge_interval_days,
             'ended_at' => $contract->ended_at?->toIso8601String(),
