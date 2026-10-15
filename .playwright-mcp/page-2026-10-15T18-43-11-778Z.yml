@@ -1,0 +1,60 @@
+- generic [ref=f18e3]:
+  - main [ref=f18e4]:
+    - generic [ref=f18e6]:
+      - button "Toggle sidebar" [ref=f18e7]
+      - navigation "breadcrumb" [ref=f18e9]:
+        - list [ref=f18e10]:
+          - listitem [ref=f18e11]:
+            - link "Movimentações" [disabled] [ref=f18e12]
+    - generic [ref=f18e13]:
+      - generic [ref=f18e14]:
+        - generic [ref=f18e15]:
+          - heading "Movimentações" [level=1] [ref=f18e16]
+          - paragraph [ref=f18e17]: Retiradas, devoluções e correções físicas dos contratos.
+        - link "Nova movimentação" [ref=f18e18] [cursor=pointer]:
+          - /url: /movements/create
+      - generic [ref=f18e19]:
+        - heading "Buscar movimentações" [level=3] [ref=f18e21]
+        - generic [ref=f18e23]:
+          - textbox "Contrato ou cliente" [ref=f18e24]
+          - combobox [ref=f18e25]:
+            - option "Todos os tipos" [selected]
+            - option "Retirada"
+            - option "Devolução"
+          - button "Buscar" [ref=f18e27]
+      - table [ref=f18e31]:
+        - rowgroup [ref=f18e32]:
+          - row [ref=f18e33]:
+            - columnheader "Data/hora" [ref=f18e34]
+            - columnheader "Contrato" [ref=f18e35]
+            - columnheader "Cliente" [ref=f18e36]
+            - columnheader "Tipo" [ref=f18e37]
+            - columnheader "Itens" [ref=f18e38]
+            - columnheader "Ações" [ref=f18e39]
+        - rowgroup [ref=f18e40]:
+          - row [ref=f18e41]:
+            - cell "01/10/2026 - 20:53h" [ref=f18e42]
+            - cell "#1" [ref=f18e43]
+            - cell "Helton serralheiro" [ref=f18e44]
+            - cell "Devolução" [ref=f18e45]
+            - cell "12 Andaime" [ref=f18e47]
+            - cell [ref=f18e48]:
+              - generic [ref=f18e49]:
+                - link "Ver" [ref=f18e50] [cursor=pointer]:
+                  - /url: /movements/2
+                - link "Editar" [ref=f18e51] [cursor=pointer]:
+                  - /url: /movements/2/edit
+          - row [ref=f18e52]:
+            - cell "30/09/2026 - 13:40h" [ref=f18e53]
+            - cell "#1" [ref=f18e54]
+            - cell "Helton serralheiro" [ref=f18e55]
+            - cell "Retirada" [ref=f18e56]
+            - cell "12 Andaime" [ref=f18e58]
+            - cell [ref=f18e59]:
+              - generic [ref=f18e60]:
+                - link "Ver" [ref=f18e61] [cursor=pointer]:
+                  - /url: /movements/1
+                - link "Editar" [ref=f18e62] [cursor=pointer]:
+                  - /url: /movements/1/edit
+  - region "Notifications alt+T":
+    - list

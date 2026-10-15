@@ -2,6 +2,7 @@
 
 namespace App\Actions\Freights;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Models\Contract;
 use App\Models\Freight;
 use Illuminate\Support\Facades\DB;
@@ -20,13 +21,18 @@ class CreateFreightAction
                 throw ValidationException::withMessages(['quantity' => 'Contrato encerrado.']);
             }
 
-            return $contract->freights()->create([
+            $freight = $contract->freights()->create([
                 'company_id' => $contract->company_id,
                 'quantity' => $data['quantity'],
                 'unit_amount' => $data['unit_amount'],
                 'occurred_at' => $data['occurred_at'],
                 'notes' => $data['notes'] ?? null,
             ]);
+            if (auth()->user() !== null) {
+                app(RecordAdminAuditAction::class)->handle(auth()->user(), 'freight', $freight->id, 'created', null, ['contract_id' => $contract->id, 'quantity' => $freight->quantity, 'unit_amount' => $freight->unit_amount, 'occurred_at' => $freight->occurred_at?->toISOString()]);
+            }
+
+            return $freight;
         });
     }
 }

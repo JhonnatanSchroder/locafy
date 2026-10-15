@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Enums\ProductType;
 use App\Http\Requests\Products\StoreProductRequest;
 use App\Http\Requests\Products\UpdateProductRequest;
@@ -71,11 +72,12 @@ class ProductController extends Controller
     /**
      * Store a newly created product in storage.
      */
-    public function store(StoreProductRequest $request): RedirectResponse
+    public function store(StoreProductRequest $request, RecordAdminAuditAction $audit): RedirectResponse
     {
         $product = $this->userCompany($request)
             ->products()
             ->create($this->productPayload($request->validated()));
+        $audit->handle($request->user(), 'product', $product->id, 'created', null, ['name' => $product->name, 'type' => $product->type->value, 'active' => $product->active]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Produto Criado com Sucesso.')]);
 
@@ -114,13 +116,20 @@ class ProductController extends Controller
     /**
      * Update the specified product in storage.
      */
-    public function update(UpdateProductRequest $request, int $product): RedirectResponse
+    public function update(UpdateProductRequest $request, int $product, RecordAdminAuditAction $audit): RedirectResponse
     {
         $product = $this->findProductForUser($request, $product);
 
         Gate::authorize('update', $product);
 
+        $before = ['name' => $product->name, 'type' => $product->type->value, 'default_price' => $product->default_price, 'unit' => $product->unit, 'stock_total' => $product->stock_total, 'active' => $product->active];
         $product->update($this->productPayload($request->validated()));
+        $product->refresh();
+        $after = ['name' => $product->name, 'type' => $product->type->value, 'default_price' => $product->default_price, 'unit' => $product->unit, 'stock_total' => $product->stock_total, 'active' => $product->active];
+        $changedBefore = array_intersect_key($before, array_diff_assoc($before, $after));
+        if ($changedBefore !== []) {
+            $audit->handle($request->user(), 'product', $product->id, 'updated', $changedBefore, array_intersect_key($after, $changedBefore));
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Produto Atualizado com Sucesso.')]);
 

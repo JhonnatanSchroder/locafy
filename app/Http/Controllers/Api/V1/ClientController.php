@@ -85,12 +85,13 @@ class ClientController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreClientRequest $request, CreateClientAction $createClient): JsonResponse
+    public function store(StoreClientRequest $request, CreateClientAction $createClient, RecordAdminAuditAction $audit): JsonResponse
     {
         $client = $createClient->handle(
             $this->userCompany($request),
             $request->validated()
         );
+        $audit->handle($request->user(), 'client', $client->id, 'created', null, ['type' => $client->type->value, 'name' => $client->name, 'phone' => $client->phone]);
 
         return (new ClientResource($client))
             ->response()
@@ -100,14 +101,18 @@ class ClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateClientRequest $request, int $client, UpdateClientAction $updateClient): ClientResource
+    public function update(UpdateClientRequest $request, int $client, UpdateClientAction $updateClient, RecordAdminAuditAction $audit): ClientResource
     {
-        return new ClientResource(
-            $updateClient->handle(
-                $this->findClientForUser($request, $client),
-                $request->validated()
-            )
-        );
+        $model = $this->findClientForUser($request, $client);
+        $before = ['type' => $model->type->value, 'name' => $model->name, 'phone' => $model->phone, 'residential_address' => $model->residential_address, 'notes' => $model->notes];
+        $model = $updateClient->handle($model, $request->validated());
+        $after = ['type' => $model->type->value, 'name' => $model->name, 'phone' => $model->phone, 'residential_address' => $model->residential_address, 'notes' => $model->notes];
+        $changedBefore = array_intersect_key($before, array_diff_assoc($before, $after));
+        if ($changedBefore !== []) {
+            $audit->handle($request->user(), 'client', $model->id, 'updated', $changedBefore, array_intersect_key($after, $changedBefore));
+        }
+
+        return new ClientResource($model);
     }
 
     public function status(Request $request, int $client, ChangeClientStatusAction $change, RecordAdminAuditAction $audit): ClientResource

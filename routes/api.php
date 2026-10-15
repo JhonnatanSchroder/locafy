@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminAuditController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ClientController;
 use App\Http\Controllers\Api\V1\ContractController;
@@ -23,6 +24,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::get('payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::post('contracts/{contract}/finalize', FinalizeContractController::class)->name('contracts.finalize');
         Route::get('me', MeController::class);
+        Route::get('audits', [AdminAuditController::class, 'index'])->name('audits.index');
+        Route::get('audits/{audit}', [AdminAuditController::class, 'show'])->name('audits.show');
         Route::post('auth/logout', [AuthController::class, 'logout']);
 
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');

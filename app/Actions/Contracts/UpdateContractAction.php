@@ -2,6 +2,7 @@
 
 namespace App\Actions\Contracts;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Enums\ContractStatus;
 use App\Models\Contract;
 use App\Services\ContractLifecycleService;
@@ -32,6 +33,7 @@ class UpdateContractAction
     {
         return DB::transaction(function () use ($contract, $data): Contract {
             $contract = Contract::query()->lockForUpdate()->findOrFail($contract->id);
+            $before = ['client_id' => $contract->client_id, 'status' => $contract->status->value, 'worksite_address' => $contract->worksite_address, 'started_at' => $contract->started_at?->toISOString(), 'ended_at' => $contract->ended_at?->toISOString(), 'charge_saturdays' => $contract->charge_saturdays, 'next_charge_date' => $contract->next_charge_date?->toDateString(), 'charge_interval_days' => $contract->charge_interval_days, 'notes' => $contract->notes];
             if (in_array($contract->status, [ContractStatus::Finalized, ContractStatus::Cancelled])) {
                 throw ValidationException::withMessages(['status' => 'Contrato encerrado. Alterações operacionais não são permitidas.']);
             }
@@ -104,6 +106,14 @@ class UpdateContractAction
                 $contract = app(FinalizeContractAction::class)->handle($contract);
             } elseif ($contract->status !== ContractStatus::Cancelled) {
                 $contract = app(ContractLifecycleService::class)->synchronize($contract);
+            }
+
+            if (! $finalize && auth()->user() !== null) {
+                $after = ['client_id' => $contract->client_id, 'status' => $contract->status->value, 'worksite_address' => $contract->worksite_address, 'started_at' => $contract->started_at?->toISOString(), 'ended_at' => $contract->ended_at?->toISOString(), 'charge_saturdays' => $contract->charge_saturdays, 'next_charge_date' => $contract->next_charge_date?->toDateString(), 'charge_interval_days' => $contract->charge_interval_days, 'notes' => $contract->notes];
+                $changedBefore = array_intersect_key($before, array_diff_assoc($before, $after));
+                if ($changedBefore !== []) {
+                    app(RecordAdminAuditAction::class)->handle(auth()->user(), 'contract', $contract->id, 'updated', $changedBefore, array_intersect_key($after, $changedBefore));
+                }
             }
 
             return $contract->load([

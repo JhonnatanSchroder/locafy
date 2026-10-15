@@ -2,6 +2,7 @@
 
 namespace App\Actions\Movements;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Models\Contract;
 use App\Models\Movement;
 use App\Services\ContractLifecycleService;
@@ -42,6 +43,9 @@ class CreateMovementAction
             }
 
             app(ContractLifecycleService::class)->synchronize($contract);
+            if (auth()->user() !== null) {
+                app(RecordAdminAuditAction::class)->handle(auth()->user(), 'movement', $movement->id, $movement->type->value === 'RETURN' ? 'returned' : 'created', null, ['contract_id' => $movement->contract_id, 'type' => $movement->type->value, 'occurred_at' => $movement->occurred_at?->toISOString(), 'item_count' => count($items)]);
+            }
 
             return $movement->load(['contract.client', 'items.contractItem.product']);
         });

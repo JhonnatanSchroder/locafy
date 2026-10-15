@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowLeftRight, Banknote, ClipboardList, Contact, LayoutGrid, Package, Users, Wrench } from '@lucide/vue';
+import { ArrowLeftRight, Banknote, ClipboardList, Contact, LayoutGrid, Package, ScrollText, Users, Wrench } from '@lucide/vue';
 import { usePage } from '@inertiajs/vue3';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -62,7 +62,7 @@ const mainNavItems: NavItem[] = [
 
 const adminNavItems = (): NavItem[] =>
     canManageUsers()
-        ? [{ title: 'Usuários', href: '/usuarios', icon: Users }]
+        ? [{ title: 'Usuários', href: '/usuarios', icon: Users }, { title: 'Auditoria', href: '/auditoria', icon: ScrollText }]
         : [];
 </script>
 

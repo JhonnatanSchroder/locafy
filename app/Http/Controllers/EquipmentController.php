@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Enums\EquipmentStatus;
 use App\Enums\ProductType;
 use App\Http\Requests\Equipments\StoreEquipmentRequest;
@@ -81,11 +82,12 @@ class EquipmentController extends Controller
     /**
      * Store a newly created equipment in storage.
      */
-    public function store(StoreEquipmentRequest $request): RedirectResponse
+    public function store(StoreEquipmentRequest $request, RecordAdminAuditAction $audit): RedirectResponse
     {
         $equipment = $this->userCompany($request)
             ->equipments()
             ->create($request->validated());
+        $audit->handle($request->user(), 'equipment', $equipment->id, 'created', null, ['name' => $equipment->name, 'product_id' => $equipment->product_id, 'status' => $equipment->status->value]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Equipamento Criado com Sucesso.')]);
 
@@ -125,13 +127,20 @@ class EquipmentController extends Controller
     /**
      * Update the specified equipment in storage.
      */
-    public function update(UpdateEquipmentRequest $request, int $equipment): RedirectResponse
+    public function update(UpdateEquipmentRequest $request, int $equipment, RecordAdminAuditAction $audit): RedirectResponse
     {
         $equipment = $this->findEquipmentForUser($request, $equipment);
 
         Gate::authorize('update', $equipment);
 
+        $before = ['name' => $equipment->name, 'brand' => $equipment->brand, 'notes' => $equipment->notes, 'status' => $equipment->status->value, 'product_id' => $equipment->product_id];
         $equipment->update($request->validated());
+        $equipment->refresh();
+        $after = ['name' => $equipment->name, 'brand' => $equipment->brand, 'notes' => $equipment->notes, 'status' => $equipment->status->value, 'product_id' => $equipment->product_id];
+        $changedBefore = array_intersect_key($before, array_diff_assoc($before, $after));
+        if ($changedBefore !== []) {
+            $audit->handle($request->user(), 'equipment', $equipment->id, 'updated', $changedBefore, array_intersect_key($after, $changedBefore));
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Equipamento Atualizado com Sucesso.')]);
 

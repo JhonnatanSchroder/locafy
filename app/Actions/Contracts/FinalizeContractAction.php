@@ -2,6 +2,7 @@
 
 namespace App\Actions\Contracts;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Enums\ContractStatus;
 use App\Models\Contract;
 use App\Services\ContractFinanceService;
@@ -38,6 +39,9 @@ class FinalizeContractAction
             }
             $contract->status = ContractStatus::Finalized;
             $contract->save();
+            if (auth()->user() !== null) {
+                app(RecordAdminAuditAction::class)->handle(auth()->user(), 'contract', $contract->id, 'finalized', ['status' => 'RETURNED'], ['status' => ContractStatus::Finalized->value, 'ended_at' => $contract->ended_at?->toISOString()]);
+            }
 
             return $contract->refresh();
         });

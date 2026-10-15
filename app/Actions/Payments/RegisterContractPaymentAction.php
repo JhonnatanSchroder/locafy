@@ -2,6 +2,7 @@
 
 namespace App\Actions\Payments;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Models\Charge;
 use App\Models\Contract;
 use App\Models\Payment;
@@ -55,6 +56,10 @@ class RegisterContractPaymentAction
                     $next = $next->addDays($contract->charge_interval_days);
                 } while ($next->lte($today));
                 $contract->update(['next_charge_date' => $next->toDateString()]);
+            }
+
+            if (auth()->user() !== null) {
+                app(RecordAdminAuditAction::class)->handle(auth()->user(), 'payment', $payment->id, 'created', null, ['contract_id' => $contract->id, 'amount' => $payment->amount, 'discount_amount' => $payment->discount_amount, 'method' => $payment->method, 'charge_id' => $payment->charge_id]);
             }
 
             return $payment;

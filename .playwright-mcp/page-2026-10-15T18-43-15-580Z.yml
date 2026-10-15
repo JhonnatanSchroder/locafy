@@ -1,0 +1,81 @@
+- generic [ref=f19e3]:
+  - main [ref=f19e4]:
+    - generic [ref=f19e6]:
+      - button "Toggle sidebar" [ref=f19e7]
+      - navigation "breadcrumb" [ref=f19e9]:
+        - list [ref=f19e10]:
+          - listitem [ref=f19e11]:
+            - link "Pagamentos" [disabled] [ref=f19e12]
+    - generic [ref=f19e13]:
+      - generic [ref=f19e14]:
+        - generic [ref=f19e15]:
+          - heading "Pagamentos" [level=1] [ref=f19e16]
+          - paragraph [ref=f19e17]: Recebimentos da sua empresa, com histórico por contrato.
+        - link "Registrar no contrato" [ref=f19e18] [cursor=pointer]:
+          - /url: /contracts
+      - generic [ref=f19e19]:
+        - generic [ref=f19e20]:
+          - paragraph [ref=f19e21]: Recebido hoje
+          - paragraph [ref=f19e24]: R$ 0,00
+        - generic [ref=f19e25]:
+          - paragraph [ref=f19e26]: Recebido no mês
+          - paragraph [ref=f19e30]: R$ 40,00
+        - generic [ref=f19e31]:
+          - paragraph [ref=f19e32]: Pagamentos na seleção
+          - paragraph [ref=f19e33]: "1"
+        - generic [ref=f19e34]:
+          - paragraph [ref=f19e35]: Total recebido
+          - paragraph [ref=f19e36]: R$ 40,00
+          - paragraph [ref=f19e37]: Descontos R$ 4,40
+      - generic [ref=f19e38]:
+        - generic [ref=f19e39]:
+          - generic [ref=f19e40]: Cliente ou contrato
+          - textbox "Cliente ou contrato" [ref=f19e41]:
+            - /placeholder: Nome ou número
+        - generic [ref=f19e42]:
+          - generic [ref=f19e43]: De
+          - textbox "De" [ref=f19e44]
+        - generic [ref=f19e45]:
+          - generic [ref=f19e46]: Até
+          - textbox "Até" [ref=f19e47]
+        - generic [ref=f19e48]:
+          - generic [ref=f19e49]: Método
+          - combobox "Método" [ref=f19e50]:
+            - option "Todos" [selected]
+            - option "PIX"
+            - option "Dinheiro"
+            - option "Cartão"
+            - option "Transferência"
+            - option "Outro"
+        - generic [ref=f19e51]:
+          - button "Filtrar" [ref=f19e52]
+          - link "Limpar" [ref=f19e53] [cursor=pointer]:
+            - /url: /pagamentos
+      - table [ref=f19e55]:
+        - rowgroup [ref=f19e56]:
+          - row [ref=f19e57]:
+            - columnheader "Data" [ref=f19e58]
+            - columnheader "Cliente" [ref=f19e59]
+            - columnheader "Contrato" [ref=f19e60]
+            - columnheader "Recebido" [ref=f19e61]
+            - columnheader "Desconto" [ref=f19e62]
+            - columnheader "Abatimento" [ref=f19e63]
+            - columnheader "Método" [ref=f19e64]
+            - columnheader "Observação" [ref=f19e65]
+            - columnheader "Ações" [ref=f19e66]
+        - rowgroup [ref=f19e67]:
+          - row [ref=f19e68]:
+            - cell "06/10/2026 - 20:54h" [ref=f19e69]
+            - cell "Helton serralheiro" [ref=f19e70]
+            - cell "#1" [ref=f19e71]
+            - cell "R$ 40,00" [ref=f19e72]
+            - cell "R$ 4,40" [ref=f19e73]
+            - cell "R$ 44,40" [ref=f19e74]
+            - cell "PIX" [ref=f19e75]
+            - cell "—" [ref=f19e77]
+            - cell [ref=f19e78]:
+              - link "Ver contrato" [ref=f19e79] [cursor=pointer]:
+                - /url: /contracts/1
+      - paragraph [ref=f19e81]: 1–1 de 1 pagamentos
+  - region "Notifications alt+T":
+    - list

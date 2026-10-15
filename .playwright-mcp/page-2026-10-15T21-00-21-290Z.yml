@@ -1,0 +1,56 @@
+- generic [ref=f8e3]:
+  - main [ref=f8e4]:
+    - generic [ref=f8e6]:
+      - button "Toggle sidebar" [ref=f8e7]
+      - navigation "breadcrumb" [ref=f8e9]:
+        - list [ref=f8e10]:
+          - listitem [ref=f8e11]:
+            - link "Auditoria" [ref=f8e12] [cursor=pointer]:
+              - /url: /auditoria
+          - listitem [aria-hidden] [ref=f8e13]
+          - listitem [ref=f8e16]:
+            - link "Detalhe" [disabled] [ref=f8e17]
+    - generic [ref=f8e18]:
+      - link "Voltar para auditoria" [ref=f8e19] [cursor=pointer]:
+        - /url: /auditoria
+      - generic [ref=f8e20]:
+        - paragraph [ref=f8e21]: "Evento #1"
+        - heading "created" [level=1] [ref=f8e22]
+        - paragraph [ref=f8e23]: "contract #2 · 15 de outubro de 2026 às 17:57"
+      - generic [ref=f8e24]:
+        - generic [ref=f8e26]:
+          - paragraph [ref=f8e27]: Operador
+          - paragraph [ref=f8e28]: Jhonnatan Gustavo
+        - generic [ref=f8e30]:
+          - paragraph [ref=f8e31]: Módulo / origem
+          - paragraph [ref=f8e32]: contracts · WEB
+        - generic [ref=f8e34]:
+          - paragraph [ref=f8e35]: Empresa
+          - paragraph [ref=f8e36]: "#1"
+      - generic [ref=f8e37]:
+        - heading "Campos alterados" [level=3] [ref=f8e39]
+        - table [ref=f8e45]:
+          - rowgroup [ref=f8e46]:
+            - row [ref=f8e47]:
+              - columnheader "Campo" [ref=f8e48]
+              - columnheader "Antes" [ref=f8e49]
+              - columnheader "Depois" [ref=f8e50]
+          - rowgroup [ref=f8e51]:
+            - row [ref=f8e52]:
+              - cell "client_id" [ref=f8e53]
+              - cell "—" [ref=f8e54]
+              - cell "2" [ref=f8e55]
+            - row [ref=f8e56]:
+              - cell "status" [ref=f8e57]
+              - cell "—" [ref=f8e58]
+              - cell "ACTIVE" [ref=f8e59]
+            - row [ref=f8e60]:
+              - cell "started_at" [ref=f8e61]
+              - cell "—" [ref=f8e62]
+              - cell "2026-10-15T17:57:00.000000Z" [ref=f8e63]
+            - row [ref=f8e64]:
+              - cell "charge_interval_days" [ref=f8e65]
+              - cell "—" [ref=f8e66]
+              - cell "15" [ref=f8e67]
+  - region "Notifications alt+T":
+    - list

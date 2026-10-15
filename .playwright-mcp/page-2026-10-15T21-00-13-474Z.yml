@@ -1,0 +1,88 @@
+- generic [ref=f7e3]:
+  - generic [ref=f7e6]:
+    - list [ref=f7e8]:
+      - listitem [ref=f7e9]:
+        - link "Locafy LOCAFY" [ref=f7e10] [cursor=pointer]:
+          - /url: /dashboard
+          - img "Locafy" [ref=f7e12]
+          - generic [ref=f7e13]: LOCAFY
+    - list [ref=f7e17]:
+      - listitem [ref=f7e18]:
+        - link "Dashboard" [ref=f7e19] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=f7e26]:
+        - link "Clientes" [ref=f7e27] [cursor=pointer]:
+          - /url: /clients
+      - listitem [ref=f7e33]:
+        - link "Produtos" [ref=f7e34] [cursor=pointer]:
+          - /url: /products
+      - listitem [ref=f7e40]:
+        - link "Equipamentos" [ref=f7e41] [cursor=pointer]:
+          - /url: /equipments
+      - listitem [ref=f7e45]:
+        - link "Contratos" [ref=f7e46] [cursor=pointer]:
+          - /url: /contracts
+      - listitem [ref=f7e51]:
+        - link "Cobranças" [ref=f7e52] [cursor=pointer]:
+          - /url: /charges
+      - listitem [ref=f7e57]:
+        - link "Pagamentos" [ref=f7e58] [cursor=pointer]:
+          - /url: /pagamentos
+      - listitem [ref=f7e63]:
+        - link "Movimentações" [ref=f7e64] [cursor=pointer]:
+          - /url: /movements
+      - listitem [ref=f7e69]:
+        - link "Usuários" [ref=f7e70] [cursor=pointer]:
+          - /url: /usuarios
+      - listitem [ref=f7e77]:
+        - link "Auditoria" [ref=f7e78] [cursor=pointer]:
+          - /url: /auditoria
+    - list [ref=f7e84]:
+      - listitem [ref=f7e85]:
+        - button "JG Jhonnatan Gustavo" [ref=f7e86]:
+          - generic [ref=f7e87]: JG
+          - generic [ref=f7e89]: Jhonnatan Gustavo
+  - main [ref=f7e94]:
+    - generic [ref=f7e96]:
+      - button "Toggle sidebar" [ref=f7e97]
+      - navigation "breadcrumb" [ref=f7e99]:
+        - list [ref=f7e100]:
+          - listitem [ref=f7e101]:
+            - link "Auditoria" [disabled] [ref=f7e102]
+    - generic [ref=f7e103]:
+      - generic [ref=f7e104]:
+        - paragraph [ref=f7e105]: Governança
+        - heading "Auditoria" [level=1] [ref=f7e106]
+        - paragraph [ref=f7e107]: Histórico operacional da empresa, somente leitura.
+      - generic [ref=f7e108]:
+        - heading "Filtrar eventos" [level=3] [ref=f7e110]
+        - generic [ref=f7e112]:
+          - textbox "De" [ref=f7e113]
+          - textbox "Até" [ref=f7e114]
+          - textbox "Módulo" [ref=f7e115]
+          - textbox "Operação" [ref=f7e116]
+          - textbox "ID do usuário" [ref=f7e117]
+          - button "Filtrar" [ref=f7e119]
+      - table [ref=f7e123]:
+        - rowgroup [ref=f7e124]:
+          - row [ref=f7e125]:
+            - columnheader "Evento" [ref=f7e126]
+            - columnheader "Entidade" [ref=f7e127]
+            - columnheader "Operador" [ref=f7e128]
+            - columnheader "Origem" [ref=f7e129]
+            - columnheader "Data" [ref=f7e130]
+            - columnheader [ref=f7e131]
+        - rowgroup [ref=f7e132]:
+          - row [ref=f7e133]:
+            - cell "created contracts" [ref=f7e134]:
+              - generic [ref=f7e135]: created
+              - paragraph [ref=f7e136]: contracts
+            - 'cell "contract #2" [ref=f7e137]'
+            - cell "Jhonnatan Gustavo" [ref=f7e138]
+            - cell "WEB" [ref=f7e139]
+            - cell "15/10/2026, 17:57" [ref=f7e140]
+            - cell [ref=f7e141]:
+              - link "Ver" [ref=f7e142] [cursor=pointer]:
+                - /url: /auditoria/1
+  - region "Notifications alt+T":
+    - list

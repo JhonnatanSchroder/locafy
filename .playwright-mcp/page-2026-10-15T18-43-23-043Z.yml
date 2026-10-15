@@ -1,0 +1,42 @@
+- generic [ref=f21e3]:
+  - main [ref=f21e4]:
+    - generic [ref=f21e6]:
+      - button "Toggle sidebar" [ref=f21e7]
+      - navigation "breadcrumb" [ref=f21e9]:
+        - list [ref=f21e10]:
+          - listitem [ref=f21e11]:
+            - link "Equipamentos" [disabled] [ref=f21e12]
+    - generic [ref=f21e13]:
+      - generic [ref=f21e14]:
+        - generic [ref=f21e15]:
+          - heading "Equipamentos" [level=1] [ref=f21e16]
+          - paragraph [ref=f21e17]: Gerencie os equipamentos físicos identificáveis da sua empresa.
+        - link "Novo equipamento" [ref=f21e18] [cursor=pointer]:
+          - /url: /equipments/create
+      - generic [ref=f21e19]:
+        - heading "Buscar equipamentos" [level=3] [ref=f21e21]
+        - generic [ref=f21e23]:
+          - textbox "Buscar por nome ou marca" [ref=f21e24]
+          - combobox [ref=f21e25]:
+            - option "Todos os produtos" [selected]
+            - option "Betoneira"
+          - combobox [ref=f21e26]:
+            - option "Todos os status" [selected]
+            - option "Disponível"
+            - option "Alugado"
+            - option "Manutenção"
+            - option "Inativo"
+          - button "Filtrar" [ref=f21e28]
+      - table [ref=f21e32]:
+        - rowgroup [ref=f21e33]:
+          - row [ref=f21e34]:
+            - columnheader "Nome" [ref=f21e35]
+            - columnheader "Produto" [ref=f21e36]
+            - columnheader "Marca" [ref=f21e37]
+            - columnheader "Status" [ref=f21e38]
+            - columnheader "Ações" [ref=f21e39]
+        - rowgroup [ref=f21e40]:
+          - row [ref=f21e41]:
+            - cell "Nenhum equipamento encontrado." [ref=f21e42]
+  - region "Notifications alt+T":
+    - list

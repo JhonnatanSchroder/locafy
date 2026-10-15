@@ -1,0 +1,54 @@
+- generic [ref=f15e3]:
+  - main [ref=f15e4]:
+    - generic [ref=f15e6]:
+      - button "Toggle sidebar" [ref=f15e7]
+      - navigation "breadcrumb" [ref=f15e9]:
+        - list [ref=f15e10]:
+          - listitem [ref=f15e11]:
+            - link "Clientes" [disabled] [ref=f15e12]
+    - generic [ref=f15e13]:
+      - generic [ref=f15e14]:
+        - generic [ref=f15e15]:
+          - heading "Clientes" [level=1] [ref=f15e16]
+          - paragraph [ref=f15e17]: Relacionamentos organizados para uma operação mais simples.
+        - link "Novo cliente" [ref=f15e18] [cursor=pointer]:
+          - /url: /clients/create
+      - generic [ref=f15e26]:
+        - paragraph [ref=f15e27]: "1"
+        - paragraph [ref=f15e28]: Clientes cadastrados
+      - generic [ref=f15e29]:
+        - heading "Buscar clientes" [level=3] [ref=f15e31]
+        - generic [ref=f15e33]:
+          - textbox "Buscar por nome, telefone ou documento" [ref=f15e34]
+          - combobox [ref=f15e35]:
+            - option "Todos os status" [selected]
+            - option "Ativos"
+            - option "Bloqueados"
+            - option "Inativos"
+          - button "Buscar" [ref=f15e37]
+      - table [ref=f15e41]:
+        - rowgroup [ref=f15e42]:
+          - row [ref=f15e43]:
+            - columnheader "Nome" [ref=f15e44]
+            - columnheader "Tipo" [ref=f15e45]
+            - columnheader "Status" [ref=f15e46]
+            - columnheader "Telefone" [ref=f15e47]
+            - columnheader "Documento" [ref=f15e48]
+            - columnheader "Ações" [ref=f15e49]
+        - rowgroup [ref=f15e50]:
+          - row [ref=f15e51]:
+            - cell [ref=f15e52]:
+              - link "Helton serralheiro" [ref=f15e53] [cursor=pointer]:
+                - /url: /clients/1
+            - cell "Ativo" [ref=f15e54]
+            - cell "Pessoa Física" [ref=f15e56]
+            - cell "94991488103" [ref=f15e57]
+            - cell "—" [ref=f15e58]
+            - cell [ref=f15e59]:
+              - generic [ref=f15e60]:
+                - link "Ver" [ref=f15e61] [cursor=pointer]:
+                  - /url: /clients/1
+                - link "Editar" [ref=f15e62] [cursor=pointer]:
+                  - /url: /clients/1/edit
+  - region "Notifications alt+T":
+    - list

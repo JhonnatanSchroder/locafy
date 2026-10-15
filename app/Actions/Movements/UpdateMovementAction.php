@@ -2,6 +2,7 @@
 
 namespace App\Actions\Movements;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Models\Contract;
 use App\Models\Movement;
 use App\Services\ContractLifecycleService;
@@ -25,6 +26,7 @@ class UpdateMovementAction
 
         return DB::transaction(function () use ($movement, $data, $items): Movement {
             $contract = Contract::query()->lockForUpdate()->findOrFail($movement->contract_id);
+            $before = ['occurred_at' => $movement->occurred_at?->toISOString(), 'notes' => $movement->notes, 'item_count' => $movement->items()->count()];
             $this->timeline->validateMovementPayload($contract, $movement->type->value, $data['occurred_at'], $items, $movement);
             $movement->update([
                 'occurred_at' => $data['occurred_at'],
@@ -46,6 +48,10 @@ class UpdateMovementAction
                 $contract->update(['ended_at' => null]);
             }
             app(ContractLifecycleService::class)->synchronize($contract);
+            if (auth()->user() !== null) {
+                $after = ['occurred_at' => $movement->occurred_at?->toISOString(), 'notes' => $movement->notes, 'item_count' => count($items)];
+                app(RecordAdminAuditAction::class)->handle(auth()->user(), 'movement', $movement->id, 'updated', $before, $after);
+            }
             $movement->unsetRelation('contract');
 
             return $movement->load(['contract.client', 'items.contractItem.product']);

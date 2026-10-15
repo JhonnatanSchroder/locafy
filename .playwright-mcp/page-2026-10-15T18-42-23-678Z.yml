@@ -1,0 +1,94 @@
+- generic [ref=f7e3]:
+  - generic [ref=f7e6]:
+    - list [ref=f7e8]:
+      - listitem [ref=f7e9]:
+        - link "Locafy LOCAFY" [ref=f7e10] [cursor=pointer]:
+          - /url: /dashboard
+          - img "Locafy" [ref=f7e12]
+          - generic [ref=f7e13]: LOCAFY
+    - list [ref=f7e17]:
+      - listitem [ref=f7e18]:
+        - link "Dashboard" [ref=f7e19] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=f7e26]:
+        - link "Clientes" [ref=f7e27] [cursor=pointer]:
+          - /url: /clients
+      - listitem [ref=f7e33]:
+        - link "Produtos" [ref=f7e34] [cursor=pointer]:
+          - /url: /products
+      - listitem [ref=f7e40]:
+        - link "Equipamentos" [ref=f7e41] [cursor=pointer]:
+          - /url: /equipments
+      - listitem [ref=f7e45]:
+        - link "Contratos" [ref=f7e46] [cursor=pointer]:
+          - /url: /contracts
+      - listitem [ref=f7e51]:
+        - link "Cobranças" [ref=f7e52] [cursor=pointer]:
+          - /url: /charges
+      - listitem [ref=f7e57]:
+        - link "Pagamentos" [ref=f7e58] [cursor=pointer]:
+          - /url: /pagamentos
+      - listitem [ref=f7e63]:
+        - link "Movimentações" [ref=f7e64] [cursor=pointer]:
+          - /url: /movements
+      - listitem [ref=f7e69]:
+        - link "Usuários" [ref=f7e70] [cursor=pointer]:
+          - /url: /usuarios
+    - list [ref=f7e78]:
+      - listitem [ref=f7e79]:
+        - button "JG Jhonnatan Gustavo" [ref=f7e80]:
+          - generic [ref=f7e81]: JG
+          - generic [ref=f7e83]: Jhonnatan Gustavo
+  - main [ref=f7e88]:
+    - generic [ref=f7e90]:
+      - button "Toggle sidebar" [ref=f7e91]
+      - navigation "breadcrumb" [ref=f7e93]:
+        - list [ref=f7e94]:
+          - listitem [ref=f7e95]:
+            - link "Clientes" [disabled] [ref=f7e96]
+    - generic [ref=f7e97]:
+      - generic [ref=f7e98]:
+        - generic [ref=f7e99]:
+          - heading "Clientes" [level=1] [ref=f7e100]
+          - paragraph [ref=f7e101]: Relacionamentos organizados para uma operação mais simples.
+        - link "Novo cliente" [ref=f7e102] [cursor=pointer]:
+          - /url: /clients/create
+      - generic [ref=f7e110]:
+        - paragraph [ref=f7e111]: "1"
+        - paragraph [ref=f7e112]: Clientes cadastrados
+      - generic [ref=f7e113]:
+        - heading "Buscar clientes" [level=3] [ref=f7e115]
+        - generic [ref=f7e117]:
+          - textbox "Buscar por nome, telefone ou documento" [ref=f7e118]
+          - combobox [ref=f7e119]:
+            - option "Todos os status" [selected]
+            - option "Ativos"
+            - option "Bloqueados"
+            - option "Inativos"
+          - button "Buscar" [ref=f7e121]
+      - table [ref=f7e125]:
+        - rowgroup [ref=f7e126]:
+          - row [ref=f7e127]:
+            - columnheader "Nome" [ref=f7e128]
+            - columnheader "Tipo" [ref=f7e129]
+            - columnheader "Status" [ref=f7e130]
+            - columnheader "Telefone" [ref=f7e131]
+            - columnheader "Documento" [ref=f7e132]
+            - columnheader "Ações" [ref=f7e133]
+        - rowgroup [ref=f7e134]:
+          - row [ref=f7e135]:
+            - cell [ref=f7e136]:
+              - link "Helton serralheiro" [ref=f7e137] [cursor=pointer]:
+                - /url: /clients/1
+            - cell "Ativo" [ref=f7e138]
+            - cell "Pessoa Física" [ref=f7e140]
+            - cell "94991488103" [ref=f7e141]
+            - cell "—" [ref=f7e142]
+            - cell [ref=f7e143]:
+              - generic [ref=f7e144]:
+                - link "Ver" [ref=f7e145] [cursor=pointer]:
+                  - /url: /clients/1
+                - link "Editar" [ref=f7e146] [cursor=pointer]:
+                  - /url: /clients/1/edit
+  - region "Notifications alt+T":
+    - list

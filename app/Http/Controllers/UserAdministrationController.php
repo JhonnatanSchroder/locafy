@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -35,7 +36,7 @@ class UserAdministrationController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, RecordAdminAuditAction $audit): RedirectResponse
     {
         Gate::authorize('create', User::class);
 
@@ -50,7 +51,7 @@ class UserAdministrationController extends Controller
         $password = $data['generate_password'] ? str()->password(14) : $data['password'];
         unset($data['generate_password'], $data['password'], $data['password_confirmation']);
 
-        User::query()->create([
+        $managedUser = User::query()->create([
             ...$data,
             'company_id' => $request->user()->company_id,
             'password' => Hash::make($password),
@@ -59,6 +60,7 @@ class UserAdministrationController extends Controller
             'created_by_user_id' => $request->user()->id,
             'role_updated_by_user_id' => $request->user()->id,
         ]);
+        $audit->handle($request->user(), 'user', $managedUser->id, 'created', null, ['name' => $managedUser->name, 'email' => $managedUser->email, 'role' => $managedUser->role->value, 'active' => $managedUser->active]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Usuário criado com sucesso.']);
         if ($request->boolean('generate_password')) {
@@ -68,7 +70,7 @@ class UserAdministrationController extends Controller
         return to_route('users.index');
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(Request $request, User $user, RecordAdminAuditAction $audit): RedirectResponse
     {
         $this->authorizeManagedUser($request, $user, 'update');
 
@@ -83,14 +85,21 @@ class UserAdministrationController extends Controller
             $data['role_updated_by_user_id'] = $request->user()->id;
         }
 
+        $before = ['name' => $user->name, 'email' => $user->email, 'role' => $user->role->value];
         $user->update($data);
+        $user->refresh();
+        $after = ['name' => $user->name, 'email' => $user->email, 'role' => $user->role->value];
+        $changedBefore = array_intersect_key($before, array_diff_assoc($before, $after));
+        if ($changedBefore !== []) {
+            $audit->handle($request->user(), 'user', $user->id, 'updated', $changedBefore, array_intersect_key($after, $changedBefore));
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Usuário atualizado com sucesso.']);
 
         return to_route('users.index');
     }
 
-    public function activate(Request $request, User $user): RedirectResponse
+    public function activate(Request $request, User $user, RecordAdminAuditAction $audit): RedirectResponse
     {
         $this->authorizeManagedUser($request, $user, 'update');
 
@@ -99,13 +108,14 @@ class UserAdministrationController extends Controller
             'deactivated_at' => null,
             'deactivated_by_user_id' => null,
         ]);
+        $audit->handle($request->user(), 'user', $user->id, 'activated', ['active' => false], ['active' => true]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Acesso ativado.']);
 
         return to_route('users.index');
     }
 
-    public function deactivate(Request $request, User $user): RedirectResponse
+    public function deactivate(Request $request, User $user, RecordAdminAuditAction $audit): RedirectResponse
     {
         $this->authorizeManagedUser($request, $user, 'deactivate');
         $this->ensureNotLastActiveAdmin($user, UserRole::Operator->value);
@@ -116,13 +126,14 @@ class UserAdministrationController extends Controller
             'deactivated_at' => now(),
             'deactivated_by_user_id' => $request->user()->id,
         ]);
+        $audit->handle($request->user(), 'user', $user->id, 'deactivated', ['active' => true], ['active' => false]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Acesso desativado.']);
 
         return to_route('users.index');
     }
 
-    public function resetPassword(Request $request, User $user): RedirectResponse
+    public function resetPassword(Request $request, User $user, RecordAdminAuditAction $audit): RedirectResponse
     {
         $this->authorizeManagedUser($request, $user, 'resetPassword');
 
@@ -138,6 +149,7 @@ class UserAdministrationController extends Controller
             'password' => Hash::make($password),
             'must_change_password_at' => now(),
         ]);
+        $audit->handle($request->user(), 'user', $user->id, 'password_reset', null, ['must_change_password' => true]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Senha redefinida.']);
         if ($request->boolean('generate_password')) {

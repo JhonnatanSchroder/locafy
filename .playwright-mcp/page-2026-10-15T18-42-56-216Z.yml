@@ -1,0 +1,117 @@
+- generic [ref=f14e3]:
+  - main [ref=f14e4]:
+    - generic [ref=f14e6]:
+      - button "Toggle sidebar" [ref=f14e7]
+      - navigation "breadcrumb" [ref=f14e9]:
+        - list [ref=f14e10]:
+          - listitem [ref=f14e11]:
+            - link "Dashboard" [disabled] [ref=f14e12]
+    - generic [ref=f14e13]:
+      - generic [ref=f14e14]:
+        - generic [ref=f14e15]:
+          - paragraph [ref=f14e16]: Visão geral · Locafy
+          - heading "Olá, Jhonnatan" [level=1] [ref=f14e17]
+          - paragraph [ref=f14e18]: 15/10/2026 · Veja o que precisa da sua atenção.
+        - link "Novo contrato" [ref=f14e19] [cursor=pointer]:
+          - /url: /contracts/create
+      - generic [ref=f14e20]:
+        - link "Contratos ativos 0 0 pendentes · 0 prontos para finalizar" [ref=f14e21] [cursor=pointer]:
+          - /url: /contracts?status=ACTIVE
+          - generic [ref=f14e22]: Contratos ativos
+          - strong [ref=f14e28]: "0"
+          - generic [ref=f14e29]: 0 pendentes · 0 prontos para finalizar
+        - link "Devolvidos pendentes 0 Contratos devolvidos com saldo" [ref=f14e30] [cursor=pointer]:
+          - /url: /contracts?status=PAYMENT_PENDING
+          - generic [ref=f14e31]: Devolvidos pendentes
+          - strong [ref=f14e37]: "0"
+          - generic [ref=f14e38]: Contratos devolvidos com saldo
+        - link "Cobranças de hoje 0 Vencimentos na data atual" [ref=f14e39] [cursor=pointer]:
+          - /url: /charges?filter=today
+          - generic [ref=f14e40]: Cobranças de hoje
+          - strong [ref=f14e45]: "0"
+          - generic [ref=f14e46]: Vencimentos na data atual
+        - link "Em atraso 0 Contratos com saldo pendente" [ref=f14e47] [cursor=pointer]:
+          - /url: /charges?filter=overdue
+          - generic [ref=f14e48]: Em atraso
+          - strong [ref=f14e53]: "0"
+          - generic [ref=f14e54]: Contratos com saldo pendente
+        - link "Saldo a receber R$ 0,00 Saldo atual de contratos abertos" [ref=f14e55] [cursor=pointer]:
+          - /url: /charges
+          - generic [ref=f14e56]: Saldo a receber
+          - strong [ref=f14e62]: R$ 0,00
+          - generic [ref=f14e63]: Saldo atual de contratos abertos
+        - generic [ref=f14e64]:
+          - generic [ref=f14e65]: Recebido no mês
+          - strong [ref=f14e71]: R$ 40,00
+          - generic [ref=f14e72]: Pagamentos registrados
+      - generic [ref=f14e73]:
+        - generic [ref=f14e74]:
+          - generic [ref=f14e75]:
+            - generic [ref=f14e76]:
+              - heading "Recebimentos" [level=3] [ref=f14e77]
+              - paragraph [ref=f14e78]: Valor recebido nos últimos sete dias.
+            - generic [ref=f14e79]: Recebido
+          - generic [ref=f14e82]:
+            - generic [ref=f14e83]: 09/10
+            - generic [ref=f14e87]: 10/10
+            - generic [ref=f14e91]: 11/10
+            - generic [ref=f14e95]: 12/10
+            - generic [ref=f14e99]: 13/10
+            - generic [ref=f14e103]: 14/10
+            - generic [ref=f14e107]: 15/10
+        - generic [ref=f14e111]:
+          - generic [ref=f14e112]:
+            - heading "Resumo da operação" [level=3] [ref=f14e113]
+            - paragraph [ref=f14e114]: Sinais que ajudam a priorizar o dia.
+          - generic [ref=f14e115]:
+            - link "Devolvidos 0 contratos no total" [ref=f14e116] [cursor=pointer]:
+              - /url: /contracts?status=RETURNED
+              - generic [ref=f14e122]:
+                - strong [ref=f14e123]: Devolvidos
+                - generic [ref=f14e124]: 0 contratos no total
+            - link "Em atraso 0 cobranças para acompanhar" [ref=f14e128] [cursor=pointer]:
+              - /url: /charges?filter=overdue
+              - generic [ref=f14e132]:
+                - strong [ref=f14e133]: Em atraso
+                - generic [ref=f14e134]: 0 cobranças para acompanhar
+            - link "Recebimentos R$ 40,00 no mês" [ref=f14e138] [cursor=pointer]:
+              - /url: /pagamentos
+              - generic [ref=f14e142]:
+                - strong [ref=f14e143]: Recebimentos
+                - generic [ref=f14e144]: R$ 40,00 no mês
+      - generic [ref=f14e152]:
+        - strong [ref=f14e153]: Tudo em dia
+        - paragraph [ref=f14e154]: Nenhuma cobrança pendente para acompanhar.
+      - generic [ref=f14e155]:
+        - generic [ref=f14e156]:
+          - generic [ref=f14e157]:
+            - generic [ref=f14e158]:
+              - heading "Contratos recentes" [level=3] [ref=f14e159]
+              - paragraph [ref=f14e160]: As últimas operações da empresa.
+            - link "Ver todos" [ref=f14e161] [cursor=pointer]:
+              - /url: /contracts
+          - 'link "Helton serralheiro Contrato #1 · 30/09/2026 Finalizado" [ref=f14e163] [cursor=pointer]':
+            - /url: /contracts/1
+            - generic [ref=f14e168]:
+              - strong [ref=f14e169]: Helton serralheiro
+              - generic [ref=f14e170]: "Contrato #1 · 30/09/2026"
+            - generic [ref=f14e171]: Finalizado
+        - generic [ref=f14e172]:
+          - generic [ref=f14e173]:
+            - heading "Atalhos rápidos" [level=3] [ref=f14e174]
+            - paragraph [ref=f14e175]: Ações frequentes da operação.
+          - generic [ref=f14e176]:
+            - link [ref=f14e177] [cursor=pointer]:
+              - /url: /contracts/create
+              - strong [ref=f14e180]: Novo contrato
+            - link [ref=f14e184] [cursor=pointer]:
+              - /url: /clients/create
+              - strong [ref=f14e191]: Novo cliente
+            - link [ref=f14e195] [cursor=pointer]:
+              - /url: /charges
+              - strong [ref=f14e200]: Cobranças
+            - link [ref=f14e204] [cursor=pointer]:
+              - /url: /movements
+              - strong [ref=f14e210]: Movimentações
+  - region "Notifications alt+T":
+    - list

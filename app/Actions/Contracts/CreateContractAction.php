@@ -2,6 +2,7 @@
 
 namespace App\Actions\Contracts;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Enums\ContractStatus;
 use App\Enums\MovementType;
 use App\Enums\ProductType;
@@ -78,6 +79,10 @@ class CreateContractAction
                     'occurred_at' => $contract->started_at,
                     'notes' => $initialFreight['notes'] ?? null,
                 ]);
+            }
+
+            if (auth()->user() !== null) {
+                app(RecordAdminAuditAction::class)->handle(auth()->user(), 'contract', $contract->id, 'created', null, ['client_id' => $contract->client_id, 'status' => $contract->status->value, 'started_at' => $contract->started_at?->toISOString(), 'charge_interval_days' => $contract->charge_interval_days]);
             }
 
             return $contract->load(['client', 'items.product', 'movements.items', 'freights']);

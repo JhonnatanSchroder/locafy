@@ -1,0 +1,133 @@
+- generic [ref=f12e3]:
+  - generic [ref=f12e6]:
+    - list [ref=f12e8]:
+      - listitem [ref=f12e9]:
+        - link "Locafy LOCAFY" [ref=f12e10] [cursor=pointer]:
+          - /url: /dashboard
+          - img "Locafy" [ref=f12e12]
+          - generic [ref=f12e13]: LOCAFY
+    - list [ref=f12e17]:
+      - listitem [ref=f12e18]:
+        - link "Dashboard" [ref=f12e19] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=f12e26]:
+        - link "Clientes" [ref=f12e27] [cursor=pointer]:
+          - /url: /clients
+      - listitem [ref=f12e33]:
+        - link "Produtos" [ref=f12e34] [cursor=pointer]:
+          - /url: /products
+      - listitem [ref=f12e40]:
+        - link "Equipamentos" [ref=f12e41] [cursor=pointer]:
+          - /url: /equipments
+      - listitem [ref=f12e45]:
+        - link "Contratos" [ref=f12e46] [cursor=pointer]:
+          - /url: /contracts
+      - listitem [ref=f12e51]:
+        - link "Cobranças" [ref=f12e52] [cursor=pointer]:
+          - /url: /charges
+      - listitem [ref=f12e57]:
+        - link "Pagamentos" [ref=f12e58] [cursor=pointer]:
+          - /url: /pagamentos
+      - listitem [ref=f12e63]:
+        - link "Movimentações" [ref=f12e64] [cursor=pointer]:
+          - /url: /movements
+      - listitem [ref=f12e69]:
+        - link "Usuários" [ref=f12e70] [cursor=pointer]:
+          - /url: /usuarios
+    - list [ref=f12e78]:
+      - listitem [ref=f12e79]:
+        - button "JG Jhonnatan Gustavo" [ref=f12e80]:
+          - generic [ref=f12e81]: JG
+          - generic [ref=f12e83]: Jhonnatan Gustavo
+  - main [ref=f12e88]:
+    - generic [ref=f12e90]:
+      - button "Toggle sidebar" [ref=f12e91]
+      - navigation "breadcrumb" [ref=f12e93]:
+        - list [ref=f12e94]:
+          - listitem [ref=f12e95]:
+            - link "Produtos" [disabled] [ref=f12e96]
+    - generic [ref=f12e97]:
+      - generic [ref=f12e98]:
+        - generic [ref=f12e99]:
+          - heading "Produtos" [level=1] [ref=f12e100]
+          - paragraph [ref=f12e101]: Gerencie o catálogo e o estoque-base da sua empresa.
+        - link "Novo produto" [ref=f12e102] [cursor=pointer]:
+          - /url: /products/create
+      - generic [ref=f12e103]:
+        - heading "Buscar produtos" [level=3] [ref=f12e105]
+        - generic [ref=f12e107]:
+          - textbox "Buscar por nome" [ref=f12e108]
+          - combobox [ref=f12e109]:
+            - option "Todos os tipos" [selected]
+            - option "Quantidade"
+            - option "Individual"
+          - combobox [ref=f12e110]:
+            - option "Todos os status" [selected]
+            - option "Ativos"
+            - option "Inativos"
+          - button "Filtrar" [ref=f12e112]
+      - table [ref=f12e116]:
+        - rowgroup [ref=f12e117]:
+          - row [ref=f12e118]:
+            - columnheader "Nome" [ref=f12e119]
+            - columnheader "Tipo" [ref=f12e120]
+            - columnheader "Preço padrão" [ref=f12e121]
+            - columnheader "Unidade" [ref=f12e122]
+            - columnheader "Estoque total" [ref=f12e123]
+            - columnheader "Status" [ref=f12e124]
+            - columnheader "Ações" [ref=f12e125]
+        - rowgroup [ref=f12e126]:
+          - row [ref=f12e127]:
+            - cell "Andaime" [ref=f12e128]
+            - cell "Quantidade" [ref=f12e129]
+            - cell "R$ 0,60" [ref=f12e130]
+            - cell "peça" [ref=f12e131]
+            - cell "1500" [ref=f12e132]
+            - cell "Ativo" [ref=f12e133]
+            - cell [ref=f12e135]:
+              - generic [ref=f12e136]:
+                - link "Ver" [ref=f12e137] [cursor=pointer]:
+                  - /url: /products/1
+                - link "Editar" [ref=f12e138] [cursor=pointer]:
+                  - /url: /products/1/edit
+          - row [ref=f12e139]:
+            - cell "Betoneira" [ref=f12e140]
+            - cell "Individual" [ref=f12e141]
+            - cell "—" [ref=f12e142]
+            - cell "máquina" [ref=f12e143]
+            - cell "—" [ref=f12e144]
+            - cell "Ativo" [ref=f12e145]
+            - cell [ref=f12e147]:
+              - generic [ref=f12e148]:
+                - link "Ver" [ref=f12e149] [cursor=pointer]:
+                  - /url: /products/4
+                - link "Editar" [ref=f12e150] [cursor=pointer]:
+                  - /url: /products/4/edit
+          - row [ref=f12e151]:
+            - cell "Rodinha" [ref=f12e152]
+            - cell "Quantidade" [ref=f12e153]
+            - cell "R$ 1,00" [ref=f12e154]
+            - cell "unidade" [ref=f12e155]
+            - cell "0" [ref=f12e156]
+            - cell "Ativo" [ref=f12e157]
+            - cell [ref=f12e159]:
+              - generic [ref=f12e160]:
+                - link "Ver" [ref=f12e161] [cursor=pointer]:
+                  - /url: /products/2
+                - link "Editar" [ref=f12e162] [cursor=pointer]:
+                  - /url: /products/2/edit
+          - row [ref=f12e163]:
+            - cell "Tábua" [ref=f12e164]
+            - cell "Quantidade" [ref=f12e165]
+            - cell "R$ 1,00" [ref=f12e166]
+            - cell "unidade" [ref=f12e167]
+            - cell "0" [ref=f12e168]
+            - cell "Ativo" [ref=f12e169]
+            - cell [ref=f12e171]:
+              - generic [ref=f12e172]:
+                - link "Ver" [ref=f12e173] [cursor=pointer]:
+                  - /url: /products/3
+                - link "Editar" [ref=f12e174] [cursor=pointer]:
+                  - /url: /products/3/edit
+  - region "Notifications alt+T":
+    - list

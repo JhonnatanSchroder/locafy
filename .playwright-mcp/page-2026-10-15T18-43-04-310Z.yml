@@ -1,0 +1,73 @@
+- generic [ref=f16e3]:
+  - main [ref=f16e4]:
+    - generic [ref=f16e6]:
+      - button "Toggle sidebar" [ref=f16e7]
+      - navigation "breadcrumb" [ref=f16e9]:
+        - list [ref=f16e10]:
+          - listitem [ref=f16e11]:
+            - link "Contratos" [disabled] [ref=f16e12]
+    - generic [ref=f16e13]:
+      - generic [ref=f16e14]:
+        - generic [ref=f16e15]:
+          - heading "Contratos" [level=1] [ref=f16e16]
+          - paragraph [ref=f16e17]: Acompanhe locações, movimentações e o financeiro dos seus contratos.
+        - link "Novo contrato" [ref=f16e18] [cursor=pointer]:
+          - /url: /contracts/create
+      - generic [ref=f16e19]:
+        - generic [ref=f16e20]:
+          - paragraph [ref=f16e21]: Contratos ativos
+          - paragraph [ref=f16e22]: "0"
+        - generic [ref=f16e23]:
+          - paragraph [ref=f16e24]: Devolvidos para fechamento
+          - paragraph [ref=f16e25]: "0"
+        - generic [ref=f16e26]:
+          - paragraph [ref=f16e27]: Total de contratos
+          - paragraph [ref=f16e28]: "1"
+      - generic [ref=f16e29]:
+        - heading "Buscar contratos" [level=3] [ref=f16e31]
+        - generic [ref=f16e33]:
+          - textbox "Buscar por número, cliente ou endereço" [ref=f16e34]
+          - combobox [ref=f16e35]:
+            - option "Todos" [selected]
+            - option "Ativos"
+            - option "Pendentes de pagamento"
+            - option "Prontos para finalizar"
+            - option "Finalizados"
+            - option "Cancelados"
+          - button "Buscar" [ref=f16e37]
+      - table [ref=f16e41]:
+        - rowgroup [ref=f16e42]:
+          - row [ref=f16e43]:
+            - columnheader "Contrato" [ref=f16e44]
+            - columnheader "Cliente" [ref=f16e45]
+            - columnheader "Status" [ref=f16e46]
+            - columnheader "Total acumulado" [ref=f16e47]
+            - columnheader "Total pago" [ref=f16e48]
+            - columnheader "Próxima cobrança" [ref=f16e49]
+            - columnheader "Itens atuais" [ref=f16e50]
+            - columnheader "Saldo a receber" [ref=f16e51]
+            - columnheader "Ações" [ref=f16e52]
+        - rowgroup [ref=f16e53]:
+          - row [ref=f16e54]:
+            - cell [ref=f16e55]:
+              - link "#1" [ref=f16e56] [cursor=pointer]:
+                - /url: /contracts/1
+            - cell "Helton serralheiro" [ref=f16e57]
+            - cell "Finalizado" [ref=f16e58]
+            - cell "R$ 44,40" [ref=f16e60]
+            - cell "R$ 40,00" [ref=f16e61]
+            - cell "—" [ref=f16e62]
+            - cell "—" [ref=f16e63]
+            - cell [ref=f16e64]:
+              - paragraph [ref=f16e65]: R$ 0,00
+              - paragraph [ref=f16e66]: Acumulado R$ 44,40
+              - paragraph [ref=f16e67]: Pago R$ 40,00
+              - paragraph [ref=f16e68]: Descontos R$ 4,40
+            - cell [ref=f16e69]:
+              - generic [ref=f16e70]:
+                - link "Ver" [ref=f16e71] [cursor=pointer]:
+                  - /url: /contracts/1
+                - link "Editar" [ref=f16e72] [cursor=pointer]:
+                  - /url: /contracts/1/edit
+  - region "Notifications alt+T":
+    - list

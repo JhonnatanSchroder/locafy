@@ -1,0 +1,93 @@
+- generic [ref=f20e3]:
+  - main [ref=f20e4]:
+    - generic [ref=f20e6]:
+      - button "Toggle sidebar" [ref=f20e7]
+      - navigation "breadcrumb" [ref=f20e9]:
+        - list [ref=f20e10]:
+          - listitem [ref=f20e11]:
+            - link "Produtos" [disabled] [ref=f20e12]
+    - generic [ref=f20e13]:
+      - generic [ref=f20e14]:
+        - generic [ref=f20e15]:
+          - heading "Produtos" [level=1] [ref=f20e16]
+          - paragraph [ref=f20e17]: Gerencie o catálogo e o estoque-base da sua empresa.
+        - link "Novo produto" [ref=f20e18] [cursor=pointer]:
+          - /url: /products/create
+      - generic [ref=f20e19]:
+        - heading "Buscar produtos" [level=3] [ref=f20e21]
+        - generic [ref=f20e23]:
+          - textbox "Buscar por nome" [ref=f20e24]
+          - combobox [ref=f20e25]:
+            - option "Todos os tipos" [selected]
+            - option "Quantidade"
+            - option "Individual"
+          - combobox [ref=f20e26]:
+            - option "Todos os status" [selected]
+            - option "Ativos"
+            - option "Inativos"
+          - button "Filtrar" [ref=f20e28]
+      - table [ref=f20e32]:
+        - rowgroup [ref=f20e33]:
+          - row [ref=f20e34]:
+            - columnheader "Nome" [ref=f20e35]
+            - columnheader "Tipo" [ref=f20e36]
+            - columnheader "Preço padrão" [ref=f20e37]
+            - columnheader "Unidade" [ref=f20e38]
+            - columnheader "Estoque total" [ref=f20e39]
+            - columnheader "Status" [ref=f20e40]
+            - columnheader "Ações" [ref=f20e41]
+        - rowgroup [ref=f20e42]:
+          - row [ref=f20e43]:
+            - cell "Andaime" [ref=f20e44]
+            - cell "Quantidade" [ref=f20e45]
+            - cell "R$ 0,60" [ref=f20e46]
+            - cell "peça" [ref=f20e47]
+            - cell "1500" [ref=f20e48]
+            - cell "Ativo" [ref=f20e49]
+            - cell [ref=f20e51]:
+              - generic [ref=f20e52]:
+                - link "Ver" [ref=f20e53] [cursor=pointer]:
+                  - /url: /products/1
+                - link "Editar" [ref=f20e54] [cursor=pointer]:
+                  - /url: /products/1/edit
+          - row [ref=f20e55]:
+            - cell "Betoneira" [ref=f20e56]
+            - cell "Individual" [ref=f20e57]
+            - cell "—" [ref=f20e58]
+            - cell "máquina" [ref=f20e59]
+            - cell "—" [ref=f20e60]
+            - cell "Ativo" [ref=f20e61]
+            - cell [ref=f20e63]:
+              - generic [ref=f20e64]:
+                - link "Ver" [ref=f20e65] [cursor=pointer]:
+                  - /url: /products/4
+                - link "Editar" [ref=f20e66] [cursor=pointer]:
+                  - /url: /products/4/edit
+          - row [ref=f20e67]:
+            - cell "Rodinha" [ref=f20e68]
+            - cell "Quantidade" [ref=f20e69]
+            - cell "R$ 1,00" [ref=f20e70]
+            - cell "unidade" [ref=f20e71]
+            - cell "0" [ref=f20e72]
+            - cell "Ativo" [ref=f20e73]
+            - cell [ref=f20e75]:
+              - generic [ref=f20e76]:
+                - link "Ver" [ref=f20e77] [cursor=pointer]:
+                  - /url: /products/2
+                - link "Editar" [ref=f20e78] [cursor=pointer]:
+                  - /url: /products/2/edit
+          - row [ref=f20e79]:
+            - cell "Tábua" [ref=f20e80]
+            - cell "Quantidade" [ref=f20e81]
+            - cell "R$ 1,00" [ref=f20e82]
+            - cell "unidade" [ref=f20e83]
+            - cell "0" [ref=f20e84]
+            - cell "Ativo" [ref=f20e85]
+            - cell [ref=f20e87]:
+              - generic [ref=f20e88]:
+                - link "Ver" [ref=f20e89] [cursor=pointer]:
+                  - /url: /products/3
+                - link "Editar" [ref=f20e90] [cursor=pointer]:
+                  - /url: /products/3/edit
+  - region "Notifications alt+T":
+    - list

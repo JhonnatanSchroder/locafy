@@ -82,9 +82,10 @@ class ClientController extends Controller
     /**
      * Store a newly created client in storage.
      */
-    public function store(StoreClientRequest $request, CreateClientAction $createClient): RedirectResponse|JsonResponse
+    public function store(StoreClientRequest $request, CreateClientAction $createClient, RecordAdminAuditAction $audit): RedirectResponse|JsonResponse
     {
         $client = $createClient->handle($this->userCompany($request), $request->validated());
+        $audit->handle($request->user(), 'client', $client->id, 'created', null, ['type' => $client->type->value, 'name' => $client->name, 'phone' => $client->phone]);
         if ($request->expectsJson()) {
             return (new ClientResource($client))->response()->setStatusCode(201);
         }
@@ -126,13 +127,19 @@ class ClientController extends Controller
     /**
      * Update the specified client in storage.
      */
-    public function update(UpdateClientRequest $request, int $client, UpdateClientAction $updateClient): RedirectResponse
+    public function update(UpdateClientRequest $request, int $client, UpdateClientAction $updateClient, RecordAdminAuditAction $audit): RedirectResponse
     {
         $client = $this->findClientForUser($request, $client);
 
         Gate::authorize('update', $client);
 
+        $before = ['type' => $client->type->value, 'name' => $client->name, 'phone' => $client->phone, 'residential_address' => $client->residential_address, 'notes' => $client->notes];
         $client = $updateClient->handle($client, $request->validated());
+        $after = ['type' => $client->type->value, 'name' => $client->name, 'phone' => $client->phone, 'residential_address' => $client->residential_address, 'notes' => $client->notes];
+        $changedBefore = array_intersect_key($before, array_diff_assoc($before, $after));
+        if ($changedBefore !== []) {
+            $audit->handle($request->user(), 'client', $client->id, 'updated', $changedBefore, array_intersect_key($after, $changedBefore));
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Cliente Atualizado com Sucesso.')]);
 

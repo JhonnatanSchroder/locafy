@@ -9,12 +9,12 @@ class AdminAudit extends Model
 {
     protected $fillable = [
         'company_id', 'user_id', 'entity_type', 'entity_id', 'operation',
-        'before_state', 'after_state', 'reason',
+        'source', 'module', 'user_snapshot', 'before_state', 'after_state', 'reason',
     ];
 
     protected function casts(): array
     {
-        return ['before_state' => 'array', 'after_state' => 'array'];
+        return ['before_state' => 'array', 'after_state' => 'array', 'user_snapshot' => 'array'];
     }
 
     public function company(): BelongsTo

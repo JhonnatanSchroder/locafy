@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminAuditController;
 use App\Http\Controllers\ChargeController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ContractAttachmentController;
@@ -44,6 +45,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'destroy'])->name('contracts.attachments.destroy');
     Route::resource('movements', MovementController::class)->except(['destroy']);
     Route::get('usuarios', [UserAdministrationController::class, 'index'])->name('users.index');
+    Route::get('auditoria', [AdminAuditController::class, 'index'])->name('audits.index');
+    Route::get('auditoria/{audit}', [AdminAuditController::class, 'show'])->name('audits.show');
     Route::post('usuarios', [UserAdministrationController::class, 'store'])->name('users.store');
     Route::patch('usuarios/{user}', [UserAdministrationController::class, 'update'])->name('users.update');
     Route::patch('usuarios/{user}/activate', [UserAdministrationController::class, 'activate'])->name('users.activate');

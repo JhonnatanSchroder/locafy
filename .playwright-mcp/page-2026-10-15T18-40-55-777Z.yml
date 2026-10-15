@@ -1,0 +1,263 @@
+- main [ref=f1e3]:
+  - generic [ref=f1e5]:
+    - link "Locafy início" [ref=f1e6] [cursor=pointer]:
+      - /url: "#top"
+      - generic [ref=f1e7]: Locafy
+    - navigation "Principal" [ref=f1e8]:
+      - link "Produto" [ref=f1e9] [cursor=pointer]:
+        - /url: "#produto"
+      - link "Como funciona" [ref=f1e10] [cursor=pointer]:
+        - /url: "#fluxo"
+      - link "Web + Mobile" [ref=f1e11] [cursor=pointer]:
+        - /url: "#mobile"
+    - link "Entrar" [ref=f1e12] [cursor=pointer]:
+      - /url: /login
+  - generic [ref=f1e19]:
+    - generic [ref=f1e20]:
+      - paragraph [ref=f1e21]: Gestão de locações para quem está em movimento
+      - heading "Controle sua locação do contrato ao recebimento." [level=1] [ref=f1e22]
+      - paragraph [ref=f1e23]: Clientes, contratos, retiradas, devoluções, cobranças e pagamentos em um único sistema — no computador e no celular.
+      - generic [ref=f1e24]:
+        - link "Entrar no Locafy" [ref=f1e25] [cursor=pointer]:
+          - /url: /login
+        - link "Conhecer o sistema" [ref=f1e28] [cursor=pointer]:
+          - /url: "#produto"
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - generic [ref=f1e33]: app.locafy.com.br / dashboard
+        - generic [ref=f1e38]:
+          - complementary [ref=f1e39]:
+            - generic [ref=f1e40]: Locafy
+            - generic [ref=f1e42]:
+              - generic [ref=f1e43]: Visão geral
+              - generic [ref=f1e44]: Clientes
+              - generic [ref=f1e45]: Contratos
+              - generic [ref=f1e46]: Movimentações
+              - generic [ref=f1e47]: Pagamentos
+          - generic [ref=f1e48]:
+            - generic [ref=f1e49]:
+              - generic [ref=f1e50]:
+                - paragraph [ref=f1e51]: Quarta-feira, 09 de outubro
+                - heading "Visão geral" [level=3] [ref=f1e52]
+              - generic [ref=f1e53]: AS
+            - generic [ref=f1e54]:
+              - generic [ref=f1e55]:
+                - generic [ref=f1e56]: Contratos ativos
+                - strong [ref=f1e57]: Em andamento
+                - generic [ref=f1e58]: visão operacional
+              - generic [ref=f1e62]:
+                - generic [ref=f1e63]: A receber
+                - strong [ref=f1e64]: Em aberto
+                - generic [ref=f1e65]: cobranças vinculadas
+              - generic [ref=f1e66]:
+                - generic [ref=f1e67]: Em campo
+                - strong [ref=f1e68]: Monitorado
+                - generic [ref=f1e69]: peças e equipamentos
+            - generic [ref=f1e70]:
+              - generic [ref=f1e71]:
+                - generic [ref=f1e72]:
+                  - generic [ref=f1e73]: Atividade operacional
+                  - generic [ref=f1e74]: Últimos 7 dias
+                - generic [ref=f1e83]:
+                  - generic [ref=f1e84]: 03 out
+                  - generic [ref=f1e85]: 05 out
+                  - generic [ref=f1e86]: 09 out
+              - generic [ref=f1e87]:
+                - generic [ref=f1e88]: Próximas ações
+                - generic [ref=f1e93]:
+                  - generic [ref=f1e98]:
+                    - paragraph [ref=f1e99]: Próxima cobrança
+                    - text: Acompanhe no contrato
+                  - generic [ref=f1e107]:
+                    - paragraph [ref=f1e108]: Retirada agendada
+                    - text: Obra em andamento
+      - generic [ref=f1e116]:
+        - paragraph [ref=f1e117]: Retirada registrada
+        - paragraph [ref=f1e118]: Histórico atualizado
+      - generic [ref=f1e125]:
+        - paragraph [ref=f1e126]: Financeiro
+        - paragraph [ref=f1e127]: Saldo em aberto
+  - generic [ref=f1e129]:
+    - generic [ref=f1e130]:
+      - paragraph [ref=f1e131]: Uma operação que se explica
+      - heading "Menos informação espalhada. Mais contexto em cada contrato." [level=2] [ref=f1e132]
+      - paragraph [ref=f1e133]: O Locafy conecta cliente, itens em campo, movimentações e recebimentos no mesmo contexto.
+      - generic [ref=f1e134]:
+        - generic [ref=f1e135]: Peças e equipamentos em campo.
+        - generic [ref=f1e140]: Fretes, fotos e movimentações no contrato.
+        - generic [ref=f1e145]: Cobrança e operação na mesma visão.
+    - generic [ref=f1e150]:
+      - generic [ref=f1e151]:
+        - generic [ref=f1e152]:
+          - paragraph [ref=f1e153]: Detalhe do contrato
+          - heading "Obra em andamento" [level=3] [ref=f1e154]
+          - paragraph [ref=f1e155]: Cliente selecionado · contrato ativo
+        - generic [ref=f1e156]: ATIVO
+      - generic [ref=f1e157]:
+        - generic [ref=f1e158]:
+          - generic [ref=f1e163]: Itens em campo
+          - strong [ref=f1e164]: Acompanhados
+        - generic [ref=f1e165]:
+          - generic [ref=f1e169]: Saldo
+          - strong [ref=f1e170]: Em aberto
+        - generic [ref=f1e171]:
+          - generic [ref=f1e174]: Próxima cobrança
+          - strong [ref=f1e175]: Programada
+      - generic [ref=f1e184]:
+        - paragraph [ref=f1e185]: Última movimentação
+        - paragraph [ref=f1e186]: Retirada vinculada ao contrato · histórico atualizado
+  - generic [ref=f1e190]:
+    - generic [ref=f1e191]:
+      - paragraph [ref=f1e192]: O fluxo real da locação
+      - heading "Do primeiro contato ao contrato encerrado." [level=2] [ref=f1e193]
+      - paragraph [ref=f1e194]: Cada etapa deixa um registro. A operação fica clara para quem está na loja e para quem está na obra.
+    - generic [ref=f1e195]:
+      - generic [ref=f1e196]:
+        - button "01 Cliente Cadastre e encontre rapidamente." [ref=f1e197]:
+          - generic [ref=f1e198]: "01"
+          - generic [ref=f1e199]:
+            - strong [ref=f1e200]: Cliente
+            - generic [ref=f1e201]: Cadastre e encontre rapidamente.
+        - button "02 Contrato Centralize itens, valores e obra." [ref=f1e205]:
+          - generic [ref=f1e206]: "02"
+          - generic [ref=f1e207]:
+            - strong [ref=f1e208]: Contrato
+            - generic [ref=f1e209]: Centralize itens, valores e obra.
+        - button "03 Movimentação Registre o que saiu e voltou." [ref=f1e214]:
+          - generic [ref=f1e215]: "03"
+          - generic [ref=f1e216]:
+            - strong [ref=f1e217]: Movimentação
+            - generic [ref=f1e218]: Registre o que saiu e voltou.
+        - button "04 Recebimento Acompanhe cobrança e saldo." [ref=f1e224]:
+          - generic [ref=f1e225]: "04"
+          - generic [ref=f1e226]:
+            - strong [ref=f1e227]: Recebimento
+            - generic [ref=f1e228]: Acompanhe cobrança e saldo.
+      - generic [ref=f1e232]:
+        - generic [ref=f1e233]:
+          - generic [ref=f1e234]: Locafy / contrato
+          - generic [ref=f1e236]: visão operacional
+        - generic [ref=f1e237]:
+          - generic [ref=f1e239]:
+            - paragraph [ref=f1e240]: Cliente selecionado
+            - heading "Cliente" [level=3] [ref=f1e241]
+          - paragraph [ref=f1e245]: Cadastro e contato no contexto do contrato.
+          - generic [ref=f1e246]:
+            - generic [ref=f1e247]:
+              - generic [ref=f1e248]: Contrato
+              - strong [ref=f1e249]: Ativo
+            - generic [ref=f1e250]:
+              - generic [ref=f1e251]: Itens
+              - strong [ref=f1e252]: Em campo
+            - generic [ref=f1e253]:
+              - generic [ref=f1e254]: Próximo passo
+              - strong [ref=f1e255]: Registrar
+          - generic [ref=f1e256]: Histórico e cobrança permanecem no contrato
+  - generic [ref=f1e260]:
+    - generic [ref=f1e261]:
+      - paragraph [ref=f1e262]: Operação sem ponto cego
+      - heading "O que está na obra também precisa estar no sistema." [level=2] [ref=f1e263]
+      - paragraph [ref=f1e264]: Retiradas, devoluções, fretes e fotos ficam vinculados ao contrato. Quando alguém precisa entender o que aconteceu, o histórico está lá.
+      - link "Ver no computador e no celular" [ref=f1e265] [cursor=pointer]:
+        - /url: "#mobile"
+    - generic [ref=f1e268]:
+      - generic [ref=f1e269]:
+        - heading "Retiradas e devoluções" [level=3] [ref=f1e275]
+        - paragraph [ref=f1e276]: Movimente itens sem perder a posição física do contrato.
+      - generic [ref=f1e285]:
+        - heading "Fotos" [level=3] [ref=f1e290]
+        - paragraph [ref=f1e291]: Evidências da obra e dos equipamentos.
+      - generic [ref=f1e292]:
+        - heading "Histórico" [level=3] [ref=f1e296]
+        - paragraph [ref=f1e297]: Cada mudança ligada ao contrato.
+  - generic [ref=f1e299]:
+    - generic [ref=f1e301]:
+      - generic [ref=f1e303]:
+        - generic [ref=f1e304]:
+          - generic [ref=f1e305]:
+            - paragraph [ref=f1e306]: Locafy
+            - paragraph [ref=f1e307]: Operação Locafy
+          - generic [ref=f1e308]: LC
+        - generic [ref=f1e309]:
+          - generic [ref=f1e310]:
+            - paragraph [ref=f1e311]: Contratos ativos
+            - strong [ref=f1e312]: Em andamento
+          - generic [ref=f1e315]:
+            - generic [ref=f1e316]:
+              - text: A receber
+              - strong [ref=f1e317]: Em aberto
+            - generic [ref=f1e318]:
+              - text: Em campo
+              - strong [ref=f1e319]: Monitorado
+          - generic [ref=f1e320]:
+            - generic [ref=f1e321]:
+              - generic [ref=f1e322]: Últimas movimentações
+              - generic [ref=f1e323]: Ver todas
+            - generic [ref=f1e324]:
+              - generic [ref=f1e325]:
+                - generic [ref=f1e326]: ↘
+                - generic [ref=f1e327]:
+                  - paragraph [ref=f1e328]: Devolução
+                  - text: Histórico do contrato
+              - generic [ref=f1e329]:
+                - generic [ref=f1e330]: ↗
+                - generic [ref=f1e331]:
+                  - paragraph [ref=f1e332]: Retirada
+                  - text: Histórico do contrato
+        - generic [ref=f1e333]:
+          - generic [ref=f1e334]: Início
+          - generic [ref=f1e335]: Contratos
+          - generic [ref=f1e336]: Mais
+      - generic [ref=f1e337]: Retirada sincronizada
+    - generic [ref=f1e340]:
+      - paragraph [ref=f1e341]: Web + Mobile
+      - heading "Na loja, na obra ou no caminho." [level=2] [ref=f1e342]
+      - paragraph [ref=f1e343]: A visão geral fica no computador. A operação acompanha a equipe no celular, com contratos, movimentações, cobranças e pagamentos no mesmo contexto.
+      - generic [ref=f1e344]:
+        - generic [ref=f1e352]:
+          - heading "Visão geral" [level=3] [ref=f1e353]
+          - paragraph [ref=f1e354]: Clientes, contratos e saldo.
+        - generic [ref=f1e362]:
+          - heading "Ação no campo" [level=3] [ref=f1e363]
+          - paragraph [ref=f1e364]: Retire, devolva e consulte.
+  - generic [ref=f1e366]:
+    - generic [ref=f1e367]:
+      - paragraph [ref=f1e368]: Feito para a rotina da locação
+      - heading "Uma base para a operação que já existe." [level=2] [ref=f1e369]
+    - generic [ref=f1e370]:
+      - generic [ref=f1e371]:
+        - generic [ref=f1e373]:
+          - text: Contratos
+          - heading "Do combinado ao realizado." [level=3] [ref=f1e374]
+          - paragraph [ref=f1e375]: Itens, valores, datas, situação e histórico em uma única visão.
+        - generic [ref=f1e379]: Ativo
+      - generic [ref=f1e386]:
+        - text: Cobranças
+        - heading "Receba com clareza." [level=3] [ref=f1e387]
+        - paragraph [ref=f1e388]: Veja valores acumulados, pagamentos, descontos e o que falta receber.
+        - strong [ref=f1e390]: Saldo em aberto
+      - generic [ref=f1e391]:
+        - heading "Movimentações" [level=3] [ref=f1e397]
+        - paragraph [ref=f1e398]: Retiradas e devoluções com quantidade física no lugar certo.
+      - generic [ref=f1e399]:
+        - heading "Fotos da operação" [level=3] [ref=f1e404]
+        - paragraph [ref=f1e405]: Registre a condição da obra e dos equipamentos.
+      - generic [ref=f1e406]:
+        - heading "Pagamentos" [level=3] [ref=f1e410]
+        - paragraph [ref=f1e411]: Dinheiro recebido separado do desconto concedido.
+  - generic [ref=f1e414]:
+    - paragraph [ref=f1e415]: Locafy
+    - heading "Menos planilha. Mais controle da operação." [level=2] [ref=f1e416]
+    - paragraph [ref=f1e417]: Entre no sistema e veja sua locação com o contexto que ela merece.
+    - link "Entrar no Locafy" [ref=f1e418] [cursor=pointer]:
+      - /url: /login
+  - generic [ref=f1e422]:
+    - generic [ref=f1e423]: Locafy
+    - generic [ref=f1e425]:
+      - link "Produto" [ref=f1e426] [cursor=pointer]:
+        - /url: "#produto"
+      - link "Como funciona" [ref=f1e427] [cursor=pointer]:
+        - /url: "#fluxo"
+      - link "Entrar" [ref=f1e428] [cursor=pointer]:
+        - /url: /login
+    - generic [ref=f1e429]: © 2026 Locafy

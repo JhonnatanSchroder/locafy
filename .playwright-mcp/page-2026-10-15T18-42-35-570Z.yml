@@ -1,0 +1,100 @@
+- generic [ref=f10e3]:
+  - generic [ref=f10e6]:
+    - list [ref=f10e8]:
+      - listitem [ref=f10e9]:
+        - link "Locafy LOCAFY" [ref=f10e10] [cursor=pointer]:
+          - /url: /dashboard
+          - img "Locafy" [ref=f10e12]
+          - generic [ref=f10e13]: LOCAFY
+    - list [ref=f10e17]:
+      - listitem [ref=f10e18]:
+        - link "Dashboard" [ref=f10e19] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=f10e26]:
+        - link "Clientes" [ref=f10e27] [cursor=pointer]:
+          - /url: /clients
+      - listitem [ref=f10e33]:
+        - link "Produtos" [ref=f10e34] [cursor=pointer]:
+          - /url: /products
+      - listitem [ref=f10e40]:
+        - link "Equipamentos" [ref=f10e41] [cursor=pointer]:
+          - /url: /equipments
+      - listitem [ref=f10e45]:
+        - link "Contratos" [ref=f10e46] [cursor=pointer]:
+          - /url: /contracts
+      - listitem [ref=f10e51]:
+        - link "Cobranças" [ref=f10e52] [cursor=pointer]:
+          - /url: /charges
+      - listitem [ref=f10e57]:
+        - link "Pagamentos" [ref=f10e58] [cursor=pointer]:
+          - /url: /pagamentos
+      - listitem [ref=f10e63]:
+        - link "Movimentações" [ref=f10e64] [cursor=pointer]:
+          - /url: /movements
+      - listitem [ref=f10e69]:
+        - link "Usuários" [ref=f10e70] [cursor=pointer]:
+          - /url: /usuarios
+    - list [ref=f10e78]:
+      - listitem [ref=f10e79]:
+        - button "JG Jhonnatan Gustavo" [ref=f10e80]:
+          - generic [ref=f10e81]: JG
+          - generic [ref=f10e83]: Jhonnatan Gustavo
+  - main [ref=f10e88]:
+    - generic [ref=f10e90]:
+      - button "Toggle sidebar" [ref=f10e91]
+      - navigation "breadcrumb" [ref=f10e93]:
+        - list [ref=f10e94]:
+          - listitem [ref=f10e95]:
+            - link "Movimentações" [disabled] [ref=f10e96]
+    - generic [ref=f10e97]:
+      - generic [ref=f10e98]:
+        - generic [ref=f10e99]:
+          - heading "Movimentações" [level=1] [ref=f10e100]
+          - paragraph [ref=f10e101]: Retiradas, devoluções e correções físicas dos contratos.
+        - link "Nova movimentação" [ref=f10e102] [cursor=pointer]:
+          - /url: /movements/create
+      - generic [ref=f10e103]:
+        - heading "Buscar movimentações" [level=3] [ref=f10e105]
+        - generic [ref=f10e107]:
+          - textbox "Contrato ou cliente" [ref=f10e108]
+          - combobox [ref=f10e109]:
+            - option "Todos os tipos" [selected]
+            - option "Retirada"
+            - option "Devolução"
+          - button "Buscar" [ref=f10e111]
+      - table [ref=f10e115]:
+        - rowgroup [ref=f10e116]:
+          - row [ref=f10e117]:
+            - columnheader "Data/hora" [ref=f10e118]
+            - columnheader "Contrato" [ref=f10e119]
+            - columnheader "Cliente" [ref=f10e120]
+            - columnheader "Tipo" [ref=f10e121]
+            - columnheader "Itens" [ref=f10e122]
+            - columnheader "Ações" [ref=f10e123]
+        - rowgroup [ref=f10e124]:
+          - row [ref=f10e125]:
+            - cell "01/10/2026 - 20:53h" [ref=f10e126]
+            - cell "#1" [ref=f10e127]
+            - cell "Helton serralheiro" [ref=f10e128]
+            - cell "Devolução" [ref=f10e129]
+            - cell "12 Andaime" [ref=f10e131]
+            - cell [ref=f10e132]:
+              - generic [ref=f10e133]:
+                - link "Ver" [ref=f10e134] [cursor=pointer]:
+                  - /url: /movements/2
+                - link "Editar" [ref=f10e135] [cursor=pointer]:
+                  - /url: /movements/2/edit
+          - row [ref=f10e136]:
+            - cell "30/09/2026 - 13:40h" [ref=f10e137]
+            - cell "#1" [ref=f10e138]
+            - cell "Helton serralheiro" [ref=f10e139]
+            - cell "Retirada" [ref=f10e140]
+            - cell "12 Andaime" [ref=f10e142]
+            - cell [ref=f10e143]:
+              - generic [ref=f10e144]:
+                - link "Ver" [ref=f10e145] [cursor=pointer]:
+                  - /url: /movements/1
+                - link "Editar" [ref=f10e146] [cursor=pointer]:
+                  - /url: /movements/1/edit
+  - region "Notifications alt+T":
+    - list

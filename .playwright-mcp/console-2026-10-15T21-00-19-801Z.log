@@ -1,0 +1,56 @@
+[     723ms] [LOG] 🔍 Browser logger active (MCP server detected). Posting to: http://localhost:8000/_boost/browser-logs @ http://localhost:8000/auditoria/1:110
+[    1373ms] [WARNING] [Vue warn]: Hydration node mismatch:
+- rendered on server: JSHandle@node  
+- expected on client: Symbol(v-fgt) 
+  at <DialogRoot data-slot="sheet" open=false onUpdate:open=fn > 
+  at <Sheet key=1 open=false onUpdate:open=fn<setOpenMobile> > 
+  at <Sidebar collapsible="icon" variant="inset" > 
+  at <AppSidebar> 
+  at <TooltipProvider delay-duration=0 > 
+  at <SidebarProvider key=1 default-open=true > 
+  at <AppShell variant="sidebar" > 
+  at <AppSidebarLayout breadcrumbs= [Object, Object] > 
+  at <AppLayout errors= {} name="Laravel" auth= {user: Object, can: Object, mustChangePassword: false}  ... > 
+  at <Inertia initialPage= {component: admin/audits/Show, props: Object, url: /auditoria/1, version: f58f39f266be6eb68a79dd0a7d3156d3, sharedProps: Array(4)} initialComponent= {layout: Object, __name: Show, props: Object, setup: , __hmrId: bae42f16} resolveComponent=fn<resolveComponent>  ... > 
+  at <App> @ http://localhost:8000/auditoria/1:197
+[    1385ms] [ERROR] Hydration completed but contains mismatches. @ http://localhost:8000/auditoria/1:197
+[    1391ms] [WARNING] [Vue warn]: Hydration attribute mismatch on JSHandle@node 
+  - rendered on server: d="m16 15-3-3 3-3"
+  - expected on client: d="m14 9 3 3-3 3"
+  Note: this mismatch is check-only. The DOM will not be rectified in production due to performance overhead.
+  You should fix the source of the mismatch. 
+  at <Icon icon= {name: panel-left-open, size: 24, node: Array(3), aliases: Array(1)} > 
+  at <Anonymous key=0 > 
+  at <Primitive data-slot="sidebar-trigger" data-variant="ghost" data-size="icon"  ... > 
+  at <Button data-sidebar="trigger" data-slot="sidebar-trigger" variant="ghost"  ... > 
+  at <SidebarTrigger class="-ml-1" > 
+  at <AppSidebarHeader breadcrumbs= [Object, Object] > 
+  at <SidebarInset key=0 class="min-w-0 overflow-x-clip" > 
+  at <AppContent variant="sidebar" class="min-w-0 overflow-x-clip" > 
+  at <TooltipProvider delay-duration=0 > 
+  at <SidebarProvider key=1 default-open=true > 
+  at <AppShell variant="sidebar" > 
+  at <AppSidebarLayout breadcrumbs= [Object, Object] > 
+  at <AppLayout errors= {} name="Laravel" auth= {user: Object, can: Object, mustChangePassword: false}  ... > 
+  at <Inertia initialPage= {component: admin/audits/Show, props: Object, url: /auditoria/1, version: f58f39f266be6eb68a79dd0a7d3156d3, sharedProps: Array(4)} initialComponent= {layout: Object, __name: Show, props: Object, setup: , __hmrId: bae42f16} resolveComponent=fn<resolveComponent>  ... > 
+  at <App> @ http://localhost:8000/auditoria/1:197
+[    1401ms] [WARNING] [Vue warn]: Hydration class mismatch on JSHandle@node 
+  - rendered on server: class="lucide lucide-panel-left-close lucide-sidebar-close"
+  - expected on client: class="lucide lucide-panel-left-open lucide-sidebar-open"
+  Note: this mismatch is check-only. The DOM will not be rectified in production due to performance overhead.
+  You should fix the source of the mismatch. 
+  at <Icon icon= {name: panel-left-open, size: 24, node: Array(3), aliases: Array(1)} > 
+  at <Anonymous key=0 > 
+  at <Primitive data-slot="sidebar-trigger" data-variant="ghost" data-size="icon"  ... > 
+  at <Button data-sidebar="trigger" data-slot="sidebar-trigger" variant="ghost"  ... > 
+  at <SidebarTrigger class="-ml-1" > 
+  at <AppSidebarHeader breadcrumbs= [Object, Object] > 
+  at <SidebarInset key=0 class="min-w-0 overflow-x-clip" > 
+  at <AppContent variant="sidebar" class="min-w-0 overflow-x-clip" > 
+  at <TooltipProvider delay-duration=0 > 
+  at <SidebarProvider key=1 default-open=true > 
+  at <AppShell variant="sidebar" > 
+  at <AppSidebarLayout breadcrumbs= [Object, Object] > 
+  at <AppLayout errors= {} name="Laravel" auth= {user: Object, can: Object, mustChangePassword: false}  ... > 
+  at <Inertia initialPage= {component: admin/audits/Show, props: Object, url: /auditoria/1, version: f58f39f266be6eb68a79dd0a7d3156d3, sharedProps: Array(4)} initialComponent= {layout: Object, __name: Show, props: Object, setup: , __hmrId: bae42f16} resolveComponent=fn<resolveComponent>  ... > 
+  at <App> @ http://localhost:8000/auditoria/1:197

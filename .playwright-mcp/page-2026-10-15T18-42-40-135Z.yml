@@ -1,0 +1,121 @@
+- generic [ref=f11e3]:
+  - generic [ref=f11e6]:
+    - list [ref=f11e8]:
+      - listitem [ref=f11e9]:
+        - link "Locafy LOCAFY" [ref=f11e10] [cursor=pointer]:
+          - /url: /dashboard
+          - img "Locafy" [ref=f11e12]
+          - generic [ref=f11e13]: LOCAFY
+    - list [ref=f11e17]:
+      - listitem [ref=f11e18]:
+        - link "Dashboard" [ref=f11e19] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=f11e26]:
+        - link "Clientes" [ref=f11e27] [cursor=pointer]:
+          - /url: /clients
+      - listitem [ref=f11e33]:
+        - link "Produtos" [ref=f11e34] [cursor=pointer]:
+          - /url: /products
+      - listitem [ref=f11e40]:
+        - link "Equipamentos" [ref=f11e41] [cursor=pointer]:
+          - /url: /equipments
+      - listitem [ref=f11e45]:
+        - link "Contratos" [ref=f11e46] [cursor=pointer]:
+          - /url: /contracts
+      - listitem [ref=f11e51]:
+        - link "Cobranças" [ref=f11e52] [cursor=pointer]:
+          - /url: /charges
+      - listitem [ref=f11e57]:
+        - link "Pagamentos" [ref=f11e58] [cursor=pointer]:
+          - /url: /pagamentos
+      - listitem [ref=f11e63]:
+        - link "Movimentações" [ref=f11e64] [cursor=pointer]:
+          - /url: /movements
+      - listitem [ref=f11e69]:
+        - link "Usuários" [ref=f11e70] [cursor=pointer]:
+          - /url: /usuarios
+    - list [ref=f11e78]:
+      - listitem [ref=f11e79]:
+        - button "JG Jhonnatan Gustavo" [ref=f11e80]:
+          - generic [ref=f11e81]: JG
+          - generic [ref=f11e83]: Jhonnatan Gustavo
+  - main [ref=f11e88]:
+    - generic [ref=f11e90]:
+      - button "Toggle sidebar" [ref=f11e91]
+      - navigation "breadcrumb" [ref=f11e93]:
+        - list [ref=f11e94]:
+          - listitem [ref=f11e95]:
+            - link "Pagamentos" [disabled] [ref=f11e96]
+    - generic [ref=f11e97]:
+      - generic [ref=f11e98]:
+        - generic [ref=f11e99]:
+          - heading "Pagamentos" [level=1] [ref=f11e100]
+          - paragraph [ref=f11e101]: Recebimentos da sua empresa, com histórico por contrato.
+        - link "Registrar no contrato" [ref=f11e102] [cursor=pointer]:
+          - /url: /contracts
+      - generic [ref=f11e103]:
+        - generic [ref=f11e104]:
+          - paragraph [ref=f11e105]: Recebido hoje
+          - paragraph [ref=f11e108]: R$ 0,00
+        - generic [ref=f11e109]:
+          - paragraph [ref=f11e110]: Recebido no mês
+          - paragraph [ref=f11e114]: R$ 40,00
+        - generic [ref=f11e115]:
+          - paragraph [ref=f11e116]: Pagamentos na seleção
+          - paragraph [ref=f11e117]: "1"
+        - generic [ref=f11e118]:
+          - paragraph [ref=f11e119]: Total recebido
+          - paragraph [ref=f11e120]: R$ 40,00
+          - paragraph [ref=f11e121]: Descontos R$ 4,40
+      - generic [ref=f11e122]:
+        - generic [ref=f11e123]:
+          - generic [ref=f11e124]: Cliente ou contrato
+          - textbox "Cliente ou contrato" [ref=f11e125]:
+            - /placeholder: Nome ou número
+        - generic [ref=f11e126]:
+          - generic [ref=f11e127]: De
+          - textbox "De" [ref=f11e128]
+        - generic [ref=f11e129]:
+          - generic [ref=f11e130]: Até
+          - textbox "Até" [ref=f11e131]
+        - generic [ref=f11e132]:
+          - generic [ref=f11e133]: Método
+          - combobox "Método" [ref=f11e134]:
+            - option "Todos" [selected]
+            - option "PIX"
+            - option "Dinheiro"
+            - option "Cartão"
+            - option "Transferência"
+            - option "Outro"
+        - generic [ref=f11e135]:
+          - button "Filtrar" [ref=f11e136]
+          - link "Limpar" [ref=f11e137] [cursor=pointer]:
+            - /url: /pagamentos
+      - table [ref=f11e139]:
+        - rowgroup [ref=f11e140]:
+          - row [ref=f11e141]:
+            - columnheader "Data" [ref=f11e142]
+            - columnheader "Cliente" [ref=f11e143]
+            - columnheader "Contrato" [ref=f11e144]
+            - columnheader "Recebido" [ref=f11e145]
+            - columnheader "Desconto" [ref=f11e146]
+            - columnheader "Abatimento" [ref=f11e147]
+            - columnheader "Método" [ref=f11e148]
+            - columnheader "Observação" [ref=f11e149]
+            - columnheader "Ações" [ref=f11e150]
+        - rowgroup [ref=f11e151]:
+          - row [ref=f11e152]:
+            - cell "06/10/2026 - 20:54h" [ref=f11e153]
+            - cell "Helton serralheiro" [ref=f11e154]
+            - cell "#1" [ref=f11e155]
+            - cell "R$ 40,00" [ref=f11e156]
+            - cell "R$ 4,40" [ref=f11e157]
+            - cell "R$ 44,40" [ref=f11e158]
+            - cell "PIX" [ref=f11e159]
+            - cell "—" [ref=f11e161]
+            - cell [ref=f11e162]:
+              - link "Ver contrato" [ref=f11e163] [cursor=pointer]:
+                - /url: /contracts/1
+      - paragraph [ref=f11e165]: 1–1 de 1 pagamentos
+  - region "Notifications alt+T":
+    - list

@@ -1,0 +1,113 @@
+- generic [ref=f8e3]:
+  - generic [ref=f8e6]:
+    - list [ref=f8e8]:
+      - listitem [ref=f8e9]:
+        - link "Locafy LOCAFY" [ref=f8e10] [cursor=pointer]:
+          - /url: /dashboard
+          - img "Locafy" [ref=f8e12]
+          - generic [ref=f8e13]: LOCAFY
+    - list [ref=f8e17]:
+      - listitem [ref=f8e18]:
+        - link "Dashboard" [ref=f8e19] [cursor=pointer]:
+          - /url: /dashboard
+      - listitem [ref=f8e26]:
+        - link "Clientes" [ref=f8e27] [cursor=pointer]:
+          - /url: /clients
+      - listitem [ref=f8e33]:
+        - link "Produtos" [ref=f8e34] [cursor=pointer]:
+          - /url: /products
+      - listitem [ref=f8e40]:
+        - link "Equipamentos" [ref=f8e41] [cursor=pointer]:
+          - /url: /equipments
+      - listitem [ref=f8e45]:
+        - link "Contratos" [ref=f8e46] [cursor=pointer]:
+          - /url: /contracts
+      - listitem [ref=f8e51]:
+        - link "Cobranças" [ref=f8e52] [cursor=pointer]:
+          - /url: /charges
+      - listitem [ref=f8e57]:
+        - link "Pagamentos" [ref=f8e58] [cursor=pointer]:
+          - /url: /pagamentos
+      - listitem [ref=f8e63]:
+        - link "Movimentações" [ref=f8e64] [cursor=pointer]:
+          - /url: /movements
+      - listitem [ref=f8e69]:
+        - link "Usuários" [ref=f8e70] [cursor=pointer]:
+          - /url: /usuarios
+    - list [ref=f8e78]:
+      - listitem [ref=f8e79]:
+        - button "JG Jhonnatan Gustavo" [ref=f8e80]:
+          - generic [ref=f8e81]: JG
+          - generic [ref=f8e83]: Jhonnatan Gustavo
+  - main [ref=f8e88]:
+    - generic [ref=f8e90]:
+      - button "Toggle sidebar" [ref=f8e91]
+      - navigation "breadcrumb" [ref=f8e93]:
+        - list [ref=f8e94]:
+          - listitem [ref=f8e95]:
+            - link "Contratos" [disabled] [ref=f8e96]
+    - generic [ref=f8e97]:
+      - generic [ref=f8e98]:
+        - generic [ref=f8e99]:
+          - heading "Contratos" [level=1] [ref=f8e100]
+          - paragraph [ref=f8e101]: Acompanhe locações, movimentações e o financeiro dos seus contratos.
+        - link "Novo contrato" [ref=f8e102] [cursor=pointer]:
+          - /url: /contracts/create
+      - generic [ref=f8e103]:
+        - generic [ref=f8e104]:
+          - paragraph [ref=f8e105]: Contratos ativos
+          - paragraph [ref=f8e106]: "0"
+        - generic [ref=f8e107]:
+          - paragraph [ref=f8e108]: Devolvidos para fechamento
+          - paragraph [ref=f8e109]: "0"
+        - generic [ref=f8e110]:
+          - paragraph [ref=f8e111]: Total de contratos
+          - paragraph [ref=f8e112]: "1"
+      - generic [ref=f8e113]:
+        - heading "Buscar contratos" [level=3] [ref=f8e115]
+        - generic [ref=f8e117]:
+          - textbox "Buscar por número, cliente ou endereço" [ref=f8e118]
+          - combobox [ref=f8e119]:
+            - option "Todos" [selected]
+            - option "Ativos"
+            - option "Pendentes de pagamento"
+            - option "Prontos para finalizar"
+            - option "Finalizados"
+            - option "Cancelados"
+          - button "Buscar" [ref=f8e121]
+      - table [ref=f8e125]:
+        - rowgroup [ref=f8e126]:
+          - row [ref=f8e127]:
+            - columnheader "Contrato" [ref=f8e128]
+            - columnheader "Cliente" [ref=f8e129]
+            - columnheader "Status" [ref=f8e130]
+            - columnheader "Total acumulado" [ref=f8e131]
+            - columnheader "Total pago" [ref=f8e132]
+            - columnheader "Próxima cobrança" [ref=f8e133]
+            - columnheader "Itens atuais" [ref=f8e134]
+            - columnheader "Saldo a receber" [ref=f8e135]
+            - columnheader "Ações" [ref=f8e136]
+        - rowgroup [ref=f8e137]:
+          - row [ref=f8e138]:
+            - cell [ref=f8e139]:
+              - link "#1" [ref=f8e140] [cursor=pointer]:
+                - /url: /contracts/1
+            - cell "Helton serralheiro" [ref=f8e141]
+            - cell "Finalizado" [ref=f8e142]
+            - cell "R$ 44,40" [ref=f8e144]
+            - cell "R$ 40,00" [ref=f8e145]
+            - cell "—" [ref=f8e146]
+            - cell "—" [ref=f8e147]
+            - cell [ref=f8e148]:
+              - paragraph [ref=f8e149]: R$ 0,00
+              - paragraph [ref=f8e150]: Acumulado R$ 44,40
+              - paragraph [ref=f8e151]: Pago R$ 40,00
+              - paragraph [ref=f8e152]: Descontos R$ 4,40
+            - cell [ref=f8e153]:
+              - generic [ref=f8e154]:
+                - link "Ver" [ref=f8e155] [cursor=pointer]:
+                  - /url: /contracts/1
+                - link "Editar" [ref=f8e156] [cursor=pointer]:
+                  - /url: /contracts/1/edit
+  - region "Notifications alt+T":
+    - list
