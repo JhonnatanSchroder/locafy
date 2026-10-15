@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\Contract;
 use App\Models\ContractItem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class CreateContractAction
 {
@@ -18,6 +19,10 @@ class CreateContractAction
     public function handle(Company $company, array $data): Contract
     {
         return DB::transaction(function () use ($company, $data): Contract {
+            $client = $company->clients()->findOrFail($data['client_id']);
+            if (in_array($client->status?->value, ['BLOCKED', 'INACTIVE'], true) || $client->trashed()) {
+                throw ValidationException::withMessages(['client_id' => 'Este cliente está bloqueado ou inativo e não pode receber novos contratos.']);
+            }
             $items = $data['items'];
             unset($data['items']);
 

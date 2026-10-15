@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Actions\Contracts\CreateContractAction;
+use App\Actions\Contracts\DeleteContractAction;
 use App\Actions\Contracts\UpdateContractAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Contracts\StoreContractRequest;
@@ -70,6 +72,15 @@ class ContractController extends Controller
         abort_unless($contract->company_id === $request->user()->company_id, 404);
 
         return new ContractResource($action->handle($contract, $request->validated()));
+    }
+
+    public function destroy(Request $request, int $contract, DeleteContractAction $delete, RecordAdminAuditAction $audit): JsonResponse
+    {
+        $model = Contract::query()->whereBelongsTo($this->userCompany($request))->findOrFail($contract);
+        abort_unless($request->user()->can('forceDelete', $model), 403, 'Você não tem permissão para executar esta operação.');
+        $delete->handle($model, $request->user(), $audit);
+
+        return response()->json([], 204);
     }
 
     private function userCompany(Request $request): Company

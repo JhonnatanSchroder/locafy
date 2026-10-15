@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ClientStatus;
 use App\Enums\ClientType;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -23,11 +25,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['type', 'name', 'document', 'phone', 'residential_address', 'notes'])]
+#[Fillable(['type', 'name', 'document', 'phone', 'residential_address', 'notes', 'status', 'status_reason', 'status_changed_at', 'status_changed_by'])]
 class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * @return BelongsTo<Company, $this>
@@ -54,6 +56,8 @@ class Client extends Model
     {
         return [
             'type' => ClientType::class,
+            'status' => ClientStatus::class,
+            'status_changed_at' => 'datetime',
         ];
     }
 }

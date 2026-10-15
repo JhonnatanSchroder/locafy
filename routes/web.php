@@ -32,9 +32,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('charges/history/{charge}/payments', [ChargeController::class, 'payment'])->name('charges.history.payments.store');
     Route::patch('charges/{charge}/cancel', [ChargeController::class, 'cancel'])->name('charges.cancel');
     Route::resource('clients', ClientController::class)->except(['destroy']);
+    Route::patch('clients/{client}/status', [ClientController::class, 'status'])->name('clients.status');
+    Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+    Route::patch('clients/{client}/restore', [ClientController::class, 'restore'])->name('clients.restore');
     Route::resource('products', ProductController::class)->except(['destroy']);
     Route::resource('equipments', EquipmentController::class)->except(['destroy']);
     Route::resource('contracts', ContractController::class)->except(['destroy']);
+    Route::delete('contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
     Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'show'])->name('contracts.attachments.show');
     Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])->name('contracts.attachments.store');
     Route::delete('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'destroy'])->name('contracts.attachments.destroy');

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Clients;
 
+use App\Enums\ClientStatus;
 use App\Models\Client;
 use App\Models\Company;
 
@@ -12,6 +13,6 @@ class CreateClientAction
      */
     public function handle(Company $company, array $data): Client
     {
-        return $company->clients()->create($data);
+        return $company->clients()->create(['status' => ClientStatus::Active, ...$data]);
     }
 }

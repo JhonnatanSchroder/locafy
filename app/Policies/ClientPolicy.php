@@ -39,6 +39,21 @@ class ClientPolicy
         return $this->belongsToUsersCompany($user, $client);
     }
 
+    public function manageStatus(User $user, Client $client): bool
+    {
+        return $user->canAdministrateCompany() && $this->belongsToUsersCompany($user, $client);
+    }
+
+    public function delete(User $user, Client $client): bool
+    {
+        return $user->canAdministrateCompany() && $this->belongsToUsersCompany($user, $client);
+    }
+
+    public function restore(User $user, Client $client): bool
+    {
+        return $user->canAdministrateCompany() && $this->belongsToUsersCompany($user, $client);
+    }
+
     private function belongsToUsersCompany(User $user, Client $client): bool
     {
         return $user->company_id !== null

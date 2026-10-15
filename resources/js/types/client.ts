@@ -1,4 +1,5 @@
 export type ClientType = 'INDIVIDUAL' | 'COMPANY';
+export type ClientStatus = 'ACTIVE' | 'BLOCKED' | 'INACTIVE';
 
 export type Client = {
     id: number;
@@ -9,6 +10,9 @@ export type Client = {
     phone: string | null;
     residential_address: string | null;
     notes: string | null;
+    status: ClientStatus;
+    status_reason?: string | null;
+    status_changed_at?: string | null;
 };
 
 export type ClientTypeOption = {

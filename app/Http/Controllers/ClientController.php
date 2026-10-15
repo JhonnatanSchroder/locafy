@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Admin\RecordAdminAuditAction;
+use App\Actions\Clients\ChangeClientStatusAction;
 use App\Actions\Clients\CreateClientAction;
+use App\Actions\Clients\DeleteClientAction;
+use App\Actions\Clients\RestoreClientAction;
 use App\Actions\Clients\UpdateClientAction;
+use App\Enums\ClientStatus;
 use App\Enums\ClientType;
 use App\Http\Requests\Clients\StoreClientRequest;
 use App\Http\Requests\Clients\UpdateClientRequest;
@@ -29,9 +34,14 @@ class ClientController extends Controller
 
         $company = $this->userCompany($request);
         $search = $request->string('search')->trim()->toString();
+        $status = $request->string('status')->toString();
+        $archived = $request->boolean('archived') && $request->user()->can('manageStatus', Client::factory()->make(['company_id' => $company->id]));
 
         $clients = Client::query()
             ->whereBelongsTo($company)
+            ->when($archived, fn ($query) => $query->onlyTrashed())
+            ->when(! $archived, fn ($query) => $query->withoutTrashed())
+            ->when(in_array($status, array_column(ClientStatus::cases(), 'value'), true), fn ($query) => $query->where('status', $status))
             ->when($search !== '', function (Builder $query) use ($search): void {
                 $query->where(function (Builder $query) use ($search): void {
                     $query
@@ -49,6 +59,8 @@ class ClientController extends Controller
             'clients' => $clients,
             'filters' => [
                 'search' => $search,
+                'status' => $status,
+                'archived' => $archived,
             ],
             'clientTypes' => $this->clientTypes(),
         ]);
@@ -127,6 +139,34 @@ class ClientController extends Controller
         return to_route('clients.show', $client);
     }
 
+    public function status(Request $request, int $client, ChangeClientStatusAction $change, RecordAdminAuditAction $audit): RedirectResponse
+    {
+        $model = $this->findClientForUser($request, $client);
+        Gate::authorize('manageStatus', $model);
+        $data = $request->validate(['status' => ['required', 'in:ACTIVE,BLOCKED,INACTIVE'], 'reason' => ['nullable', 'string', 'max:2000']]);
+        $change->handle($model, ClientStatus::from($data['status']), $request->user(), $data['reason'] ?? null, $audit);
+
+        return back();
+    }
+
+    public function destroy(Request $request, int $client, DeleteClientAction $delete, RecordAdminAuditAction $audit): RedirectResponse
+    {
+        $model = Client::query()->withTrashed()->whereBelongsTo($this->userCompany($request))->findOrFail($client);
+        Gate::authorize('delete', $model);
+        $delete->handle($model, $request->user(), $audit);
+
+        return to_route('clients.index');
+    }
+
+    public function restore(Request $request, int $client, RestoreClientAction $restore, RecordAdminAuditAction $audit): RedirectResponse
+    {
+        $model = Client::query()->withTrashed()->whereBelongsTo($this->userCompany($request))->findOrFail($client);
+        Gate::authorize('restore', $model);
+        $restore->handle($model, $request->user(), $audit);
+
+        return back();
+    }
+
     private function findClientForUser(Request $request, int $client): Client
     {
         return Client::query()
@@ -170,6 +210,9 @@ class ClientController extends Controller
             'phone' => $client->phone,
             'residential_address' => $client->residential_address,
             'notes' => $client->notes,
+            'status' => $client->status?->value ?? 'ACTIVE',
+            'status_reason' => $client->status_reason,
+            'status_changed_at' => $client->status_changed_at?->toISOString(),
         ];
     }
 

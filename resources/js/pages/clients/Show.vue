@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,15 @@ type Props = {
     client: Client;
 };
 
-defineProps<Props>();
+const props = defineProps<Props>();
+const page = usePage<{ auth?: { user?: { role?: string } } }>();
+const isAdmin = () => page.props.auth?.user?.role === 'ADMIN';
+const changeStatus = (status: string) => {
+    if (window.confirm(`Confirmar alteração para ${status}?`)) router.patch(`/clients/${props.client.id}/status`, { status }, { preserveScroll: true });
+};
+const archive = () => {
+    if (window.confirm('Esta operação pode arquivar o cliente e não poderá ser desfeita automaticamente. Continuar?')) router.delete(`/clients/${props.client.id}`);
+};
 
 defineOptions({
     layout: {
@@ -51,6 +59,12 @@ defineOptions({
                 <Button as-child>
                     <Link :href="clientsEdit(client.id)">Editar</Link>
                 </Button>
+                <template v-if="isAdmin()">
+                    <Button v-if="client.status === 'ACTIVE'" variant="outline" @click="changeStatus('BLOCKED')">Bloquear</Button>
+                    <Button v-else variant="outline" @click="changeStatus('ACTIVE')">Reativar</Button>
+                    <Button v-if="client.status !== 'INACTIVE'" variant="outline" @click="changeStatus('INACTIVE')">Inativar</Button>
+                    <Button variant="destructive" @click="archive">Arquivar</Button>
+                </template>
             </div>
         </div>
 
@@ -60,6 +74,11 @@ defineOptions({
             </CardHeader>
             <CardContent>
                 <dl class="grid gap-6 sm:grid-cols-2">
+                    <div class="grid gap-1">
+                        <dt class="text-sm font-medium text-muted-foreground">Status</dt>
+                        <dd><Badge :variant="client.status === 'ACTIVE' ? 'success' : client.status === 'BLOCKED' ? 'warning' : 'muted'">{{ client.status === 'ACTIVE' ? 'Ativo' : client.status === 'BLOCKED' ? 'Bloqueado' : 'Inativo' }}</Badge></dd>
+                    </div>
+
                     <div class="grid gap-1">
                         <dt class="text-sm font-medium text-muted-foreground">
                             Nome

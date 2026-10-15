@@ -1,4 +1,5 @@
 import type { ProductType } from './product';
+import type { ClientStatus } from './client';
 
 export type ContractStatus = 'ACTIVE' | 'RETURNED' | 'FINALIZED' | 'CANCELLED';
 
@@ -17,6 +18,7 @@ export type BillingPeriodOption = {
 export type ContractClientOption = {
     id: number;
     name: string;
+    status?: ClientStatus;
 };
 
 export type ContractProductOption = {

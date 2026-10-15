@@ -60,7 +60,7 @@ class ContractPolicy
      */
     public function forceDelete(User $user, Contract $contract): bool
     {
-        return false;
+        return $user->canAdministrateCompany() && $this->belongsToUsersCompany($user, $contract);
     }
 
     private function belongsToUsersCompany(User $user, Contract $contract): bool

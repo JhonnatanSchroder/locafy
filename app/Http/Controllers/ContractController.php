@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Admin\RecordAdminAuditAction;
 use App\Actions\Contracts\CreateContractAction;
+use App\Actions\Contracts\DeleteContractAction;
 use App\Actions\Contracts\UpdateContractAction;
 use App\Enums\BillingPeriod;
 use App\Enums\ClientType;
@@ -165,9 +167,13 @@ class ContractController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, Contract $contract, DeleteContractAction $delete, RecordAdminAuditAction $audit): RedirectResponse
     {
-        abort(404);
+        $contract = $this->findContractForUser($request, $contract);
+        Gate::authorize('forceDelete', $contract);
+        $delete->handle($contract, $request->user(), $audit);
+
+        return to_route('contracts.index');
     }
 
     private function findContractForUser(Request $request, Contract $contract): Contract
@@ -189,17 +195,19 @@ class ContractController extends Controller
     }
 
     /**
-     * @return array<int, array{id: int, name: string}>
+     * @return array<int, array{id: int, name: string, status: string}>
      */
     private function clientOptions(Company $company): array
     {
         return Client::query()
             ->whereBelongsTo($company)
+            ->where('status', 'ACTIVE')
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn (Client $client): array => [
                 'id' => $client->id,
                 'name' => $client->name,
+                'status' => $client->status?->value ?? 'ACTIVE',
             ])
             ->all();
     }

@@ -9,6 +9,7 @@ import {
     show as clientsShow,
 } from '@/routes/clients';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type { Client, ClientTypeOption } from '@/types';
@@ -31,17 +32,20 @@ type Props = {
     clients: PaginatedClients;
     filters: {
         search: string;
+        status?: string;
+        archived?: boolean;
     };
     clientTypes: ClientTypeOption[];
 };
 
 const props = defineProps<Props>();
 const search = ref(props.filters.search);
+const status = ref(props.filters.status ?? '');
 
 const submitSearch = () => {
     router.get(
         clientsIndex.url(),
-        { search: search.value || undefined },
+        { search: search.value || undefined, status: status.value || undefined },
         { preserveState: true, replace: true },
     );
 };
@@ -93,6 +97,7 @@ defineOptions({
                         placeholder="Buscar por nome, telefone ou documento"
                         class="sm:max-w-md"
                     />
+                    <select v-model="status" class="h-9 rounded-md border border-input bg-background px-3 text-sm"><option value="">Todos os status</option><option value="ACTIVE">Ativos</option><option value="BLOCKED">Bloqueados</option><option value="INACTIVE">Inativos</option></select>
                     <div class="flex gap-2">
                         <Button type="submit">Buscar</Button>
                         <Button
@@ -115,6 +120,7 @@ defineOptions({
                             <tr>
                                 <th class="px-4 py-3 font-medium">Nome</th>
                                 <th class="px-4 py-3 font-medium">Tipo</th>
+                                <th class="px-4 py-3 font-medium">Status</th>
                                 <th class="px-4 py-3 font-medium">Telefone</th>
                                 <th class="px-4 py-3 font-medium">Documento</th>
                                 <th class="px-4 py-3 text-right font-medium">
@@ -125,7 +131,7 @@ defineOptions({
                         <tbody>
                             <tr v-if="clients.data.length === 0">
                                 <td
-                                    colspan="5"
+                                    colspan="6"
                                     class="px-4 py-14 text-center text-muted-foreground"
                                 >
                                     <Users class="mx-auto mb-3 size-8"/><p class="font-semibold text-foreground">Nenhum cliente nesta seleção</p><p class="mt-1 text-sm">Ajuste sua busca ou cadastre o primeiro cliente.</p><Button variant="outline" class="mt-4" as-child><Link :href="clientsCreate()">Novo cliente</Link></Button>
@@ -139,6 +145,7 @@ defineOptions({
                                 <td class="px-4 py-3 font-medium">
                                     <Link :href="clientsShow(client.id)" class="hover:text-primary">{{ client.name }}</Link>
                                 </td>
+                                <td class="px-4 py-3"><Badge :variant="client.status === 'ACTIVE' ? 'success' : client.status === 'BLOCKED' ? 'warning' : 'muted'">{{ client.status === 'ACTIVE' ? 'Ativo' : client.status === 'BLOCKED' ? 'Bloqueado' : 'Inativo' }}</Badge></td>
                                 <td class="px-4 py-3">
                                     {{ client.type_label }}
                                 </td>

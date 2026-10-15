@@ -26,11 +26,13 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::post('auth/logout', [AuthController::class, 'logout']);
 
         Route::get('payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
-        Route::apiResource('clients', ClientController::class)->only(['index', 'show', 'store', 'update']);
+        Route::apiResource('clients', ClientController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+        Route::patch('clients/{client}/status', [ClientController::class, 'status'])->name('clients.status');
+        Route::patch('clients/{client}/restore', [ClientController::class, 'restore'])->name('clients.restore');
         Route::apiResource('products', ProductController::class)->only(['index']);
         Route::apiResource('equipments', EquipmentController::class)->only(['index', 'show']);
         Route::apiResource('movements', MovementController::class)->only(['index', 'show', 'update']);
-        Route::apiResource('contracts', ContractController::class)->only(['index', 'show', 'store', 'update']);
+        Route::apiResource('contracts', ContractController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::get('contracts/{contract}/attachments', [ContractAttachmentController::class, 'index'])->name('contracts.attachments.index');
         Route::post('contracts/{contract}/attachments', [ContractAttachmentController::class, 'store'])->name('contracts.attachments.store');
         Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'show'])->name('contracts.attachments.show');

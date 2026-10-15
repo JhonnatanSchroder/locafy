@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Admin\RecordAdminAuditAction;
+use App\Actions\Clients\ChangeClientStatusAction;
 use App\Actions\Clients\CreateClientAction;
+use App\Actions\Clients\DeleteClientAction;
+use App\Actions\Clients\RestoreClientAction;
 use App\Actions\Clients\UpdateClientAction;
+use App\Enums\ClientStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clients\StoreClientRequest;
 use App\Http\Requests\Clients\UpdateClientRequest;
@@ -24,6 +29,8 @@ class ClientController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $search = $request->string('search')->trim()->toString();
+        $status = $request->string('status')->toString();
+        $archived = $request->boolean('archived') && $request->user()->can('manageStatus', Client::factory()->make(['company_id' => $request->user()->company_id]));
         $sqlite = (new Client)->getConnection()->getDriverName() === 'sqlite';
         if ($sqlite && $search !== '') {
             (new Client)->getConnection()->getPdo()->sqliteCreateFunction(
@@ -36,6 +43,9 @@ class ClientController extends Controller
         return ClientResource::collection(
             Client::query()
                 ->whereBelongsTo($this->userCompany($request))
+                ->when($archived, fn ($query) => $query->onlyTrashed())
+                ->when(! $archived, fn ($query) => $query->withoutTrashed())
+                ->when(in_array($status, array_column(ClientStatus::cases(), 'value'), true), fn ($query) => $query->where('status', $status))
                 ->when($search !== '', function (Builder $query) use ($search, $sqlite): void {
                     $query->where(function (Builder $query) use ($search, $sqlite): void {
                         if ($sqlite) {
@@ -98,6 +108,32 @@ class ClientController extends Controller
                 $request->validated()
             )
         );
+    }
+
+    public function status(Request $request, int $client, ChangeClientStatusAction $change, RecordAdminAuditAction $audit): ClientResource
+    {
+        $model = $this->findClientForUser($request, $client);
+        abort_unless($request->user()->can('manageStatus', $model), 403, 'Você não tem permissão para executar esta operação.');
+        $data = $request->validate(['status' => ['required', 'in:ACTIVE,BLOCKED,INACTIVE'], 'reason' => ['nullable', 'string', 'max:2000']]);
+
+        return new ClientResource($change->handle($model, ClientStatus::from($data['status']), $request->user(), $data['reason'] ?? null, $audit));
+    }
+
+    public function destroy(Request $request, int $client, DeleteClientAction $delete, RecordAdminAuditAction $audit): JsonResponse
+    {
+        $model = Client::query()->withTrashed()->whereBelongsTo($this->userCompany($request))->findOrFail($client);
+        abort_unless($request->user()->can('delete', $model), 403, 'Você não tem permissão para executar esta operação.');
+
+        return response()->json(['result' => $delete->handle($model, $request->user(), $audit)], 200);
+    }
+
+    public function restore(Request $request, int $client, RestoreClientAction $restore, RecordAdminAuditAction $audit): ClientResource
+    {
+        $model = Client::query()->withTrashed()->whereBelongsTo($this->userCompany($request))->findOrFail($client);
+        abort_unless($request->user()->can('restore', $model), 403, 'Você não tem permissão para executar esta operação.');
+        $model = $restore->handle($model, $request->user(), $audit);
+
+        return new ClientResource($model->refresh());
     }
 
     private function findClientForUser(Request $request, int $client): Client

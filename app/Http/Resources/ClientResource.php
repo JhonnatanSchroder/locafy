@@ -27,6 +27,9 @@ class ClientResource extends JsonResource
             'phone' => $this->phone,
             'residential_address' => $this->residential_address,
             'notes' => $this->notes,
+            'status' => $this->status?->value ?? 'ACTIVE',
+            'status_reason' => $this->when($request->user()?->can('manageStatus', $this->resource), $this->status_reason),
+            'status_changed_at' => $this->when($request->user()?->can('manageStatus', $this->resource), $this->status_changed_at?->toISOString()),
         ];
     }
 }
