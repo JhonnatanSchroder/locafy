@@ -222,3 +222,34 @@ it('calculates quantity day rentals with return cutoff and weekend rules', funct
 
     CarbonImmutable::setTestNow();
 });
+
+it('generates quantity periods that reconcile exactly with the official rental total', function () {
+    CarbonImmutable::setTestNow('2026-10-10 12:00:00');
+    $company = Company::factory()->create();
+    [$contract, $item] = movementContract($company, ['charge_saturdays' => true]);
+
+    $initial = $company->movements()->create(['contract_id' => $contract->id, 'type' => MovementType::Withdrawal, 'occurred_at' => '2026-10-05 09:00:00']);
+    $initial->items()->create(['contract_item_id' => $item->id, 'quantity' => 10]);
+    $additional = $company->movements()->create(['contract_id' => $contract->id, 'type' => MovementType::Withdrawal, 'occurred_at' => '2026-10-07 14:00:00']);
+    $additional->items()->create(['contract_item_id' => $item->id, 'quantity' => 5]);
+    $return = $company->movements()->create(['contract_id' => $contract->id, 'type' => MovementType::Return, 'occurred_at' => '2026-10-09 09:00:00']);
+    $return->items()->create(['contract_item_id' => $item->id, 'quantity' => 8]);
+
+    $result = app(ContractCalculationService::class)->calculate($contract->fresh(['items.product', 'items.movementItems.movement', 'movements.items']));
+    $periods = $result->item($item->id)?->periods;
+
+    expect($periods)->toHaveCount(3)
+        ->and($periods[0]->startedAt)->toBe('2026-10-05')
+        ->and($periods[0]->endedAt)->toBe('2026-10-06')
+        ->and($periods[0]->quantity)->toBe(10)
+        ->and($periods[0]->billableDays)->toBe(2)
+        ->and($periods[0]->subtotal)->toBe('12.00')
+        ->and($periods[1]->quantity)->toBe(15)
+        ->and($periods[1]->subtotal)->toBe('18.00')
+        ->and($periods[2]->quantity)->toBe(7)
+        ->and($periods[2]->subtotal)->toBe('8.40')
+        ->and($periods->sum(fn ($period): int => (int) round(((float) $period->subtotal) * 100)))->toBe(3840)
+        ->and($result->rentalTotal)->toBe('38.40');
+
+    CarbonImmutable::setTestNow();
+});
