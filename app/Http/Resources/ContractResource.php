@@ -10,6 +10,7 @@ use App\Models\Movement;
 use App\Services\ContractAccrualService;
 use App\Services\ContractFinanceService;
 use App\Services\ContractLifecycleService;
+use App\Services\ContractRentalBreakdownService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -54,6 +55,10 @@ class ContractResource extends JsonResource
             'calculated_until' => $calculation->calculatedUntil,
             'rental_total' => $calculation->rentalTotal,
             'calculation_complete' => $calculation->calculationComplete,
+            'rental_breakdown' => $this->when(
+                $request->routeIs('api.v1.contracts.show'),
+                fn (): array => app(ContractRentalBreakdownService::class)->fromCalculation($calculation)
+            ),
             'freight_count' => $summary['freight_count'],
             'freight_total' => $summary['freight_total'],
             'total_accrued' => $summary['total_accrued'],

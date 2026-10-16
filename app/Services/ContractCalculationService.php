@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Data\ContractCalculationResult;
 use App\Data\ContractItemCalculationResult;
+use App\Data\ContractRentalPeriod;
 use App\Enums\BillingPeriod;
 use App\Enums\MovementType;
 use App\Enums\ProductType;
@@ -41,7 +42,8 @@ class ContractCalculationService
                 return new ContractItemCalculationResult($item->id, $currentQuantity, 0, null, false);
             }
 
-            $quantityDays = $this->billableQuantityDays($contract, $item->id, $calculatedUntil);
+            $periods = $this->rentalPeriods($contract, $item->id, $item->product->name, $item->unit_price, $calculatedUntil);
+            $quantityDays = $periods->sum(fn (ContractRentalPeriod $period): int => $period->billableDays * $period->quantity);
             $subtotalCents = $quantityDays * $this->decimalToCents($item->unit_price);
             $totalCents += $subtotalCents;
 
@@ -50,7 +52,8 @@ class ContractCalculationService
                 $currentQuantity,
                 $quantityDays,
                 $this->formatCents($subtotalCents),
-                true
+                true,
+                $periods
             );
         });
 
@@ -62,39 +65,77 @@ class ContractCalculationService
         );
     }
 
-    private function billableQuantityDays(Contract $contract, int $contractItemId, CarbonImmutable $calculatedUntil): int
+    private function rentalPeriods(Contract $contract, int $contractItemId, string $productName, string $unitPrice, CarbonImmutable $calculatedUntil): Collection
     {
         $start = CarbonImmutable::parse($contract->started_at)->setTimezone(self::TIMEZONE)->startOfDay();
         $end = $calculatedUntil->startOfDay();
 
         if ($end->lt($start)) {
-            return 0;
+            return collect();
         }
 
-        $effectiveChanges = $this->effectiveChanges($contract, $contractItemId);
+        $effectiveEvents = $this->effectiveEvents($contract, $contractItemId)
+            ->filter(fn (array $event): bool => $event['date'] <= $end->toDateString())
+            ->groupBy('date');
         $quantity = 0;
-        $quantityDays = 0;
+        $periods = collect();
+        $periodStart = null;
+        $periodQuantity = 0;
+        $periodChanges = [];
 
         for ($day = $start; $day->lte($end); $day = $day->addDay()) {
-            foreach ($effectiveChanges->get($day->toDateString(), []) as $change) {
-                $quantity += $change;
-            }
+            $dayEvents = $effectiveEvents->get($day->toDateString(), collect());
+            if ($dayEvents->isNotEmpty()) {
+                $dayChanges = [];
+                foreach ($dayEvents as $event) {
+                    $quantity += $event['change'];
+                    $dayChanges[] = [
+                        'movement_id' => $event['movement_id'],
+                        'type' => $event['type'],
+                        'occurred_at' => $event['occurred_at'],
+                        'quantity_change' => $event['change'],
+                    ];
+                }
 
-            if ($quantity > 0 && $this->isBillableDay($contract, $day)) {
-                $quantityDays += $quantity;
+                if ($periodStart !== null && $periodQuantity !== $quantity) {
+                    $periods->push($this->makePeriod($contractItemId, $productName, $periodStart, $day->subDay(), $periodQuantity, $periodChanges, $unitPrice, $contract));
+                    $periodStart = null;
+                    $periodChanges = [];
+                }
+
+                if ($quantity > 0 && $periodStart === null) {
+                    $periodStart = $day;
+                    $periodQuantity = $quantity;
+                    $periodChanges = $dayChanges;
+                } elseif ($quantity === 0) {
+                    $periodChanges = [];
+                } else {
+                    $periodChanges = [...$periodChanges, ...$dayChanges];
+                }
             }
         }
 
-        return $quantityDays;
+        if ($periodStart !== null) {
+            $periods->push($this->makePeriod($contractItemId, $productName, $periodStart, $end, $periodQuantity, $periodChanges, $unitPrice, $contract));
+        }
+
+        return $periods;
     }
 
-    /**
-     * @return Collection<string, array<int, int>>
-     */
-    private function effectiveChanges(
-        Contract $contract,
-        int $contractItemId
-    ): Collection {
+    private function makePeriod(int $contractItemId, string $productName, CarbonImmutable $start, CarbonImmutable $end, int $quantity, array $changes, string $unitPrice, Contract $contract): ContractRentalPeriod
+    {
+        $billableDays = 0;
+        for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+            if ($this->isBillableDay($contract, $day)) {
+                $billableDays++;
+            }
+        }
+
+        return new ContractRentalPeriod($contractItemId, $productName, $start->toDateString(), $end->toDateString(), $quantity, $billableDays, $unitPrice, $this->formatCents($billableDays * $quantity * $this->decimalToCents($unitPrice)), $changes);
+    }
+
+    private function effectiveEvents(Contract $contract, int $contractItemId): Collection
+    {
         $changes = collect();
 
         foreach ($contract->movements as $movement) {
@@ -138,17 +179,14 @@ class ContractCalculationService
                 $changes->push([
                     'date' => $effectiveDate,
                     'change' => $change,
+                    'movement_id' => $movement->id,
+                    'type' => $movement->type->value,
+                    'occurred_at' => $movementAt->toISOString(),
                 ]);
             }
         }
 
-        return $changes
-            ->groupBy('date')
-            ->map(
-                fn (Collection $dayChanges): array => $dayChanges
-                    ->pluck('change')
-                    ->all()
-            );
+        return $changes;
     }
 
     private function isBillableDay(Contract $contract, CarbonImmutable $day): bool
