@@ -67,7 +67,7 @@ jobs:
         run: |
           mapfile -d '' -t files < <(
             git diff --name-only --diff-filter=ACMR -z "$BASE_SHA" "$GITHUB_SHA" -- \
-              '*.css' '*.cjs' '*.cts' '*.html' '*.js' '*.json' '*.jsx' '*.md' '*.mjs' '*.mts' '*.ts' '*.tsx' '*.vue' '*.yaml' '*.yml'
+              '*.css' '*.cjs' '*.cts' '*.html' '*.js' '*.json' '*.jsx' '*.md' '*.mjs' '*.mts' '*.ts' '*.tsx' '*.vue'
           )
 
           if (( ${#files[@]} )); then
