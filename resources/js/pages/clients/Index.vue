@@ -47,7 +47,10 @@ const isAdmin = () => page.props.auth?.user?.role === 'ADMIN';
 const submitSearch = () => {
     router.get(
         clientsIndex.url(),
-        { search: search.value || undefined, status: status.value || undefined },
+        {
+            search: search.value || undefined,
+            status: status.value || undefined,
+        },
         { preserveState: true, replace: true },
     );
 };
@@ -65,7 +68,9 @@ defineOptions({
 </script>
 
 <template>
-    <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
+    <div
+        class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8"
+    >
         <Head title="Clientes" />
 
         <div
@@ -79,11 +84,29 @@ defineOptions({
             </div>
 
             <Button as-child>
-                <Link :href="clientsCreate()"><Plus class="mr-2 size-4"/> Novo cliente</Link>
+                <Link :href="clientsCreate()"
+                    ><Plus class="mr-2 size-4" /> Novo cliente</Link
+                >
             </Button>
         </div>
 
-        <div class="flex items-center gap-4 rounded-xl border bg-card p-5"><div class="rounded-lg bg-primary/5 p-3"><Users class="size-5 text-primary"/></div><div><p class="text-2xl font-semibold tabular-nums">{{ clients.total }}</p><p class="text-xs text-muted-foreground">{{ filters.search ? 'Clientes nesta busca' : 'Clientes cadastrados' }}</p></div></div>
+        <div class="flex items-center gap-4 rounded-xl border bg-card p-5">
+            <div class="rounded-lg bg-primary/5 p-3">
+                <Users class="size-5 text-primary" />
+            </div>
+            <div>
+                <p class="text-2xl font-semibold tabular-nums">
+                    {{ clients.total }}
+                </p>
+                <p class="text-xs text-muted-foreground">
+                    {{
+                        filters.search
+                            ? 'Clientes nesta busca'
+                            : 'Clientes cadastrados'
+                    }}
+                </p>
+            </div>
+        </div>
         <Card class="rounded-xl">
             <CardHeader>
                 <CardTitle class="text-base">Buscar clientes</CardTitle>
@@ -99,7 +122,15 @@ defineOptions({
                         placeholder="Buscar por nome, telefone ou documento"
                         class="sm:max-w-md"
                     />
-                    <select v-model="status" class="h-9 rounded-md border border-input bg-background px-3 text-sm"><option value="">Todos os status</option><option value="ACTIVE">Ativos</option><option value="BLOCKED">Bloqueados</option><option value="INACTIVE">Inativos</option></select>
+                    <select
+                        v-model="status"
+                        class="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                        <option value="">Todos os status</option>
+                        <option value="ACTIVE">Ativos</option>
+                        <option value="BLOCKED">Bloqueados</option>
+                        <option value="INACTIVE">Inativos</option>
+                    </select>
                     <div class="flex gap-2">
                         <Button type="submit">Buscar</Button>
                         <Button
@@ -110,7 +141,18 @@ defineOptions({
                             <Link :href="clientsIndex()">Limpar</Link>
                         </Button>
                         <Button v-if="isAdmin()" variant="outline" as-child>
-                            <Link :href="filters.archived ? clientsIndex() : `${clientsIndex()}?archived=1`">{{ filters.archived ? 'Ver ativos' : 'Ver arquivados' }}</Link>
+                            <Link
+                                :href="
+                                    filters.archived
+                                        ? clientsIndex()
+                                        : `${clientsIndex()}?archived=1`
+                                "
+                                >{{
+                                    filters.archived
+                                        ? 'Ver ativos'
+                                        : 'Ver arquivados'
+                                }}</Link
+                            >
                         </Button>
                     </div>
                 </form>
@@ -121,7 +163,9 @@ defineOptions({
             <CardContent class="p-0">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead class="border-b bg-muted/60 text-left text-muted-foreground">
+                        <thead
+                            class="border-b bg-muted/60 text-left text-muted-foreground"
+                        >
                             <tr>
                                 <th class="px-4 py-3 font-medium">Nome</th>
                                 <th class="px-4 py-3 font-medium">Tipo</th>
@@ -139,7 +183,22 @@ defineOptions({
                                     colspan="6"
                                     class="px-4 py-14 text-center text-muted-foreground"
                                 >
-                                    <Users class="mx-auto mb-3 size-8"/><p class="font-semibold text-foreground">Nenhum cliente nesta seleção</p><p class="mt-1 text-sm">Ajuste sua busca ou cadastre o primeiro cliente.</p><Button variant="outline" class="mt-4" as-child><Link :href="clientsCreate()">Novo cliente</Link></Button>
+                                    <Users class="mx-auto mb-3 size-8" />
+                                    <p class="font-semibold text-foreground">
+                                        Nenhum cliente nesta seleção
+                                    </p>
+                                    <p class="mt-1 text-sm">
+                                        Ajuste sua busca ou cadastre o primeiro
+                                        cliente.
+                                    </p>
+                                    <Button
+                                        variant="outline"
+                                        class="mt-4"
+                                        as-child
+                                        ><Link :href="clientsCreate()"
+                                            >Novo cliente</Link
+                                        ></Button
+                                    >
                                 </td>
                             </tr>
                             <tr
@@ -148,9 +207,30 @@ defineOptions({
                                 class="border-b transition-colors hover:bg-muted/40 last:border-0"
                             >
                                 <td class="px-4 py-3 font-medium">
-                                    <Link :href="clientsShow(client.id)" class="hover:text-primary">{{ client.name }}</Link>
+                                    <Link
+                                        :href="clientsShow(client.id)"
+                                        class="hover:text-primary"
+                                        >{{ client.name }}</Link
+                                    >
                                 </td>
-                                <td class="px-4 py-3"><Badge :variant="client.status === 'ACTIVE' ? 'success' : client.status === 'BLOCKED' ? 'warning' : 'muted'">{{ client.status === 'ACTIVE' ? 'Ativo' : client.status === 'BLOCKED' ? 'Bloqueado' : 'Inativo' }}</Badge></td>
+                                <td class="px-4 py-3">
+                                    <Badge
+                                        :variant="
+                                            client.status === 'ACTIVE'
+                                                ? 'success'
+                                                : client.status === 'BLOCKED'
+                                                  ? 'warning'
+                                                  : 'muted'
+                                        "
+                                        >{{
+                                            client.status === 'ACTIVE'
+                                                ? 'Ativo'
+                                                : client.status === 'BLOCKED'
+                                                  ? 'Bloqueado'
+                                                  : 'Inativo'
+                                        }}</Badge
+                                    >
+                                </td>
                                 <td class="px-4 py-3">
                                     {{ client.type_label }}
                                 </td>
@@ -180,7 +260,17 @@ defineOptions({
                                                 >Editar</Link
                                             >
                                         </Button>
-                                        <Button v-if="filters.archived && isAdmin()" variant="outline" size="sm" @click="router.patch(`/clients/${client.id}/restore`)">Restaurar</Button>
+                                        <Button
+                                            v-if="filters.archived && isAdmin()"
+                                            variant="outline"
+                                            size="sm"
+                                            @click="
+                                                router.patch(
+                                                    `/clients/${client.id}/restore`,
+                                                )
+                                            "
+                                            >Restaurar</Button
+                                        >
                                     </div>
                                 </td>
                             </tr>

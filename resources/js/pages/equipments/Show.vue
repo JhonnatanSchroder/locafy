@@ -78,8 +78,16 @@ defineOptions({
                 <Button as-child>
                     <Link :href="equipmentsEdit(equipment.id)">Editar</Link>
                 </Button>
-                <Button variant="outline" :disabled="equipment.status === 'RENTED'" @click="toggleStatus">
-                    {{ equipment.status === 'INACTIVE' ? 'Reativar' : 'Desativar' }}
+                <Button
+                    variant="outline"
+                    :disabled="equipment.status === 'RENTED'"
+                    @click="toggleStatus"
+                >
+                    {{
+                        equipment.status === 'INACTIVE'
+                            ? 'Reativar'
+                            : 'Desativar'
+                    }}
                 </Button>
             </div>
         </div>
