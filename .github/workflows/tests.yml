@@ -12,11 +12,14 @@ permissions:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Setup PHP
@@ -31,8 +34,40 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Setup Application
+      - name: Setup application and build production assets
         run: composer setup
 
-      - name: Run CI Checks
-        run: composer ci:check
+      - name: Run frontend lint
+        run: npm run check -- --no-fmt
+
+      - name: Run TypeScript checks
+        run: npm run types:check
+
+      - name: Verify changed frontend files are formatted
+        shell: bash
+        run: |
+          mapfile -d '' -t files < <(
+            git diff --name-only --diff-filter=ACMR -z "$BASE_SHA" "$GITHUB_SHA" -- \
+              '*.css' '*.cjs' '*.cts' '*.html' '*.js' '*.json' '*.jsx' '*.md' '*.mjs' '*.mts' '*.ts' '*.tsx' '*.vue' '*.yaml' '*.yml'
+          )
+
+          if (( ${#files[@]} )); then
+            ./node_modules/.bin/vp fmt --check "${files[@]}"
+          fi
+
+      - name: Verify changed PHP files are formatted
+        shell: bash
+        run: |
+          mapfile -d '' -t files < <(
+            git diff --name-only --diff-filter=ACMR -z "$BASE_SHA" "$GITHUB_SHA" -- '*.php'
+          )
+
+          if (( ${#files[@]} )); then
+            ./vendor/bin/pint --parallel --test "${files[@]}"
+          fi
+
+      - name: Run PHPStan
+        run: composer types:check
+
+      - name: Run Laravel tests
+        run: php artisan test
