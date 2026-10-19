@@ -3,7 +3,7 @@ import ContractOperations from '@/components/contracts/ContractOperations.vue';
 import ContractAttachments from '@/components/contracts/ContractAttachments.vue';
 import FinancialSummary from '@/components/finance/FinancialSummary.vue';
 import { formatDate, formatDateTime } from '@/lib/dates';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +23,12 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+const page = usePage<{ auth?: { user?: { role?: string } } }>();
+const isAdmin = () => page.props.auth?.user?.role === 'ADMIN';
+const deleteContract = () => {
+    if (!isAdmin() || !window.confirm(`Excluir o contrato #${props.contract.number}? Esta ação só funciona sem histórico operacional ou financeiro.`)) return;
+    router.delete(`/contracts/${props.contract.id}`);
+};
 
 
 const freightForm = useForm({
@@ -139,6 +145,7 @@ defineOptions({
                 <Button variant="outline" as-child>
                     <Link :href="contractsIndex()">Voltar</Link>
                 </Button>
+                <Button v-if="isAdmin() && !['FINALIZED','CANCELLED'].includes(contract.status)" variant="destructive" @click="deleteContract">Excluir</Button>
             </div>
         </div>
 

@@ -95,6 +95,7 @@ class ChargeController extends Controller
 
     public function cancel(Request $request, int $charge, CancelChargeAction $action): RedirectResponse
     {
+        abort_unless($request->user()?->canAdministrateCompany(), 403);
         $action->handle($this->query($request)->findOrFail($charge));
 
         return back();

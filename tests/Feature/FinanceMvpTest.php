@@ -53,6 +53,18 @@ it('registers exact partial and full payments independently of accrual', functio
     expect(fn () => app(CancelChargeAction::class)->handle($charge))->toThrow(ValidationException::class);
 });
 
+it('allows only administrators to cancel unpaid charges', function () {
+    [$admin, $contract] = financeSetup();
+    $charge = app(CreateChargeAction::class)->handle($contract, []);
+    $operator = User::factory()->for($admin->company)->create(['role' => 'OPERATOR']);
+
+    $this->actingAs($operator)->patch("/charges/{$charge->id}/cancel")->assertForbidden();
+    expect($charge->fresh()->status)->toBe('PENDING');
+
+    $this->actingAs($admin)->patch("/charges/{$charge->id}/cancel")->assertRedirect();
+    expect($charge->fresh()->status)->toBe('CANCELLED');
+});
+
 it('snapshots rental growth separately and never bills the same accrual twice', function () {
     [, $contract] = financeSetup();
     $action = app(CreateChargeAction::class);

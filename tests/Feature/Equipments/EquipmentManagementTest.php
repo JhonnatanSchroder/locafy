@@ -2,6 +2,8 @@
 
 use App\Enums\EquipmentStatus;
 use App\Enums\ProductType;
+use App\Enums\UserRole;
+use App\Models\AdminAudit;
 use App\Models\Company;
 use App\Models\Equipment;
 use App\Models\Product;
@@ -385,4 +387,32 @@ it('includes the current inactive product on edit', function () {
             ->has('eligibleProducts', 2)
             ->where('eligibleProducts.0.id', $activeProduct->id)
             ->where('eligibleProducts.1.id', $inactiveProduct->id));
+});
+
+it('allows administrators to deactivate and reactivate equipment with an audit', function () {
+    $company = Company::factory()->create();
+    $admin = User::factory()->for($company)->create(['role' => UserRole::Admin]);
+    $product = Product::factory()->for($company)->individual()->create();
+    $equipment = Equipment::factory()->for($company)->for($product)->create(['status' => EquipmentStatus::Available]);
+
+    $this->actingAs($admin)->patch(route('equipments.status', $equipment))->assertRedirect();
+    expect($equipment->fresh()->status)->toBe(EquipmentStatus::Inactive);
+    expect(AdminAudit::query()->where('entity_type', 'equipment')->where('entity_id', $equipment->id)->where('operation', 'deactivated')->exists())->toBeTrue();
+
+    $this->actingAs($admin)->patch(route('equipments.status', $equipment))->assertRedirect();
+    expect($equipment->fresh()->status)->toBe(EquipmentStatus::Available);
+});
+
+it('blocks operators and rented equipment from deactivation', function () {
+    $company = Company::factory()->create();
+    $operator = User::factory()->for($company)->create(['role' => UserRole::Operator]);
+    $product = Product::factory()->for($company)->individual()->create();
+    $equipment = Equipment::factory()->for($company)->for($product)->create(['status' => EquipmentStatus::Rented]);
+
+    $this->actingAs($operator)->patch(route('equipments.status', $equipment))->assertForbidden();
+    expect($equipment->fresh()->status)->toBe(EquipmentStatus::Rented);
+
+    $admin = User::factory()->for($company)->create(['role' => UserRole::Admin]);
+    $this->actingAs($admin)->patch(route('equipments.status', $equipment))->assertStatus(422);
+    expect($equipment->fresh()->status)->toBe(EquipmentStatus::Rented);
 });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ type Props = {
     product: Product;
 };
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const formatCurrency = (value: string | null) => {
     if (value === null) {
@@ -37,6 +37,13 @@ const formatStock = (product: Product) => {
 
 const productStatusVariant = (product: Product): BadgeVariants['variant'] =>
     product.active ? 'success' : 'muted';
+
+const toggleStatus = () => {
+    if (!window.confirm(productStatusLabel())) return;
+    router.patch(`/products/${props.product.id}/status`);
+};
+
+const productStatusLabel = () => 'Alterar o status deste produto?';
 
 defineOptions({
     layout: {
@@ -76,6 +83,9 @@ defineOptions({
                 </Button>
                 <Button as-child>
                     <Link :href="productsEdit(product.id)">Editar</Link>
+                </Button>
+                <Button variant="outline" @click="toggleStatus">
+                    {{ product.active ? 'Desativar' : 'Reativar' }}
                 </Button>
             </div>
         </div>

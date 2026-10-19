@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Users, Plus } from '@lucide/vue';
 import { ref } from 'vue';
 import {
@@ -41,6 +41,8 @@ type Props = {
 const props = defineProps<Props>();
 const search = ref(props.filters.search);
 const status = ref(props.filters.status ?? '');
+const page = usePage<{ auth?: { user?: { role?: string } } }>();
+const isAdmin = () => page.props.auth?.user?.role === 'ADMIN';
 
 const submitSearch = () => {
     router.get(
@@ -106,6 +108,9 @@ defineOptions({
                             as-child
                         >
                             <Link :href="clientsIndex()">Limpar</Link>
+                        </Button>
+                        <Button v-if="isAdmin()" variant="outline" as-child>
+                            <Link :href="filters.archived ? clientsIndex() : `${clientsIndex()}?archived=1`">{{ filters.archived ? 'Ver ativos' : 'Ver arquivados' }}</Link>
                         </Button>
                     </div>
                 </form>
@@ -175,6 +180,7 @@ defineOptions({
                                                 >Editar</Link
                                             >
                                         </Button>
+                                        <Button v-if="filters.archived && isAdmin()" variant="outline" size="sm" @click="router.patch(`/clients/${client.id}/restore`)">Restaurar</Button>
                                     </div>
                                 </td>
                             </tr>

@@ -37,7 +37,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
     Route::patch('clients/{client}/restore', [ClientController::class, 'restore'])->name('clients.restore');
     Route::resource('products', ProductController::class)->except(['destroy']);
+    Route::patch('products/{product}/status', [ProductController::class, 'toggleStatus'])->name('products.status');
     Route::resource('equipments', EquipmentController::class)->except(['destroy']);
+    Route::patch('equipments/{equipment}/status', [EquipmentController::class, 'toggleStatus'])->name('equipments.status');
     Route::resource('contracts', ContractController::class)->except(['destroy']);
     Route::delete('contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
     Route::get('contracts/{contract}/attachments/{attachment}', [ContractAttachmentController::class, 'show'])->name('contracts.attachments.show');
