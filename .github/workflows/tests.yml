@@ -40,7 +40,18 @@ jobs:
       - name: Run frontend lint
         id: lint
         continue-on-error: true
-        run: npm run check -- --no-fmt
+        shell: bash
+        run: |
+          mapfile -d '' -t files < <(
+            git diff --name-only --diff-filter=ACMR -z "$BASE_SHA" "$GITHUB_SHA" -- \
+              '*.js' '*.jsx' '*.ts' '*.tsx' '*.vue'
+          )
+
+          if (( ${#files[@]} )); then
+            ./node_modules/.bin/vp check --no-fmt "${files[@]}"
+          else
+            echo "No changed frontend source files to lint."
+          fi
 
       - name: Run TypeScript checks
         id: types
@@ -61,6 +72,8 @@ jobs:
 
           if (( ${#files[@]} )); then
             ./node_modules/.bin/vp fmt --check "${files[@]}"
+          else
+            echo "No changed frontend files eligible for formatting."
           fi
 
       - name: Report frontend validation result
@@ -109,13 +122,25 @@ jobs:
 
           if (( ${#files[@]} )); then
             ./vendor/bin/pint --parallel --test "${files[@]}"
+          else
+            echo "No changed PHP files to format."
           fi
 
       - name: Run PHPStan
         id: phpstan
         if: ${{ !cancelled() }}
         continue-on-error: true
-        run: composer types:check
+        shell: bash
+        run: |
+          mapfile -d '' -t files < <(
+            git diff --name-only --diff-filter=ACMR -z "$BASE_SHA" "$GITHUB_SHA" -- '*.php'
+          )
+
+          if (( ${#files[@]} )); then
+            ./vendor/bin/phpstan analyse --configuration=phpstan.neon "${files[@]}"
+          else
+            echo "No changed PHP files to analyze."
+          fi
 
       - name: Run Laravel tests
         id: tests
