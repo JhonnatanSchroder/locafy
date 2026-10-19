@@ -38,12 +38,20 @@ jobs:
         run: composer setup
 
       - name: Run frontend lint
+        id: lint
+        continue-on-error: true
         run: npm run check -- --no-fmt
 
       - name: Run TypeScript checks
+        id: types
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         run: npm run types:check
 
       - name: Verify changed frontend files are formatted
+        id: format
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         shell: bash
         run: |
           mapfile -d '' -t files < <(
@@ -54,6 +62,14 @@ jobs:
           if (( ${#files[@]} )); then
             ./node_modules/.bin/vp fmt --check "${files[@]}"
           fi
+
+      - name: Report frontend validation result
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          test "${{ steps.lint.outcome }}" = success
+          test "${{ steps.types.outcome }}" = success
+          test "${{ steps.format.outcome }}" = success
 
   backend:
     runs-on: ubuntu-latest
@@ -83,6 +99,8 @@ jobs:
         run: composer setup
 
       - name: Verify changed PHP files are formatted
+        id: format
+        continue-on-error: true
         shell: bash
         run: |
           mapfile -d '' -t files < <(
@@ -94,7 +112,21 @@ jobs:
           fi
 
       - name: Run PHPStan
+        id: phpstan
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         run: composer types:check
 
       - name: Run Laravel tests
+        id: tests
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         run: php artisan test
+
+      - name: Report backend validation result
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          test "${{ steps.format.outcome }}" = success
+          test "${{ steps.phpstan.outcome }}" = success
+          test "${{ steps.tests.outcome }}" = success
