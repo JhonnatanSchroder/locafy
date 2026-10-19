@@ -15,5 +15,6 @@ export type Auth = {
     user: User;
     can: {
         manageUsers: boolean;
+        deleteContracts: boolean;
     };
 };

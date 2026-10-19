@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ContractOperations from '@/components/contracts/ContractOperations.vue';
+import DeleteContractDialog from '@/components/contracts/DeleteContractDialog.vue';
 import { formatDate } from '@/lib/dates';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -256,6 +257,11 @@ defineOptions({
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex flex-wrap justify-end gap-2"><ContractOperations :contract="contract"/>
+                                        <DeleteContractDialog
+                                            v-if="$page.props.auth.can.deleteContracts"
+                                            :contract="contract"
+                                            compact
+                                        />
                                         <Button
                                             variant="outline"
                                             size="sm"

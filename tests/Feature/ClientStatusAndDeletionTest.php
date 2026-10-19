@@ -145,6 +145,39 @@ test('operator cannot authorize contract deletion', function () {
     expect((new ContractPolicy)->forceDelete($operator, $contract))->toBeFalse();
 });
 
+test('admin can delete an eligible contract through the web route', function () {
+    $company = Company::factory()->create();
+    $admin = User::factory()->for($company)->create(['role' => 'ADMIN']);
+    $client = Client::factory()->for($company)->create();
+    $contract = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id,
+        'started_at' => '2026-10-15 10:00',
+        'charge_saturdays' => true,
+        'items' => [],
+    ]);
+
+    $this->actingAs($admin)->delete(route('contracts.destroy', $contract))->assertRedirect(route('contracts.index'));
+
+    expect(Contract::find($contract->id))->toBeNull()
+        ->and(AdminAudit::query()->where('entity_type', 'contract')->where('entity_id', $contract->id)->exists())->toBeTrue();
+});
+
+test('operator cannot delete a contract through the web route', function () {
+    $company = Company::factory()->create();
+    $operator = User::factory()->for($company)->create(['role' => 'OPERATOR']);
+    $client = Client::factory()->for($company)->create();
+    $contract = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id,
+        'started_at' => '2026-10-15 10:00',
+        'charge_saturdays' => true,
+        'items' => [],
+    ]);
+
+    $this->actingAs($operator)->delete(route('contracts.destroy', $contract))->assertForbidden();
+
+    expect(Contract::find($contract->id))->not->toBeNull();
+});
+
 test('administrative status changes, archive and restore are audited', function () {
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
