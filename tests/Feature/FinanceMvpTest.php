@@ -49,7 +49,8 @@ it('registers exact partial and full payments independently of accrual', functio
     expect($charge->fresh()->status)->toBe('PARTIAL');
     $action->handle($charge, ['amount' => '60.00', ...$data]);
     expect($charge->fresh()->status)->toBe('PAID')->and(app(ContractAccrualService::class)->summarize($contract)['total_accrued'])->toBe('100.00');
-    expect(fn () => $action->handle($charge, ['amount' => '0.01', ...$data]))->toThrow(ValidationException::class);
+    $action->handle($charge, ['amount' => '0.01', ...$data]);
+    expect(app(\App\Services\ContractFinanceService::class)->summarize($contract->fresh())['credit_balance'])->toBe('0.01');
     expect(fn () => app(CancelChargeAction::class)->handle($charge))->toThrow(ValidationException::class);
 });
 
@@ -96,7 +97,8 @@ it('handles cent values without rounding drift and rejects excessive precision',
     expect($charge->total_amount)->toBe('0.30');
     $this->actingAs($user)->postJson("/api/v1/charges/history/{$charge->id}/payments", ['amount' => '0.10', 'paid_at' => now()->toIso8601String(), 'method' => 'PIX'])->assertOk()->assertJsonPath('data.balance', '0.20');
     $this->postJson("/api/v1/charges/history/{$charge->id}/payments", ['amount' => '0.201', 'paid_at' => now()->toIso8601String(), 'method' => 'PIX'])->assertUnprocessable()->assertJsonValidationErrors('amount');
-    $this->postJson("/api/v1/charges/history/{$charge->id}/payments", ['amount' => '0.21', 'paid_at' => now()->toIso8601String(), 'method' => 'PIX'])->assertUnprocessable();
+    $this->postJson("/api/v1/charges/history/{$charge->id}/payments", ['amount' => '0.21', 'paid_at' => now()->toIso8601String(), 'method' => 'PIX'])->assertOk();
+    expect(app(\App\Services\ContractFinanceService::class)->summarize($contract->fresh())['credit_balance'])->toBe('0.01');
 });
 
 it('writes contracts movements freights charges and payments through the api', function () {
