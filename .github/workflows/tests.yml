@@ -37,17 +37,6 @@ jobs:
       - name: Setup application and build production assets
         run: composer setup
 
-      - name: TEMPORARY export formatted financial branch sources
-        shell: bash
-        run: |
-          for file in resources/js/components/contracts/ContractOperations.vue resources/js/components/finance/PaymentDialog.vue resources/js/types/charge.ts resources/js/pages/contracts/Index.vue resources/js/components/contracts/DeleteContractDialog.vue; do
-            git show "origin/feat/advance-contract-payments:$file" > "$file"
-            ./node_modules/.bin/vp fmt "$file"
-            echo "__FMT_FIN_START__:$file"
-            cat "$file"
-            echo "__FMT_FIN_END__:$file"
-          done
-
       - name: Run frontend lint
         id: lint
         continue-on-error: true
