@@ -36,8 +36,8 @@ class RegisterContractPaymentAction
             $discount = Money::cents((string) ($data['discount_amount'] ?? '0.00'));
             $settled = $amount + $discount;
             $accrued = $finance['total_accrued'] === null ? null : Money::cents($finance['total_accrued']);
-            if ($accrued === null || $amount < 0 || $discount < 0 || $discount > $accrued || $settled <= 0) {
-                throw ValidationException::withMessages(['amount' => 'Pagamento/desconto inválido ou superior ao saldo atual do contrato.']);
+            if ($accrued === null || $amount < 0 || $discount < 0 || $discount > Money::cents($finance['balance']) || $settled <= 0) {
+                throw ValidationException::withMessages(['amount' => 'Pagamento inválido ou desconto superior ao saldo atual do contrato.']);
             }
             $payment = $contract->payments()->create([
                 ...$data, 'discount_amount' => $data['discount_amount'] ?? '0.00', 'company_id' => $contract->company_id, 'charge_id' => $charge?->id,
@@ -47,7 +47,7 @@ class RegisterContractPaymentAction
                 $settledForCharge = $charge->payments()->get()->sum(fn ($p) => Money::cents($p->amount) + Money::cents((string) ($p->discount_amount ?? '0.00')));
                 $charge->update(['status' => $settledForCharge >= Money::cents($charge->total_amount) ? 'PAID' : 'PARTIAL']);
             }
-            if ($finance['balance'] !== null && $settled >= Money::cents($finance['balance']) && $contract->next_charge_date !== null) {
+            if ($finance['balance'] !== null && Money::cents($finance['balance']) > 0 && $settled >= Money::cents($finance['balance']) && $contract->next_charge_date !== null) {
                 if ($contract->charge_interval_days < 1 || $contract->charge_interval_days > 365) {
                     throw ValidationException::withMessages(['charge_interval_days' => 'Intervalo de cobrança inválido.']);
                 }
