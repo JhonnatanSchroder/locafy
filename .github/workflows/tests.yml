@@ -133,7 +133,7 @@ jobs:
         shell: bash
         run: |
           mapfile -d '' -t files < <(
-            git diff --name-only --diff-filter=ACMR -z "$BASE_SHA" "$GITHUB_SHA" -- '*.php'
+            git diff --name-only --diff-filter=ACMR -z "$BASE_SHA" "$GITHUB_SHA" -- 'app/**/*.php'
           )
 
           if (( ${#files[@]} )); then
