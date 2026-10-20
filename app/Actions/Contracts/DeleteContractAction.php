@@ -35,7 +35,7 @@ class DeleteContractAction
 
             $before = [
                 'contract_number' => $contract->id,
-                'status' => $contract->status?->value ?? $contract->status,
+                'status' => $contract->status->value,
                 'movement_count' => $movements->count(),
                 'payment_count' => $payments->count(),
                 'charge_count' => $charges->count(),

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 const props = defineProps<{ contract: Contract; compact?: boolean }>();
 const open = ref(false);
 const confirmation = ref('');
-const form = useForm({});
+const form = useForm<{ contract?: string }>({});
 
 const canConfirm = () => confirmation.value === String(props.contract.number);
 

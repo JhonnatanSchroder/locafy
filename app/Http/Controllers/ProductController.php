@@ -170,8 +170,8 @@ class ProductController extends Controller
     }
 
     /**
-     * @param  array{name: string, type: string, default_price?: numeric-string|float|int|null, unit?: string|null, stock_total?: int|null, active: bool}  $data
-     * @return array{name: string, type: string, default_price: mixed, unit: string|null, stock_total: int|null, active: bool}
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
      */
     private function productPayload(array $data): array
     {

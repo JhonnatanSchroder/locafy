@@ -26,7 +26,7 @@ class EquipmentController extends Controller
         Gate::authorize('update', $equipment);
         abort_unless($request->user()?->canAdministrateCompany(), 403);
 
-        if ($equipment->status === EquipmentStatus::Rented && $equipment->status !== EquipmentStatus::Inactive) {
+        if ($equipment->status === EquipmentStatus::Rented) {
             abort(422, 'Equipamento alugado não pode ser desativado.');
         }
 
