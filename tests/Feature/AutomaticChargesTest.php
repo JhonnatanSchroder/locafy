@@ -288,13 +288,13 @@ it('only finalizes returned physical quantities when the current balance is zero
     $this->getJson('/api/v1/charges?filter=upcoming')->assertJsonCount(0, 'data');
 });
 
-it('excludes cancelled contracts and blocks payments above the current balance', function () {
+it('excludes cancelled contracts while allowing genuine advance payments', function () {
     [$user,$contract] = liveReceivableFixture();
-    $this->actingAs($user)->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('300.01'))->assertUnprocessable();
+    $this->actingAs($user)->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('300.01'))->assertOk()->assertJsonPath('data.credit_balance', '0.01');
     $contract->update(['status' => 'CANCELLED']);
     $this->getJson('/api/v1/charges')->assertJsonCount(0, 'data');
     $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('1.00'))->assertUnprocessable();
-    expect(Payment::count())->toBe(0);
+    expect(Payment::count())->toBe(1);
 });
 
 it('isolates receivables and contract payments by company', function () {
