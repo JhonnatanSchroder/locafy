@@ -9,14 +9,21 @@ use App\Actions\Contracts\DeleteContractAction;
 use App\Actions\Movements\CreateMovementAction;
 use App\Enums\ClientStatus;
 use App\Models\AdminAudit;
+use App\Models\Charge;
 use App\Models\Client;
 use App\Models\Company;
 use App\Models\Contract;
+use App\Models\ContractAttachment;
+use App\Models\Freight;
+use App\Models\Movement;
+use App\Models\MovementItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Policies\ContractPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 test('new clients are active and blocked clients cannot receive contracts', function () {
@@ -60,7 +67,7 @@ test('client without history can be permanently deleted', function () {
         ->and(Client::withTrashed()->find($client->id))->toBeNull();
 });
 
-test('contract with a movement cannot be permanently deleted', function () {
+test('contract with movement history and its audit can be permanently deleted', function () {
     test()->travelTo(CarbonImmutable::parse('2026-10-16 12:00:00'));
     $company = Company::factory()->create();
     $user = User::factory()->for($company)->create();
@@ -74,8 +81,79 @@ test('contract with a movement cannot be permanently deleted', function () {
     ]);
     app(CreateMovementAction::class)->handle($contract, ['type' => 'RETURN', 'occurred_at' => '2026-10-15 11:00', 'items' => [['contract_item_id' => $contract->items()->first()->id, 'quantity' => 1]]]);
 
-    expect(fn () => app(DeleteContractAction::class)->handle($contract, $user, app(RecordAdminAuditAction::class)))->toThrow(ValidationException::class)
-        ->and($contract->fresh())->not->toBeNull();
+    app(DeleteContractAction::class)->handle($contract, $user, app(RecordAdminAuditAction::class));
+
+    expect(Contract::find($contract->id))->toBeNull()
+        ->and(AdminAudit::query()->where('entity_type', 'contract')->where('entity_id', $contract->id)->where('operation', 'deleted')->exists())->toBeTrue();
+});
+
+test('permanently deleting a contract removes exclusive financial and operational records', function () {
+    Storage::fake('local');
+    $company = Company::factory()->create();
+    $admin = User::factory()->for($company)->create();
+    $client = Client::factory()->for($company)->create();
+    $product = Product::factory()->for($company)->create();
+    $contract = app(CreateContractAction::class)->handle($company, [
+        'client_id' => $client->id,
+        'started_at' => '2026-10-15 10:00',
+        'charge_saturdays' => true,
+        'items' => [['product_id' => $product->id, 'billing_period' => 'DAY', 'unit_price' => '10.00', 'initial_quantity' => 2]],
+    ]);
+    $charge = Charge::create([
+        'company_id' => $company->id,
+        'contract_id' => $contract->id,
+        'rental_amount' => '20.00',
+        'freight_amount' => '0.00',
+        'total_amount' => '20.00',
+        'due_date' => '2026-10-20',
+        'calculated_until' => '2026-10-19',
+        'status' => 'PAID',
+    ]);
+    Payment::create([
+        'company_id' => $company->id,
+        'contract_id' => $contract->id,
+        'charge_id' => $charge->id,
+        'amount' => '10.00',
+        'discount_amount' => '1.00',
+        'paid_at' => '2026-10-20 10:00',
+        'method' => 'PIX',
+    ]);
+    Freight::create([
+        'company_id' => $company->id,
+        'contract_id' => $contract->id,
+        'quantity' => 2,
+        'unit_amount' => '15.00',
+        'occurred_at' => '2026-10-15 10:00',
+    ]);
+    Storage::disk('local')->put('contracts/test-photo.jpg', 'photo');
+    ContractAttachment::create([
+        'company_id' => $company->id,
+        'contract_id' => $contract->id,
+        'uploaded_by' => $admin->id,
+        'file_path' => 'contracts/test-photo.jpg',
+        'original_name' => 'photo.jpg',
+        'mime_type' => 'image/jpeg',
+        'file_size' => 5,
+    ]);
+    $itemIds = $contract->items()->pluck('id');
+
+    app(DeleteContractAction::class)->handle($contract, $admin, app(RecordAdminAuditAction::class));
+
+    expect(Contract::find($contract->id))->toBeNull()
+        ->and(Movement::where('contract_id', $contract->id)->count())->toBe(0)
+        ->and(MovementItem::whereIn('contract_item_id', $itemIds)->count())->toBe(0)
+        ->and(Charge::where('contract_id', $contract->id)->count())->toBe(0)
+        ->and(Payment::where('contract_id', $contract->id)->count())->toBe(0)
+        ->and(Freight::where('contract_id', $contract->id)->count())->toBe(0)
+        ->and(ContractAttachment::withTrashed()->where('contract_id', $contract->id)->count())->toBe(0)
+        ->and(Client::find($client->id))->not->toBeNull()
+        ->and(Product::find($product->id))->not->toBeNull()
+        ->and(Storage::disk('local')->missing('contracts/test-photo.jpg'))->toBeTrue()
+        ->and(AdminAudit::where('entity_type', 'contract')->where('entity_id', $contract->id)->value('after_state'))->toMatchArray([
+            'payment_count' => 1,
+            'charge_count' => 1,
+            'freight_count' => 1,
+        ]);
 });
 
 test('admin deletes a contract without history and preserves the audit after hard delete', function () {
