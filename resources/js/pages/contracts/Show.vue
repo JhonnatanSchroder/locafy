@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ContractOperations from '@/components/contracts/ContractOperations.vue';
 import ContractAttachments from '@/components/contracts/ContractAttachments.vue';
+import DeleteContractDialog from '@/components/contracts/DeleteContractDialog.vue';
 import FinancialSummary from '@/components/finance/FinancialSummary.vue';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { Head, Link, useForm } from '@inertiajs/vue3';
@@ -23,8 +24,6 @@ type Props = {
 };
 
 const props = defineProps<Props>();
-
-
 const freightForm = useForm({
     quantity: 1,
     unit_amount: '',
@@ -86,7 +85,9 @@ defineOptions({
 </script>
 
 <template>
-    <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
+    <div
+        class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8"
+    >
         <Head :title="`Contrato #${contract.number}`" />
 
         <div
@@ -106,11 +107,19 @@ defineOptions({
                 </p>
             </div>
 
-            <div class="flex flex-wrap gap-2"><ContractOperations :contract="contract"/>
-                <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" as-child>
+            <div class="flex flex-wrap gap-2">
+                <ContractOperations :contract="contract" />
+                <Button
+                    v-if="!['FINALIZED', 'CANCELLED'].includes(contract.status)"
+                    as-child
+                >
                     <Link :href="contractsEdit(contract.id)">Editar</Link>
                 </Button>
-                <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" variant="outline" as-child>
+                <Button
+                    v-if="!['FINALIZED', 'CANCELLED'].includes(contract.status)"
+                    variant="outline"
+                    as-child
+                >
                     <Link
                         :href="
                             movementsCreate.url({
@@ -123,7 +132,11 @@ defineOptions({
                         >Nova retirada</Link
                     >
                 </Button>
-                <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" variant="outline" as-child>
+                <Button
+                    v-if="!['FINALIZED', 'CANCELLED'].includes(contract.status)"
+                    variant="outline"
+                    as-child
+                >
                     <Link
                         :href="
                             movementsCreate.url({
@@ -139,11 +152,34 @@ defineOptions({
                 <Button variant="outline" as-child>
                     <Link :href="contractsIndex()">Voltar</Link>
                 </Button>
+                <DeleteContractDialog
+                    v-if="$page.props.auth.can.deleteContracts"
+                    :contract="contract"
+                />
             </div>
         </div>
 
-        <FinancialSummary :rental-total="contract.rental_total" :freight-total="contract.freight_total" :total-accrued="contract.total_accrued" :total-paid="contract.total_paid" :total-discount="contract.total_discount" :balance="contract.balance"/>
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-5 py-4"><p class="text-sm text-muted-foreground">Próxima cobrança: {{ formatDate(contract.next_charge_date) }} · Intervalo de {{ contract.charge_interval_days }} dias</p><Button variant="outline" as-child><Link :href="`/charges/${contract.id}`">Pagamentos e financeiro</Link></Button></div>
+        <FinancialSummary
+            :rental-total="contract.rental_total"
+            :freight-total="contract.freight_total"
+            :total-accrued="contract.total_accrued"
+            :total-paid="contract.total_paid"
+            :total-discount="contract.total_discount"
+            :balance="contract.balance"
+        />
+        <div
+            class="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-5 py-4"
+        >
+            <p class="text-sm text-muted-foreground">
+                Próxima cobrança: {{ formatDate(contract.next_charge_date) }} ·
+                Intervalo de {{ contract.charge_interval_days }} dias
+            </p>
+            <Button variant="outline" as-child
+                ><Link :href="`/charges/${contract.id}`"
+                    >Pagamentos e financeiro</Link
+                ></Button
+            >
+        </div>
         <div class="grid gap-5 xl:grid-cols-[1fr_24rem]">
             <Card class="rounded-xl">
                 <CardHeader>
@@ -379,7 +415,7 @@ defineOptions({
         <ContractAttachments
             :contract-id="contract.id"
             :attachments="contract.attachments ?? []"
-            :locked="['FINALIZED','CANCELLED'].includes(contract.status)"
+            :locked="['FINALIZED', 'CANCELLED'].includes(contract.status)"
         />
 
         <Card class="rounded-xl">
@@ -415,7 +451,16 @@ defineOptions({
                                 }}
                             </div>
                         </div>
-                        <Button v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" variant="outline" size="sm" as-child>
+                        <Button
+                            v-if="
+                                !['FINALIZED', 'CANCELLED'].includes(
+                                    contract.status,
+                                )
+                            "
+                            variant="outline"
+                            size="sm"
+                            as-child
+                        >
                             <Link :href="movementsEdit(movement.id)"
                                 >Editar</Link
                             >
@@ -425,8 +470,18 @@ defineOptions({
             </CardContent>
         </Card>
 
-        <div class="grid gap-5" :class="!['FINALIZED','CANCELLED'].includes(contract.status) ? 'xl:grid-cols-[24rem_1fr]' : ''">
-            <Card v-if="!['FINALIZED','CANCELLED'].includes(contract.status)" class="rounded-xl">
+        <div
+            class="grid gap-5"
+            :class="
+                !['FINALIZED', 'CANCELLED'].includes(contract.status)
+                    ? 'xl:grid-cols-[24rem_1fr]'
+                    : ''
+            "
+        >
+            <Card
+                v-if="!['FINALIZED', 'CANCELLED'].includes(contract.status)"
+                class="rounded-xl"
+            >
                 <CardHeader>
                     <CardTitle class="text-base">Adicionar frete</CardTitle>
                 </CardHeader>

@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\ProductType;
+use App\Enums\UserRole;
+use App\Models\AdminAudit;
 use App\Models\Company;
 use App\Models\Product;
 use App\Models\User;
@@ -290,4 +292,30 @@ it('normalizes stock total to null for individual products', function () {
     $product = Product::query()->where('name', 'Betoneira')->firstOrFail();
 
     expect($product->stock_total)->toBeNull();
+});
+
+it('allows only administrators to toggle product activity and records the audit', function () {
+    $company = Company::factory()->create();
+    $admin = User::factory()->for($company)->create(['role' => UserRole::Admin]);
+    $operator = User::factory()->for($company)->create(['role' => UserRole::Operator]);
+    $product = Product::factory()->for($company)->create(['active' => true]);
+
+    $this->actingAs($operator)->patch(route('products.status', $product))->assertForbidden();
+    expect($product->fresh()->active)->toBeTrue();
+
+    $this->actingAs($admin)->patch(route('products.status', $product))->assertRedirect();
+    expect($product->fresh()->active)->toBeFalse();
+    expect(AdminAudit::query()->where('entity_type', 'product')->where('entity_id', $product->id)->where('operation', 'deactivated')->exists())->toBeTrue();
+
+    $this->actingAs($admin)->patch(route('products.status', $product))->assertRedirect();
+    expect($product->fresh()->active)->toBeTrue();
+});
+
+it('does not allow toggling a product from another company', function () {
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $admin = User::factory()->for($company)->create(['role' => UserRole::Admin]);
+    $product = Product::factory()->for($otherCompany)->create();
+
+    $this->actingAs($admin)->patch(route('products.status', $product))->assertNotFound();
 });

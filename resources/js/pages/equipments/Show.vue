@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +14,7 @@ type Props = {
     equipment: Equipment;
 };
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const equipmentStatusVariant = (
     status: Equipment['status'],
@@ -32,6 +32,11 @@ const equipmentStatusVariant = (
     }
 
     return 'muted';
+};
+
+const toggleStatus = () => {
+    if (!window.confirm('Alterar o status deste equipamento?')) return;
+    router.patch(`/equipments/${props.equipment.id}/status`);
 };
 
 defineOptions({
@@ -72,6 +77,17 @@ defineOptions({
                 </Button>
                 <Button as-child>
                     <Link :href="equipmentsEdit(equipment.id)">Editar</Link>
+                </Button>
+                <Button
+                    variant="outline"
+                    :disabled="equipment.status === 'RENTED'"
+                    @click="toggleStatus"
+                >
+                    {{
+                        equipment.status === 'INACTIVE'
+                            ? 'Reativar'
+                            : 'Desativar'
+                    }}
                 </Button>
             </div>
         </div>

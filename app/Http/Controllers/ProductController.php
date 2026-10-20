@@ -17,6 +17,23 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
+    public function toggleStatus(Request $request, int $product, RecordAdminAuditAction $audit): RedirectResponse
+    {
+        $product = $this->findProductForUser($request, $product);
+
+        Gate::authorize('update', $product);
+        abort_unless($request->user()?->canAdministrateCompany(), 403);
+
+        $before = ['active' => $product->active];
+        $product->update(['active' => ! $product->active]);
+
+        $audit->handle($request->user(), 'product', $product->id, $product->active ? 'activated' : 'deactivated', $before, ['active' => $product->active]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $product->active ? __('Produto ativado com sucesso.') : __('Produto desativado com sucesso.')]);
+
+        return back();
+    }
+
     /**
      * Display a listing of the products.
      */
@@ -153,8 +170,8 @@ class ProductController extends Controller
     }
 
     /**
-     * @param  array{name: string, type: string, default_price?: numeric-string|float|int|null, unit?: string|null, stock_total?: int|null, active: bool}  $data
-     * @return array{name: string, type: string, default_price: mixed, unit: string|null, stock_total: int|null, active: bool}
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
      */
     private function productPayload(array $data): array
     {

@@ -19,6 +19,30 @@ use Inertia\Response;
 
 class EquipmentController extends Controller
 {
+    public function toggleStatus(Request $request, int $equipment, RecordAdminAuditAction $audit): RedirectResponse
+    {
+        $equipment = $this->findEquipmentForUser($request, $equipment);
+
+        Gate::authorize('update', $equipment);
+        abort_unless($request->user()?->canAdministrateCompany(), 403);
+
+        if ($equipment->status === EquipmentStatus::Rented) {
+            abort(422, 'Equipamento alugado não pode ser desativado.');
+        }
+
+        $before = ['status' => $equipment->status->value];
+        $nextStatus = $equipment->status === EquipmentStatus::Inactive
+            ? EquipmentStatus::Available
+            : EquipmentStatus::Inactive;
+        $equipment->update(['status' => $nextStatus]);
+
+        $audit->handle($request->user(), 'equipment', $equipment->id, $nextStatus === EquipmentStatus::Inactive ? 'deactivated' : 'activated', $before, ['status' => $nextStatus->value]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $nextStatus === EquipmentStatus::Inactive ? __('Equipamento desativado com sucesso.') : __('Equipamento reativado com sucesso.')]);
+
+        return back();
+    }
+
     /**
      * Display a listing of the equipments.
      */

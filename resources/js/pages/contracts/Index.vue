@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ContractOperations from '@/components/contracts/ContractOperations.vue';
+import DeleteContractDialog from '@/components/contracts/DeleteContractDialog.vue';
 import { formatDate } from '@/lib/dates';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -32,7 +33,7 @@ type PaginatedContracts = {
 
 type Props = {
     contracts: PaginatedContracts;
-    overview: {active:number;returned:number;total:number};
+    overview: { active: number; returned: number; total: number };
     filters: {
         search: string;
         status: string;
@@ -98,7 +99,9 @@ defineOptions({
 </script>
 
 <template>
-    <div class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
+    <div
+        class="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8"
+    >
         <Head title="Contratos" />
 
         <div
@@ -107,16 +110,39 @@ defineOptions({
             <div>
                 <h1 class="text-2xl font-semibold tracking-tight">Contratos</h1>
                 <p class="text-sm text-muted-foreground">
-                    Acompanhe locações, movimentações e o financeiro dos seus contratos.
+                    Acompanhe locações, movimentações e o financeiro dos seus
+                    contratos.
                 </p>
             </div>
 
             <Button as-child>
-                <Link :href="contractsCreate()"><Plus class="mr-2 size-4"/> Novo contrato</Link>
+                <Link :href="contractsCreate()"
+                    ><Plus class="mr-2 size-4" /> Novo contrato</Link
+                >
             </Button>
         </div>
 
-        <section class="grid gap-4 sm:grid-cols-3"><div v-for="metric in [{label:'Contratos ativos',value:overview.active},{label:'Devolvidos para fechamento',value:overview.returned},{label:'Total de contratos',value:overview.total}]" :key="metric.label" class="rounded-xl border bg-card px-5 py-4"><p class="text-xs font-medium text-muted-foreground">{{ metric.label }}</p><p class="mt-2 text-2xl font-semibold tabular-nums">{{ metric.value }}</p></div></section>
+        <section class="grid gap-4 sm:grid-cols-3">
+            <div
+                v-for="metric in [
+                    { label: 'Contratos ativos', value: overview.active },
+                    {
+                        label: 'Devolvidos para fechamento',
+                        value: overview.returned,
+                    },
+                    { label: 'Total de contratos', value: overview.total },
+                ]"
+                :key="metric.label"
+                class="rounded-xl border bg-card px-5 py-4"
+            >
+                <p class="text-xs font-medium text-muted-foreground">
+                    {{ metric.label }}
+                </p>
+                <p class="mt-2 text-2xl font-semibold tabular-nums">
+                    {{ metric.value }}
+                </p>
+            </div>
+        </section>
         <Card class="rounded-xl">
             <CardHeader>
                 <CardTitle class="text-base">Buscar contratos</CardTitle>
@@ -171,7 +197,12 @@ defineOptions({
                                 <th class="px-4 py-3 font-medium">Contrato</th>
                                 <th class="px-4 py-3 font-medium">Cliente</th>
                                 <th class="px-4 py-3 font-medium">Status</th>
-                                <th class="px-4 py-3 font-medium">Total acumulado</th><th class="px-4 py-3 font-medium">Total pago</th>
+                                <th class="px-4 py-3 font-medium">
+                                    Total acumulado
+                                </th>
+                                <th class="px-4 py-3 font-medium">
+                                    Total pago
+                                </th>
                                 <th class="px-4 py-3 font-medium">
                                     Próxima cobrança
                                 </th>
@@ -193,7 +224,24 @@ defineOptions({
                                     colspan="9"
                                     class="px-4 py-14 text-center text-muted-foreground"
                                 >
-                                    <ClipboardList class="mx-auto mb-3 size-8"/><p class="font-semibold text-foreground">Nenhum contrato nesta seleção</p><p class="mt-1 text-sm">Ajuste os filtros ou crie uma nova locação.</p><Button variant="outline" class="mt-4" as-child><Link :href="contractsCreate()">Novo contrato</Link></Button>
+                                    <ClipboardList
+                                        class="mx-auto mb-3 size-8"
+                                    />
+                                    <p class="font-semibold text-foreground">
+                                        Nenhum contrato nesta seleção
+                                    </p>
+                                    <p class="mt-1 text-sm">
+                                        Ajuste os filtros ou crie uma nova
+                                        locação.
+                                    </p>
+                                    <Button
+                                        variant="outline"
+                                        class="mt-4"
+                                        as-child
+                                        ><Link :href="contractsCreate()"
+                                            >Novo contrato</Link
+                                        ></Button
+                                    >
                                 </td>
                             </tr>
                             <tr
@@ -202,7 +250,11 @@ defineOptions({
                                 class="border-b transition-colors last:border-0 hover:bg-muted/40"
                             >
                                 <td class="px-4 py-3 font-medium">
-                                    <Link :href="contractsShow(contract.id)" class="hover:text-primary">#{{ contract.number }}</Link>
+                                    <Link
+                                        :href="contractsShow(contract.id)"
+                                        class="hover:text-primary"
+                                        >#{{ contract.number }}</Link
+                                    >
                                 </td>
                                 <td class="px-4 py-3">
                                     {{ contract.client.name }}
@@ -210,12 +262,21 @@ defineOptions({
                                 <td class="px-4 py-3">
                                     <Badge
                                         :variant="
-                                            statusVariant(contract.display_status)
+                                            statusVariant(
+                                                contract.display_status,
+                                            )
                                         "
-                                        >{{ contract.display_status_label }}</Badge
+                                        >{{
+                                            contract.display_status_label
+                                        }}</Badge
                                     >
                                 </td>
-                                <td class="px-4 py-3 tabular-nums">{{ formatCurrency(contract.total_accrued) }}</td><td class="px-4 py-3 tabular-nums">{{ formatCurrency(contract.total_paid) }}</td>
+                                <td class="px-4 py-3 tabular-nums">
+                                    {{ formatCurrency(contract.total_accrued) }}
+                                </td>
+                                <td class="px-4 py-3 tabular-nums">
+                                    {{ formatCurrency(contract.total_paid) }}
+                                </td>
                                 <td class="px-4 py-3">
                                     {{ formatDate(contract.next_charge_date) }}
                                 </td>
@@ -249,13 +310,55 @@ defineOptions({
                                 </td>
 
                                 <td class="px-4 py-3">
-                                    <p class="text-base font-semibold tabular-nums text-primary">{{ formatCurrency(contract.financial_balance) }}</p>
-                                    <p class="mt-1 text-xs text-muted-foreground">Acumulado {{ formatCurrency(contract.total_accrued) }}</p>
-                                    <p class="text-xs text-muted-foreground">Pago {{ formatCurrency(contract.total_paid) }}</p>
-                                    <p class="text-xs text-muted-foreground">Descontos {{ formatCurrency(contract.total_discount) }}</p>
+                                    <p
+                                        class="text-base font-semibold text-primary tabular-nums"
+                                    >
+                                        {{
+                                            formatCurrency(
+                                                contract.financial_balance,
+                                            )
+                                        }}
+                                    </p>
+                                    <p
+                                        class="mt-1 text-xs text-muted-foreground"
+                                    >
+                                        Acumulado
+                                        {{
+                                            formatCurrency(
+                                                contract.total_accrued,
+                                            )
+                                        }}
+                                    </p>
+                                    <p class="text-xs text-muted-foreground">
+                                        Pago
+                                        {{
+                                            formatCurrency(contract.total_paid)
+                                        }}
+                                    </p>
+                                    <p class="text-xs text-muted-foreground">
+                                        Descontos
+                                        {{
+                                            formatCurrency(
+                                                contract.total_discount,
+                                            )
+                                        }}
+                                    </p>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="flex flex-wrap justify-end gap-2"><ContractOperations :contract="contract"/>
+                                    <div
+                                        class="flex flex-wrap justify-end gap-2"
+                                    >
+                                        <ContractOperations
+                                            :contract="contract"
+                                        />
+                                        <DeleteContractDialog
+                                            v-if="
+                                                $page.props.auth.can
+                                                    .deleteContracts
+                                            "
+                                            :contract="contract"
+                                            compact
+                                        />
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -263,20 +366,26 @@ defineOptions({
                                         >
                                             <Link
                                                 :href="
-                                                    contractsShow.url(contract.id)
+                                                    contractsShow.url(
+                                                        contract.id,
+                                                    )
                                                 "
                                                 >Ver</Link
                                             >
                                         </Button>
                                         <Button
-                                            v-if="contract.status !== 'CANCELLED'"
+                                            v-if="
+                                                contract.status !== 'CANCELLED'
+                                            "
                                             variant="outline"
                                             size="sm"
                                             as-child
                                         >
                                             <Link
                                                 :href="
-                                                    contractsEdit.url(contract.id)
+                                                    contractsEdit.url(
+                                                        contract.id,
+                                                    )
                                                 "
                                                 >Editar</Link
                                             >
