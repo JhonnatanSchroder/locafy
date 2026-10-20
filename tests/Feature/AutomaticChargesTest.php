@@ -72,14 +72,33 @@ it('settles balances with payments and discounts while keeping revenue separate'
     expect($finance['balance'])->toBe('130.00');
 });
 
-it('rejects payment plus discount above the current balance', function () {
+it('accepts an advance payment and exposes the resulting credit', function () {
     [$user, $contract] = liveReceivableFixture();
 
     $this->actingAs($user)
         ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('290.00', '20.00'))
-        ->assertUnprocessable();
+        ->assertOk()
+        ->assertJsonPath('data.total_paid', '290.00')
+        ->assertJsonPath('data.total_discount', '20.00')
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '10.00');
 
-    expect(Payment::count())->toBe(0);
+    expect(Payment::count())->toBe(1);
+});
+
+it('allows a payment when the current balance is zero without creating debt', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('300.00', '0.00'))
+        ->assertOk()
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '0.00');
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('50.00', '0.00'))
+        ->assertOk()
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '50.00');
 });
 
 it('allows full discount settlement without received revenue', function () {

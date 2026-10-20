@@ -33,6 +33,7 @@ const payment = computed(() => ({
     contract_id: props.contract.id,
     client: props.contract.client.name,
     balance: props.contract.financial_balance,
+    credit_balance: props.contract.credit_balance,
     total_accrued: props.contract.total_accrued,
     total_paid: props.contract.total_paid,
     total_discount: props.contract.total_discount,
@@ -59,7 +60,7 @@ function finalize() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-52">
             <DropdownMenuItem
-                v-if="!['FINALIZED', 'CANCELLED'].includes(contract.status) && contract.financial_balance !== null && contract.financial_balance !== '0.00'"
+                v-if="!['FINALIZED', 'CANCELLED'].includes(contract.status) && contract.financial_balance !== null"
                 @select="paymentOpen = true"
             >
                 <Banknote class="size-4" /> Registrar pagamento
@@ -79,7 +80,7 @@ function finalize() {
         </DropdownMenuContent>
     </DropdownMenu>
     <Button
-        v-else-if="!['FINALIZED', 'CANCELLED'].includes(contract.status) && contract.financial_balance !== null && contract.financial_balance !== '0.00'"
+        v-else-if="!['FINALIZED', 'CANCELLED'].includes(contract.status) && contract.financial_balance !== null"
         variant="outline"
         size="sm"
         @click="paymentOpen = true"
