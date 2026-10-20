@@ -37,16 +37,6 @@ jobs:
       - name: Setup application and build production assets
         run: composer setup
 
-      - name: TEMPORARY diagnostic frontend formatter export
-        shell: bash
-        run: |
-          for file in resources/js/components/contracts/ContractOperations.vue resources/js/pages/contracts/Index.vue; do
-            ./node_modules/.bin/vp fmt "$file"
-            echo "__FMT_START__:$file"
-            cat "$file"
-            echo "__FMT_END__:$file"
-          done
-
       - name: Run frontend lint
         id: lint
         continue-on-error: true
