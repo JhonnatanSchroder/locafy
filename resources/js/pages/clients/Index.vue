@@ -204,7 +204,7 @@ defineOptions({
                             <tr
                                 v-for="client in clients.data"
                                 :key="client.id"
-                                class="border-b transition-colors hover:bg-muted/40 last:border-0"
+                                class="border-b transition-colors last:border-0 hover:bg-muted/40"
                             >
                                 <td class="px-4 py-3 font-medium">
                                     <Link

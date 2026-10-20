@@ -5,7 +5,14 @@ import { Trash2 } from '@lucide/vue';
 import type { Contract } from '@/types';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
 const props = defineProps<{ contract: Contract; compact?: boolean }>();
@@ -23,7 +30,10 @@ const start = () => {
 
 const destroy = () => {
     if (!canConfirm()) {
-        form.setError('contract', `Digite ${props.contract.number} para confirmar a exclusão.`);
+        form.setError(
+            'contract',
+            `Digite ${props.contract.number} para confirmar a exclusão.`,
+        );
         return;
     }
 
@@ -37,21 +47,41 @@ const destroy = () => {
 </script>
 
 <template>
-    <Button variant="destructive" :size="compact ? 'sm' : 'default'" @click="start">
+    <Button
+        variant="destructive"
+        :size="compact ? 'sm' : 'default'"
+        @click="start"
+    >
         <Trash2 class="mr-1 size-4" />
         <span>Excluir contrato</span>
     </Button>
-    <Dialog :open="open" @update:open="value => { if (!form.processing) open = value }">
+    <Dialog
+        :open="open"
+        @update:open="
+            (value) => {
+                if (!form.processing) open = value;
+            }
+        "
+    >
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Excluir contrato #{{ contract.number }}?</DialogTitle>
+                <DialogTitle
+                    >Excluir contrato #{{ contract.number }}?</DialogTitle
+                >
                 <DialogDescription>
-                    Esta ação apagará permanentemente o contrato e todo o histórico operacional e financeiro exclusivo associado a ele.
+                    Esta ação apagará permanentemente o contrato e todo o
+                    histórico operacional e financeiro exclusivo associado a
+                    ele.
                 </DialogDescription>
             </DialogHeader>
-            <p class="text-sm text-muted-foreground">{{ contract.client.name }}</p>
+            <p class="text-sm text-muted-foreground">
+                {{ contract.client.name }}
+            </p>
             <div class="grid gap-2">
-                <label class="text-sm font-medium" :for="`delete-contract-${contract.id}`">
+                <label
+                    class="text-sm font-medium"
+                    :for="`delete-contract-${contract.id}`"
+                >
                     Digite {{ contract.number }} para confirmar
                 </label>
                 <Input
@@ -65,8 +95,17 @@ const destroy = () => {
             </div>
             <InputError :message="form.errors.contract" />
             <DialogFooter class="gap-2">
-                <Button variant="outline" :disabled="form.processing" @click="open = false">Cancelar</Button>
-                <Button variant="destructive" :disabled="form.processing || !canConfirm()" @click="destroy">
+                <Button
+                    variant="outline"
+                    :disabled="form.processing"
+                    @click="open = false"
+                    >Cancelar</Button
+                >
+                <Button
+                    variant="destructive"
+                    :disabled="form.processing || !canConfirm()"
+                    @click="destroy"
+                >
                     {{ form.processing ? 'Excluindo…' : 'Excluir contrato' }}
                 </Button>
             </DialogFooter>

@@ -152,7 +152,10 @@ defineOptions({
                 <Button variant="outline" as-child>
                     <Link :href="contractsIndex()">Voltar</Link>
                 </Button>
-                <DeleteContractDialog v-if="$page.props.auth.can.deleteContracts" :contract="contract" />
+                <DeleteContractDialog
+                    v-if="$page.props.auth.can.deleteContracts"
+                    :contract="contract"
+                />
             </div>
         </div>
 

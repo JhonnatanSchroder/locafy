@@ -48,7 +48,7 @@ jobs:
           )
 
           if (( ${#files[@]} )); then
-            ./node_modules/.bin/vp check --quiet --no-fmt "${files[@]}"
+            ./node_modules/.bin/vp check --no-fmt "${files[@]}"
           else
             echo "No changed frontend source files to lint."
           fi
