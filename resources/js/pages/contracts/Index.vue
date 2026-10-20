@@ -206,36 +206,70 @@ defineOptions({
                                 >
                                     #{{ contract.number }}
                                 </Link>
-                                <p class="truncate text-sm text-muted-foreground">
+                                <p
+                                    class="truncate text-sm text-muted-foreground"
+                                >
                                     {{ contract.client.name }}
                                 </p>
                             </div>
-                            <Badge :variant="statusVariant(contract.display_status)">
+                            <Badge
+                                :variant="
+                                    statusVariant(contract.display_status)
+                                "
+                            >
                                 {{ contract.display_status_label }}
                             </Badge>
                         </div>
                         <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
                             <div>
-                                <p class="text-xs text-muted-foreground">Itens atuais</p>
+                                <p class="text-xs text-muted-foreground">
+                                    Itens atuais
+                                </p>
                                 <p class="mt-1 truncate font-medium">
-                                    {{ contract.items.filter((item) => (item.current_quantity ?? 0) > 0).map((item) => `${item.current_quantity} ${item.product.name}`).join(' · ') || '—' }}
+                                    {{
+                                        contract.items
+                                            .filter(
+                                                (item) =>
+                                                    (item.current_quantity ??
+                                                        0) > 0,
+                                            )
+                                            .map(
+                                                (item) =>
+                                                    `${item.current_quantity} ${item.product.name}`,
+                                            )
+                                            .join(' · ') || '—'
+                                    }}
                                 </p>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs text-muted-foreground">Saldo a receber</p>
-                                <p class="mt-1 font-semibold text-primary tabular-nums">
-                                    {{ formatCurrency(contract.financial_balance) }}
+                                <p class="text-xs text-muted-foreground">
+                                    Saldo a receber
+                                </p>
+                                <p
+                                    class="mt-1 font-semibold text-primary tabular-nums"
+                                >
+                                    {{
+                                        formatCurrency(
+                                            contract.financial_balance,
+                                        )
+                                    }}
                                 </p>
                             </div>
                         </div>
-                        <div class="mt-4 flex items-center justify-end gap-2 border-t pt-3">
+                        <div
+                            class="mt-4 flex items-center justify-end gap-2 border-t pt-3"
+                        >
                             <Button variant="outline" size="sm" as-child>
-                                <Link :href="contractsShow(contract.id)">Ver</Link>
+                                <Link :href="contractsShow(contract.id)"
+                                    >Ver</Link
+                                >
                             </Button>
                             <ContractOperations
                                 :contract="contract"
                                 menu
-                                :can-delete="$page.props.auth.can.deleteContracts"
+                                :can-delete="
+                                    $page.props.auth.can.deleteContracts
+                                "
                             />
                         </div>
                     </article>
