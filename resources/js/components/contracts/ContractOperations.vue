@@ -23,7 +23,11 @@ import {
 import { edit as contractsEdit } from '@/routes/contracts';
 import type { Contract } from '@/types';
 
-const props = defineProps<{ contract: Contract; menu?: boolean; canDelete?: boolean }>();
+const props = defineProps<{
+    contract: Contract;
+    menu?: boolean;
+    canDelete?: boolean;
+}>();
 const paymentOpen = ref(false);
 const finalizeOpen = ref(false);
 const deleteOpen = ref(false);
@@ -53,18 +57,30 @@ function finalize() {
 <template>
     <DropdownMenu v-if="menu">
         <DropdownMenuTrigger as-child>
-            <Button variant="outline" size="icon" class="size-9" aria-label="Ações do contrato">
+            <Button
+                variant="outline"
+                size="icon"
+                class="size-9"
+                aria-label="Ações do contrato"
+            >
                 <Ellipsis class="size-4" />
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-52">
             <DropdownMenuItem
-                v-if="!['FINALIZED', 'CANCELLED'].includes(contract.status) && contract.financial_balance !== null && contract.financial_balance !== '0.00'"
+                v-if="
+                    !['FINALIZED', 'CANCELLED'].includes(contract.status) &&
+                    contract.financial_balance !== null &&
+                    contract.financial_balance !== '0.00'
+                "
                 @select="paymentOpen = true"
             >
                 <Banknote class="size-4" /> Registrar pagamento
             </DropdownMenuItem>
-            <DropdownMenuItem v-if="contract.can_finalize" @select="finalizeOpen = true">
+            <DropdownMenuItem
+                v-if="contract.can_finalize"
+                @select="finalizeOpen = true"
+            >
                 <CheckCheck class="size-4" /> Finalizar contrato
             </DropdownMenuItem>
             <DropdownMenuItem :as-child="true">
@@ -73,35 +89,78 @@ function finalize() {
                 </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem v-if="canDelete" variant="destructive" @select="deleteOpen = true">
+            <DropdownMenuItem
+                v-if="canDelete"
+                variant="destructive"
+                @select="deleteOpen = true"
+            >
                 <Trash2 class="size-4" /> Excluir contrato
             </DropdownMenuItem>
         </DropdownMenuContent>
     </DropdownMenu>
     <Button
-        v-else-if="!['FINALIZED', 'CANCELLED'].includes(contract.status) && contract.financial_balance !== null && contract.financial_balance !== '0.00'"
+        v-else-if="
+            !['FINALIZED', 'CANCELLED'].includes(contract.status) &&
+            contract.financial_balance !== null &&
+            contract.financial_balance !== '0.00'
+        "
         variant="outline"
         size="sm"
         @click="paymentOpen = true"
     >
         <Banknote class="mr-1 size-4" /> Pagamento
     </Button>
-    <Button v-if="!menu && contract.can_finalize" size="sm" @click="form.clearErrors(); finalizeOpen = true">
+    <Button
+        v-if="!menu && contract.can_finalize"
+        size="sm"
+        @click="
+            form.clearErrors();
+            finalizeOpen = true;
+        "
+    >
         <CheckCheck class="mr-1 size-4" /> Finalizar
     </Button>
     <PaymentDialog v-model:open="paymentOpen" :receivable="payment" />
-    <DeleteContractDialog v-if="menu && canDelete" v-model:open="deleteOpen" :contract="contract" />
-    <Dialog :open="finalizeOpen" @update:open="(value) => { if (!form.processing) finalizeOpen = value; }">
+    <DeleteContractDialog
+        v-if="menu && canDelete"
+        v-model:open="deleteOpen"
+        :contract="contract"
+    />
+    <Dialog
+        :open="finalizeOpen"
+        @update:open="
+            (value) => {
+                if (!form.processing) finalizeOpen = value;
+            }
+        "
+    >
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Finalizar este contrato?</DialogTitle>
-                <DialogDescription>Após a finalização ele será considerado encerrado e não aceitará novas movimentações operacionais.</DialogDescription>
+                <DialogDescription
+                    >Após a finalização ele será considerado encerrado e não
+                    aceitará novas movimentações
+                    operacionais.</DialogDescription
+                >
             </DialogHeader>
-            <p class="text-sm text-muted-foreground">{{ contract.client.name }} · Contrato #{{ contract.number }}</p>
-            <InputError v-for="(message, field) in form.errors" :key="field" :message="message" />
+            <p class="text-sm text-muted-foreground">
+                {{ contract.client.name }} · Contrato #{{ contract.number }}
+            </p>
+            <InputError
+                v-for="(message, field) in form.errors"
+                :key="field"
+                :message="message"
+            />
             <div class="flex justify-end gap-2">
-                <Button variant="outline" :disabled="form.processing" @click="finalizeOpen = false">Cancelar</Button>
-                <Button :disabled="form.processing" @click="finalize">{{ form.processing ? 'Finalizando…' : 'Confirmar' }}</Button>
+                <Button
+                    variant="outline"
+                    :disabled="form.processing"
+                    @click="finalizeOpen = false"
+                    >Cancelar</Button
+                >
+                <Button :disabled="form.processing" @click="finalize">{{
+                    form.processing ? 'Finalizando…' : 'Confirmar'
+                }}</Button>
             </div>
         </DialogContent>
     </Dialog>
