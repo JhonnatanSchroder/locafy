@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { Trash2 } from '@lucide/vue';
 import type { Contract } from '@/types';
 import InputError from '@/components/InputError.vue';
@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 
 const props = defineProps<{ contract: Contract; compact?: boolean }>();
-const open = ref(false);
+const open = defineModel<boolean>('open', { default: false });
 const confirmation = ref('');
 const form = useForm<{ contract?: string }>({});
 

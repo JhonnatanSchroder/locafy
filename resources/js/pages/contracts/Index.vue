@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ContractOperations from '@/components/contracts/ContractOperations.vue';
-import DeleteContractDialog from '@/components/contracts/DeleteContractDialog.vue';
 import { formatDate } from '@/lib/dates';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
@@ -11,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     create as contractsCreate,
-    edit as contractsEdit,
     index as contractsIndex,
     show as contractsShow,
 } from '@/routes/contracts';
@@ -188,7 +186,95 @@ defineOptions({
 
         <Card class="rounded-xl">
             <CardContent class="p-0">
-                <div class="overflow-x-auto">
+                <div class="space-y-3 p-3 md:hidden">
+                    <div
+                        v-if="contracts.data.length === 0"
+                        class="px-3 py-10 text-center text-sm text-muted-foreground"
+                    >
+                        Nenhum contrato nesta seleção.
+                    </div>
+                    <article
+                        v-for="contract in contracts.data"
+                        :key="`mobile-${contract.id}`"
+                        class="rounded-lg border bg-card p-4 shadow-sm"
+                    >
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <Link
+                                    :href="contractsShow(contract.id)"
+                                    class="font-semibold hover:text-primary"
+                                >
+                                    #{{ contract.number }}
+                                </Link>
+                                <p
+                                    class="truncate text-sm text-muted-foreground"
+                                >
+                                    {{ contract.client.name }}
+                                </p>
+                            </div>
+                            <Badge
+                                :variant="
+                                    statusVariant(contract.display_status)
+                                "
+                            >
+                                {{ contract.display_status_label }}
+                            </Badge>
+                        </div>
+                        <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <p class="text-xs text-muted-foreground">
+                                    Itens atuais
+                                </p>
+                                <p class="mt-1 truncate font-medium">
+                                    {{
+                                        contract.items
+                                            .filter(
+                                                (item) =>
+                                                    (item.current_quantity ??
+                                                        0) > 0,
+                                            )
+                                            .map(
+                                                (item) =>
+                                                    `${item.current_quantity} ${item.product.name}`,
+                                            )
+                                            .join(' · ') || '—'
+                                    }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-muted-foreground">
+                                    Saldo a receber
+                                </p>
+                                <p
+                                    class="mt-1 font-semibold text-primary tabular-nums"
+                                >
+                                    {{
+                                        formatCurrency(
+                                            contract.financial_balance,
+                                        )
+                                    }}
+                                </p>
+                            </div>
+                        </div>
+                        <div
+                            class="mt-4 flex items-center justify-end gap-2 border-t pt-3"
+                        >
+                            <Button variant="outline" size="sm" as-child>
+                                <Link :href="contractsShow(contract.id)"
+                                    >Ver</Link
+                                >
+                            </Button>
+                            <ContractOperations
+                                :contract="contract"
+                                menu
+                                :can-delete="
+                                    $page.props.auth.can.deleteContracts
+                                "
+                            />
+                        </div>
+                    </article>
+                </div>
+                <div class="hidden overflow-x-auto md:block">
                     <table class="w-full text-sm">
                         <thead
                             class="border-b bg-muted/60 text-left text-muted-foreground"
@@ -348,17 +434,6 @@ defineOptions({
                                     <div
                                         class="flex flex-wrap justify-end gap-2"
                                     >
-                                        <ContractOperations
-                                            :contract="contract"
-                                        />
-                                        <DeleteContractDialog
-                                            v-if="
-                                                $page.props.auth.can
-                                                    .deleteContracts
-                                            "
-                                            :contract="contract"
-                                            compact
-                                        />
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -373,23 +448,14 @@ defineOptions({
                                                 >Ver</Link
                                             >
                                         </Button>
-                                        <Button
-                                            v-if="
-                                                contract.status !== 'CANCELLED'
+                                        <ContractOperations
+                                            :contract="contract"
+                                            menu
+                                            :can-delete="
+                                                $page.props.auth.can
+                                                    .deleteContracts
                                             "
-                                            variant="outline"
-                                            size="sm"
-                                            as-child
-                                        >
-                                            <Link
-                                                :href="
-                                                    contractsEdit.url(
-                                                        contract.id,
-                                                    )
-                                                "
-                                                >Editar</Link
-                                            >
-                                        </Button>
+                                        />
                                     </div>
                                 </td>
                             </tr>
