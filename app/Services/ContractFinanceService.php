@@ -10,7 +10,7 @@ class ContractFinanceService
 {
     /**
      * @param  array{calculation: ContractCalculationResult, freight_count: int, freight_total: string, total_accrued: string|null}|null  $accrual
-     * @return array{rental_total: string|null, freight_total: string, total_accrued: string|null, total_paid: string, total_discount: string, balance: string|null, financial_balance: string|null}
+     * @return array{rental_total: string|null, freight_total: string, total_accrued: string|null, total_paid: string, total_discount: string, balance: string|null, financial_balance: string|null, credit_balance: string|null}
      */
     public function summarize(Contract $contract, ?array $accrual = null): array
     {
@@ -19,7 +19,9 @@ class ContractFinanceService
         $paid = $contract->payments->sum(fn ($payment) => Money::cents($payment->amount));
         $discount = $contract->payments->sum(fn ($payment) => Money::cents((string) ($payment->discount_amount ?? '0.00')));
         $balance = $accrual['total_accrued'] === null ? null : Money::format(max(0, Money::cents($accrual['total_accrued']) - $paid - $discount));
+        // Credit represents only received cash remaining after the discounted accrual is covered.
+        $credit = $accrual['total_accrued'] === null ? null : Money::format(max(0, $paid - max(0, Money::cents($accrual['total_accrued']) - $discount)));
 
-        return ['rental_total' => $accrual['calculation']->rentalTotal, 'freight_total' => $accrual['freight_total'], 'total_accrued' => $accrual['total_accrued'], 'total_paid' => Money::format($paid), 'total_discount' => Money::format($discount), 'balance' => $balance, 'financial_balance' => $balance];
+        return ['rental_total' => $accrual['calculation']->rentalTotal, 'freight_total' => $accrual['freight_total'], 'total_accrued' => $accrual['total_accrued'], 'total_paid' => Money::format($paid), 'total_discount' => Money::format($discount), 'balance' => $balance, 'financial_balance' => $balance, 'credit_balance' => $credit];
     }
 }

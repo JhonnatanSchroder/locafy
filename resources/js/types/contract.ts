@@ -93,6 +93,7 @@ export type Contract = {
     total_discount: string;
     balance: string | null;
     financial_balance: string | null;
+    credit_balance: string | null;
     attachments_count: number;
     attachments?: ContractAttachment[];
     initial_freight?: InitialFreight;

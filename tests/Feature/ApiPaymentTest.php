@@ -164,10 +164,24 @@ it('keeps existing contract payment creation endpoint and financial validations'
     $this
         ->withToken($token)
         ->postJson("/api/v1/contracts/{$contract->id}/payments", [
-            'amount' => '999999.99',
+            'amount' => '50.00',
             'discount_amount' => '0.00',
             'paid_at' => '2026-10-09T10:00:00',
             'method' => 'PIX',
         ])
-        ->assertUnprocessable();
+        ->assertOk()
+        ->assertJsonPath('data.balance', '50.00')
+        ->assertJsonPath('data.credit_balance', '0.00');
+
+    $this
+        ->withToken($token)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", [
+            'amount' => '100.00',
+            'discount_amount' => '0.00',
+            'paid_at' => '2026-10-09T10:00:00',
+            'method' => 'PIX',
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '50.00');
 });

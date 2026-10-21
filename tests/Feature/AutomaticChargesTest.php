@@ -72,14 +72,79 @@ it('settles balances with payments and discounts while keeping revenue separate'
     expect($finance['balance'])->toBe('130.00');
 });
 
-it('rejects payment plus discount above the current balance', function () {
+it('accepts an advance payment and exposes the resulting credit', function () {
     [$user, $contract] = liveReceivableFixture();
 
     $this->actingAs($user)
         ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('290.00', '20.00'))
-        ->assertUnprocessable();
+        ->assertOk()
+        ->assertJsonPath('data.total_paid', '290.00')
+        ->assertJsonPath('data.total_discount', '20.00')
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '10.00');
 
-    expect(Payment::count())->toBe(0);
+    expect(Payment::count())->toBe(1);
+});
+
+it('allows a payment when the current balance is zero without creating debt', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('300.00', '0.00'))
+        ->assertOk()
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '0.00');
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('50.00', '0.00'))
+        ->assertOk()
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '50.00');
+});
+
+it('does not advance the next charge date again for consecutive prepayments', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('310.00'))
+        ->assertOk()
+        ->assertJsonPath('data.credit_balance', '10.00')
+        ->assertJsonPath('data.next_charge_date', '2026-10-20');
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('80.00'))
+        ->assertOk()
+        ->assertJsonPath('data.credit_balance', '90.00')
+        ->assertJsonPath('data.next_charge_date', '2026-10-20');
+
+    $this->travelTo(CarbonImmutable::parse('2026-10-06 18:00', 'America/Belem'));
+    $this->getJson("/api/v1/contracts/{$contract->id}")
+        ->assertOk()
+        ->assertJsonPath('data.balance', '180.00')
+        ->assertJsonPath('data.credit_balance', '0.00');
+});
+
+it('does not allow repeated discounts to exceed current debt or generate credit', function () {
+    [$user, $contract] = liveReceivableFixture();
+
+    $this->actingAs($user)
+        ->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('0.00', '200.00'))
+        ->assertOk()
+        ->assertJsonPath('data.balance', '100.00')
+        ->assertJsonPath('data.credit_balance', '0.00');
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('0.00', '100.01'))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('amount');
+    expect(Payment::count())->toBe(1);
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentWithDiscount('0.00', '100.00'))
+        ->assertOk()
+        ->assertJsonPath('data.balance', '0.00')
+        ->assertJsonPath('data.credit_balance', '0.00');
+
+    $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('40.00'))
+        ->assertOk()
+        ->assertJsonPath('data.credit_balance', '40.00')
+        ->assertJsonPath('data.next_charge_date', '2026-10-20');
 });
 
 it('allows full discount settlement without received revenue', function () {
@@ -269,13 +334,13 @@ it('only finalizes returned physical quantities when the current balance is zero
     $this->getJson('/api/v1/charges?filter=upcoming')->assertJsonCount(0, 'data');
 });
 
-it('excludes cancelled contracts and blocks payments above the current balance', function () {
+it('excludes cancelled contracts while allowing genuine advance payments', function () {
     [$user,$contract] = liveReceivableFixture();
-    $this->actingAs($user)->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('300.01'))->assertUnprocessable();
+    $this->actingAs($user)->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('300.01'))->assertOk()->assertJsonPath('data.credit_balance', '0.01');
     $contract->update(['status' => 'CANCELLED']);
     $this->getJson('/api/v1/charges')->assertJsonCount(0, 'data');
     $this->postJson("/api/v1/contracts/{$contract->id}/payments", livePaymentData('1.00'))->assertUnprocessable();
-    expect(Payment::count())->toBe(0);
+    expect(Payment::count())->toBe(1);
 });
 
 it('isolates receivables and contract payments by company', function () {
