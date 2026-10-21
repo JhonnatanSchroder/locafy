@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { Trash2 } from '@lucide/vue';
 import type { Contract } from '@/types';
 import InputError from '@/components/InputError.vue';
