@@ -47,7 +47,7 @@ class RegisterContractPaymentAction
                 $settledForCharge = $charge->payments()->get()->sum(fn ($p) => Money::cents($p->amount) + Money::cents((string) ($p->discount_amount ?? '0.00')));
                 $charge->update(['status' => $settledForCharge >= Money::cents($charge->total_amount) ? 'PAID' : 'PARTIAL']);
             }
-            if ($availableDiscount !== null && $availableDiscount > 0 && $settled >= $availableDiscount && $contract->next_charge_date !== null) {
+            if ($availableDiscount > 0 && $settled >= $availableDiscount && $contract->next_charge_date !== null) {
                 if ($contract->charge_interval_days < 1 || $contract->charge_interval_days > 365) {
                     throw ValidationException::withMessages(['charge_interval_days' => 'Intervalo de cobrança inválido.']);
                 }
