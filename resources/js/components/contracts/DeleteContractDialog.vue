@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { Trash2 } from '@lucide/vue';
 import type { Contract } from '@/types';
@@ -14,7 +15,11 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
-const props = defineProps<{ contract: Contract; compact?: boolean }>();
+const props = defineProps<{
+    contract: Contract;
+    compact?: boolean;
+    triggerless?: boolean;
+}>();
 const open = defineModel<boolean>('open', { default: false });
 const confirmation = ref('');
 const form = useForm<{ contract?: string }>({});
@@ -47,6 +52,7 @@ const destroy = () => {
 
 <template>
     <Button
+        v-if="!triggerless"
         variant="destructive"
         :size="compact ? 'sm' : 'default'"
         @click="start"

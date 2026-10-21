@@ -90,7 +90,12 @@ function finalize() {
         <CheckCheck class="mr-1 size-4" /> Finalizar
     </Button>
     <PaymentDialog v-model:open="paymentOpen" :receivable="payment" />
-    <DeleteContractDialog v-if="menu && canDelete" v-model:open="deleteOpen" :contract="contract" />
+    <DeleteContractDialog
+        v-if="menu && canDelete"
+        v-model:open="deleteOpen"
+        :contract="contract"
+        triggerless
+    />
     <Dialog :open="finalizeOpen" @update:open="(value) => { if (!form.processing) finalizeOpen = value; }">
         <DialogContent>
             <DialogHeader>
