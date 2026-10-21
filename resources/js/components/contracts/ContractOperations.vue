@@ -125,6 +125,7 @@ function finalize() {
         v-if="menu && canDelete"
         v-model:open="deleteOpen"
         :contract="contract"
+        triggerless
     />
     <Dialog
         :open="finalizeOpen"
